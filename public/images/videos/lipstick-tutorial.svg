@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" fill="none" role="img"><defs>
+      <linearGradient id="bgv" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#fdf4f6"/>
+        <stop offset="1" stop-color="#ece2d4"/>
+      </linearGradient>
+    </defs>
+    <rect width="640" height="360" fill="url(#bgv)"/>
+    <g>
+      <rect x="112" y="150" width="38" height="120" rx="8" fill="#7a1f3f"/>
+      <path d="M120 150c0-18 4-32 11-38 7 6 11 20 11 38h-22z" fill="#8f2749"/>
+      <rect x="140" y="150" width="38" height="30" rx="6" fill="#c9a86a"/>
+      <path d="M455 210c30-24 70-24 100 0-30 26-70 26-100 0z" fill="#a83a5e"/>
+      <path d="M455 210c30-10 70-10 100 0-30 8-70 8-100 0z" fill="#7a1f3f"/>
+    </g>
+    <circle cx="320" cy="180" r="46" fill="#ffffff" opacity="0.92"/>
+    <path d="M308 158v44l38-22-38-22z" fill="#7a1f3f"/>
+    
+  <g fill="#c9a86a" opacity="0.7">
+    <path d="M64 60l3 9 9 3-9 3-3 9-3-9-9-3 9-3z"/>
+    <path d="M338 108l2.2 6.6 6.6 2.2-6.6 2.2-2.2 6.6-2.2-6.6-6.6-2.2 6.6-2.2z"/>
+    <path d="M312 424l1.8 5.4 5.4 1.8-5.4 1.8-1.8 5.4-1.8-5.4-5.4-1.8 5.4-1.8z"/>
+  </g></svg>

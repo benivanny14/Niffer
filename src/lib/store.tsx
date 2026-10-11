@@ -1,0 +1,158 @@
+"use client";
+
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
+import { getProductBySlug, type Product } from "@/lib/data/catalog";
+import { createLocalStore } from "@/lib/local-store";
+import { getStock } from "@/lib/stock";
+
+const CART_KEY = "niffer.cart.v1";
+const WISHLIST_KEY = "niffer.wishlist.v1";
+
+export type CartItem = { slug: string; qty: number };
+
+const cartStore = createLocalStore<CartItem[]>(CART_KEY, []);
+const wishlistStore = createLocalStore<string[]>(WISHLIST_KEY, []);
+
+/** `ready`: false kwenye server/first paint, true baada ya hydration. */
+const subscribeNoop = () => () => {};
+const getClientReady = () => true;
+const getServerReady = () => false;
+
+type StoreValue = {
+  items: CartItem[];
+  count: number;
+  subtotalTsh: number;
+  lines: { product: Product; qty: number }[];
+  add: (slug: string, qty?: number) => void;
+  setQty: (slug: string, qty: number) => void;
+  remove: (slug: string) => void;
+  clear: () => void;
+  inWishlist: (slug: string) => boolean;
+  toggleWishlist: (slug: string) => void;
+  wishlist: string[];
+  ready: boolean;
+};
+
+const StoreContext = createContext<StoreValue | null>(null);
+
+export function StoreProvider({ children }: { children: ReactNode }) {
+  const items = useSyncExternalStore(
+    cartStore.subscribe,
+    cartStore.get,
+    cartStore.getServer,
+  );
+  const wishlist = useSyncExternalStore(
+    wishlistStore.subscribe,
+    wishlistStore.get,
+    wishlistStore.getServer,
+  );
+  const ready = useSyncExternalStore(
+    subscribeNoop,
+    getClientReady,
+    getServerReady,
+  );
+
+  const add = useCallback((slug: string, qty = 1) => {
+    // Zuzuia kuongeza zaidi ya stoo halisi iliyopo.
+    const cap = Math.max(getStock(slug), 0);
+    if (cap <= 0) return;
+    const prev = cartStore.get();
+    const found = prev.find((i) => i.slug === slug);
+    if (found) {
+      cartStore.set(
+        prev.map((i) =>
+          i.slug === slug
+            ? { ...i, qty: Math.min(i.qty + qty, cap, 99) }
+            : i,
+        ),
+      );
+    } else {
+      cartStore.set([...prev, { slug, qty: Math.min(qty, cap, 99) }]);
+    }
+  }, []);
+
+  const setQty = useCallback((slug: string, qty: number) => {
+    const cap = Math.max(getStock(slug), 0);
+    const prev = cartStore.get();
+    if (qty <= 0) {
+      cartStore.set(prev.filter((i) => i.slug !== slug));
+      return;
+    }
+    cartStore.set(
+      prev.map((i) =>
+        i.slug === slug ? { ...i, qty: Math.min(qty, cap, 99) } : i,
+      ),
+    );
+  }, []);
+
+  const remove = useCallback((slug: string) => {
+    cartStore.set(cartStore.get().filter((i) => i.slug !== slug));
+  }, []);
+
+  const clear = useCallback(() => cartStore.set([]), []);
+
+  const toggleWishlist = useCallback((slug: string) => {
+    const prev = wishlistStore.get();
+    wishlistStore.set(
+      prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug],
+    );
+  }, []);
+
+  const inWishlist = useCallback(
+    (slug: string) => wishlist.includes(slug),
+    [wishlist],
+  );
+
+  const lines = useMemo(
+    () =>
+      items
+        .map((i) => {
+          const product = getProductBySlug(i.slug);
+          return product ? { product, qty: i.qty } : null;
+        })
+        .filter((x): x is { product: Product; qty: number } => x !== null),
+    [items],
+  );
+
+  const subtotalTsh = useMemo(
+    () => lines.reduce((sum, l) => sum + l.product.priceTsh * l.qty, 0),
+    [lines],
+  );
+
+  const count = useMemo(
+    () => items.reduce((sum, i) => sum + i.qty, 0),
+    [items],
+  );
+
+  const value: StoreValue = {
+    items,
+    lines,
+    count,
+    subtotalTsh,
+    add,
+    setQty,
+    remove,
+    clear,
+    inWishlist,
+    toggleWishlist,
+    wishlist,
+    ready,
+  };
+
+  return (
+    <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
+  );
+}
+
+export function useStore(): StoreValue {
+  const ctx = useContext(StoreContext);
+  if (!ctx) throw new Error("useStore lazima itumike ndani ya <StoreProvider>");
+  return ctx;
+}
