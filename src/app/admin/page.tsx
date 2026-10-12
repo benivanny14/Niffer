@@ -226,9 +226,11 @@ function AdminLogin() {
         >
           {sending ? "Inaingia…" : "Ingia"}
         </button>
-        <p className="text-center text-xs text-ink-400">
-          Demo nywila: <span className="font-mono">niffer2026</span>
-        </p>
+        {process.env.NODE_ENV !== "production" ? (
+          <p className="text-center text-xs text-ink-400">
+            Demo nywila: <span className="font-mono">niffer2026</span>
+          </p>
+        ) : null}
       </form>
     </div>
   );

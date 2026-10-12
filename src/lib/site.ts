@@ -3,9 +3,9 @@
 export const site = {
   name: "Niffer Cosmetics",
   tagline: "Urembo halisi, ubora wa juu",
-  phoneDisplay: "+255 754 000 000",
-  phoneTel: "+255754000000",
-  whatsapp: "255754000000",
+  phoneDisplay: "+255 747 340 170",
+  phoneTel: "+255747340170",
+  whatsapp: "255747340170",
   email: "habari@niffercosmetics.co.tz",
   address: "Mtaa wa Samora, Dar es Salaam",
   hours: "Jumatatu–Jumamosi · 9:00–20:00",
@@ -13,7 +13,7 @@ export const site = {
   baseShippingTsh: 3000,
   codEnabled: true,
   socials: {
-    instagram: "https://instagram.com/niffercosmetics",
+    instagram: "https://www.instagram.com/niffer_cosmetics1/",
     tiktok: "https://tiktok.com/@niffercosmetics",
     facebook: "https://facebook.com/niffercosmetics",
   },

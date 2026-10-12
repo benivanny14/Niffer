@@ -4,17 +4,22 @@ import { getOrder, updateOrderStatus } from "@/lib/server/orders";
 import { demoOrders, statusSteps, type OrderStatus } from "@/lib/orders";
 import { isAdminRequest } from "@/lib/server/auth";
 import { notifyCustomer } from "@/lib/server/customer-notify";
+import { rateLimit, rateLimitMessage } from "@/lib/server/rate-limit";
 
 /**
  * Oda moja kwa nambari (umma).
  * Ndani ya DB kwanza, kisha oda za demo (NCF-XXXX) zinazotumika kwenye majaribio.
  */
 export async function GET(
-  _req: Request,
+  req: NextRequest,
   ctx: { params: Promise<{ code: string }> },
 ) {
   await connection();
   try {
+    const limited = rateLimit(req, "order-lookup", 20, 60);
+    if (!limited.ok) {
+      return fail(rateLimitMessage(limited.retryAfterSec), 429);
+    }
     const { code } = await ctx.params;
     const order =
       getOrder(code) ??

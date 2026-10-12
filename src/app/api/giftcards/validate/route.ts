@@ -1,6 +1,7 @@
 import { type NextRequest } from "next/server";
 import { json, fail, readBody, toErrorResponse } from "@/lib/server/http";
 import { getGiftCard } from "@/lib/server/leads";
+import { rateLimit, rateLimitMessage } from "@/lib/server/rate-limit";
 
 /**
  * Thibitisha kadi ya zawadi kabla ya kulipa (checkout preview).
@@ -8,6 +9,10 @@ import { getGiftCard } from "@/lib/server/leads";
  */
 export async function POST(req: NextRequest) {
   try {
+    const limited = rateLimit(req, "giftcard-validate", 15, 60);
+    if (!limited.ok) {
+      return fail(rateLimitMessage(limited.retryAfterSec), 429);
+    }
     const body = await readBody<{ code?: string }>(req);
     if (!body?.code) return fail("Weka msimbo wa kadi.");
     const card = getGiftCard(String(body.code));

@@ -11,17 +11,12 @@ const field =
 
 type Rfq = {
   code: string;
-  business: string;
-  name: string;
-  phone: string;
-  region: string;
   productName: string;
   qty: number;
   status: "new" | "reviewed" | "quoted" | "accepted" | "declined";
   quoteTsh: number | null;
   unitQuoteTsh: number | null;
   createdAt: string;
-  updatedAt: string;
 };
 
 const statusLabels: Record<Rfq["status"], string> = {
@@ -165,23 +160,17 @@ export function RfqTracker() {
                   </ol>
                 ) : null}
 
-                <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+                <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
                   <div>
-                    <dt className="text-ink-400">Biashara</dt>
+                    <dt className="text-ink-400">Bidhaa</dt>
                     <dd className="mt-0.5 font-medium text-ink-900">
-                      {rfq.business}
+                      {rfq.productName || "—"}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-ink-400">Bidhaa &amp; wingi</dt>
+                    <dt className="text-ink-400">Wingi</dt>
                     <dd className="mt-0.5 font-medium text-ink-900">
-                      {rfq.productName || "—"} × {rfq.qty} pcs
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-ink-400">Mkoa</dt>
-                    <dd className="mt-0.5 font-medium text-ink-900">
-                      {rfq.region || "—"}
+                      {rfq.qty} pcs
                     </dd>
                   </div>
                 </dl>

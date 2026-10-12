@@ -17,10 +17,13 @@ export async function GET() {
   }
 }
 
-/** Toa kadi ya zawadi mpya (msimbo wa pekee). */
+/** Toa kadi ya zawadi mpya (admin pekee). */
 export async function POST(req: NextRequest) {
   try {
-    const limited = rateLimit(req, "giftcard-create", 10, 600);
+    if (!(await isAdminRequest())) {
+      return fail("Ingia kama admin kuongeza kadi.", 401);
+    }
+    const limited = rateLimit(req, "giftcard-create", 30, 600);
     if (!limited.ok) {
       return fail(rateLimitMessage(limited.retryAfterSec), 429);
     }

@@ -16,6 +16,24 @@ const store = (globalThis as unknown as { __rateLimit?: Map<string, Bucket> })
   ((globalThis as unknown as { __rateLimit?: Map<string, Bucket> }).__rateLimit =
     new Map());
 
+const MAX_BUCKETS = 5000;
+
+function pruneExpired(): void {
+  const now = Date.now();
+  for (const [key, bucket] of store) {
+    if (bucket.resetAt <= now) store.delete(key);
+  }
+  // Kikomo cha kumbuka — futa kale zaidi ikiwa zimezidi.
+  if (store.size > MAX_BUCKETS) {
+    const entries = [...store.entries()].sort(
+      (a, b) => a[1].resetAt - b[1].resetAt,
+    );
+    for (let i = 0; i < entries.length - MAX_BUCKETS; i++) {
+      store.delete(entries[i][0]);
+    }
+  }
+}
+
 export type RateLimitResult = {
   ok: boolean;
   /** Sekunde zilizobaki kabla ya kupumzika. */
@@ -36,6 +54,9 @@ export function rateLimit(
   const bucketKey = `${key}:${ip}`;
   const now = Date.now();
 
+  // Osha bucket za zamani kila ~100 calls.
+  if (store.size > 200) pruneExpired();
+
   let bucket = store.get(bucketKey);
   if (!bucket || bucket.resetAt <= now) {
     bucket = { count: 0, resetAt: now + windowSec * 1000 };
@@ -52,14 +73,24 @@ export function rateLimit(
   return { ok: true, retryAfterSec: 0 };
 }
 
-/** IP salama kutoka headers (proxy/trust). */
+/**
+ * IP salama kutoka headers.
+ * Tumia `x-real-ip` kwanza (inawekwa na proxy kama nginx/Caddy) —
+ * `x-forwarded-for` ya kwanza inaweza kuwa spoofed na client.
+ * Ikiwa hakuna proxy, tumia "unknown" (rate limit bado inafanya kazi
+ * kwa mwendo wa jumla).
+ */
 export function clientIp(req: NextRequest): string {
+  const real = req.headers.get("x-real-ip")?.trim();
+  if (real) return real;
+  // XFF: tumia hop ya mwisho (iliyoongezwa na proxy, si ya client).
   const fwd = req.headers.get("x-forwarded-for");
   if (fwd) {
-    const first = fwd.split(",")[0]?.trim();
-    if (first) return first;
+    const parts = fwd.split(",").map((s) => s.trim()).filter(Boolean);
+    const last = parts[parts.length - 1];
+    if (last) return last;
   }
-  return req.headers.get("x-real-ip")?.trim() || "unknown";
+  return "unknown";
 }
 
 /** Ujumbe wa kikomo (Kiswahili). */

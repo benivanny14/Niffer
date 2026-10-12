@@ -6,7 +6,7 @@ import { notifyCustomer } from "@/lib/server/customer-notify";
 import { InputError } from "@/lib/server/errors";
 import { getGiftCard, redeemGiftCard } from "@/lib/server/leads";
 import { products } from "@/lib/data/catalog";
-import { site, paymentMethods, type PaymentId } from "@/lib/site";
+import { site, paymentMethods, isRegion, isCityInRegion, type PaymentId } from "@/lib/site";
 import {
   statusSteps,
   type CartLine,
@@ -167,8 +167,10 @@ export function createOrder(input: CreateOrderInput): {
   if (!/^[0-9+\s]{9,15}$/.test(customer.phone)) {
     throw new InputError("Weka namba sahihi ya simu (mfano 0754 000 000).");
   }
-  if (!customer.region) throw new InputError("Chagua mkoa wako.");
-  if (!customer.city) throw new InputError("Chagua mji / wilaya yako.");
+  if (!isRegion(customer.region)) throw new InputError("Chagua mkoa sahihi.");
+  if (!customer.city || !isCityInRegion(customer.region, customer.city)) {
+    throw new InputError("Chagua mji / wilaya sahihi ndani ya mkoa uliochagua.");
+  }
   if (!customer.street || customer.street.length < 2) {
     throw new InputError("Weka mtaa / kata yako.");
   }
@@ -295,13 +297,30 @@ export function createOrder(input: CreateOrderInput): {
       "INSERT INTO order_events (code, status, at) VALUES (?, ?, ?)",
     ).run(code, "imapokelewa", createdAt);
 
+    // Punguza stoo — thibitisha kwamba kuna kutosha (si MAX(0, …)).
     const dec = db.prepare(
-      "UPDATE stock SET qty = MAX(0, qty - ?), updated_at = ? WHERE slug = ?",
+      "UPDATE stock SET qty = qty - ?, updated_at = ? WHERE slug = ? AND qty >= ?",
     );
-    for (const line of lines) dec.run(line.qty, createdAt, line.slug);
+    for (const line of lines) {
+      const result = dec.run(line.qty, createdAt, line.slug, line.qty);
+      if (Number(result.changes) !== 1) {
+        throw new InputError(
+          `Stoo ya ${line.slug} haitoshi. Jaribu tena.`,
+          409,
+        );
+      }
+    }
 
     // Redeem kadi ya zawadi ndani ya transaction (haiwezi kutumika tena).
-    if (giftCard) redeemGiftCard(giftCard.code, code);
+    if (giftCard) {
+      const redeemed = redeemGiftCard(giftCard.code, code);
+      if (!redeemed) {
+        throw new InputError(
+          "Kadi ya zawadi tayari imetumika na mtu mwingine.",
+          409,
+        );
+      }
+    }
 
     db.exec("COMMIT");
   } catch (error) {

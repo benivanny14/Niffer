@@ -76,11 +76,10 @@ export default function CheckoutPage() {
       : promo.discountTsh
     : 0;
   const shipping = promo?.freeShipping ? 0 : shippingBase;
-  const beforeGift =
-    Math.max(0, subtotalTsh - (promo?.freeShipping ? 0 : discountTsh)) +
-    shipping;
+  // Kadi ya zawadi inaweza kufunika subtotal tu (si usafirishaji).
+  const beforeGift = Math.max(0, subtotalTsh - (promo?.freeShipping ? 0 : discountTsh));
   const giftDiscountTsh = gift ? Math.min(gift.amountTsh, beforeGift) : 0;
-  const total = Math.max(0, beforeGift - giftDiscountTsh);
+  const total = Math.max(0, beforeGift - giftDiscountTsh) + shipping;
 
   async function applyPromoCode() {
     if (promoChecking) return;

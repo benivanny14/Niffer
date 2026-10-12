@@ -1,4 +1,5 @@
 import { getDb } from "@/lib/server/db";
+import { timingSafeEqual } from "node:crypto";
 import type { Order } from "@/lib/orders";
 
 /**
@@ -163,9 +164,18 @@ export function getPaymentStatus(code: string): PaymentStatus | null {
 export function validCallbackToken(token: string | null): boolean {
   const expected = env("PAYMENT_CALLBACK_TOKEN");
   if (!expected) {
-    // Dev/mock: kubali. Production: KATAA (fail-closed) — callback
-    // isiyo na token inaweza kubadilisha hali ya oda kwa udanganyifu.
-    return process.env.NODE_ENV !== "production" || env("AZAMPAY_MOCK") === "1";
+    // Dev: kubali. Production: KATAA (fail-closed) — callback isiyo na
+    // token inaweza kubadilisha hali ya oda kwa udanganyifu.
+    return process.env.NODE_ENV !== "production";
   }
-  return Boolean(token) && token === expected;
+  if (!token) return false;
+  const a = Buffer.from(token);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
+
+/** Mock mode: ni kwa development PEKEE. */
+export function mockPaymentsAllowed(): boolean {
+  return env("AZAMPAY_MOCK") === "1" && process.env.NODE_ENV !== "production";
 }

@@ -8,6 +8,7 @@ import { formatTsh } from "@/lib/format";
 import { ProductCard } from "@/components/catalog/ProductCard";
 import { ProductImage } from "@/components/media/ProductImage";
 import { VideoGallery } from "@/components/media/VideoGallery";
+import { InstagramShowcase } from "@/components/instagram/InstagramShowcase";
 import { RatingStars } from "@/components/ui/RatingStars";
 import { NewsletterForm } from "@/components/ui/NewsletterForm";
 import {
@@ -189,6 +190,8 @@ export default async function Home() {
           ))}
         </ul>
       </section>
+
+      <InstagramShowcase />
 
       {/* ============ BIDHAA MAARUFU ============ */}
       <section id="bidhaa" className="scroll-mt-24 bg-cream-100 py-16 lg:py-24">

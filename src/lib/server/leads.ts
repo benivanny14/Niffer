@@ -261,15 +261,16 @@ export function getGiftCard(code: string): GiftCard | undefined {
   };
 }
 
-/** Weka kadi kuwa imetumika (ndani ya transaction ya oda). */
-export function redeemGiftCard(code: string, orderCode: string): void {
-  getDb()
+/** Weka kadi kuwa imetumika (ndani ya transaction ya oda). Rudisha true kama imefanikiwa. */
+export function redeemGiftCard(code: string, orderCode: string): boolean {
+  const result = getDb()
     .prepare(
       `UPDATE gift_cards
          SET status = 'redeemed', redeemed_at = ?, order_code = ?
        WHERE code = ? AND status = 'issued'`,
     )
     .run(nowIso(), orderCode, code.trim().toUpperCase());
+  return Number(result.changes) > 0;
 }
 
 /* ============ Hakiki ============ */

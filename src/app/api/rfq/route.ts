@@ -19,7 +19,21 @@ export async function GET(req: NextRequest) {
   try {
     const phone = req.nextUrl.searchParams.get("phone");
     if (phone) {
-      return json({ ok: true, rfqs: listRfqsByPhone(phone) });
+      const limited = rateLimit(req, "rfq-lookup", 10, 60);
+      if (!limited.ok) {
+        return fail(rateLimitMessage(limited.retryAfterSec), 429);
+      }
+      // Rudisha taarifa za msingi + bei — si PII kamili (biashara, simu, barua pepe).
+      const rfqs = listRfqsByPhone(phone).map((r) => ({
+        code: r.code,
+        productName: r.productName,
+        qty: r.qty,
+        status: r.status,
+        quoteTsh: r.quoteTsh,
+        unitQuoteTsh: r.unitQuoteTsh,
+        createdAt: r.createdAt,
+      }));
+      return json({ ok: true, rfqs });
     }
     if (!(await isAdminRequest())) {
       return fail("Ingia kama admin kuona ombi zote za RFQ.", 401);

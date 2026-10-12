@@ -189,6 +189,23 @@ CREATE TABLE IF NOT EXISTS rfqs (
   created_at    TEXT NOT NULL,
   updated_at    TEXT NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_orders_customer ON orders(customer_id);
+CREATE INDEX IF NOT EXISTS idx_orders_created ON orders(created_at);
+CREATE INDEX IF NOT EXISTS idx_orders_payment_status ON orders(payment_status);
+CREATE INDEX IF NOT EXISTS idx_order_events_code ON order_events(code, at);
+CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_slug, status);
+CREATE INDEX IF NOT EXISTS idx_reviews_status ON reviews(status, created_at);
+CREATE INDEX IF NOT EXISTS idx_messages_created ON messages(created_at, status);
+CREATE INDEX IF NOT EXISTS idx_notifications_status ON notifications(status, created_at);
+CREATE INDEX IF NOT EXISTS idx_cust_notif_customer ON customer_notifications(customer_id);
+CREATE INDEX IF NOT EXISTS idx_cust_notif_phone ON customer_notifications(phone);
+CREATE INDEX IF NOT EXISTS idx_cust_notif_status ON customer_notifications(status, created_at);
+CREATE INDEX IF NOT EXISTS idx_customer_sessions_customer ON customer_sessions(customer_id);
+CREATE INDEX IF NOT EXISTS idx_customer_sessions_expires ON customer_sessions(expires_at);
+CREATE INDEX IF NOT EXISTS idx_admin_sessions_expires ON admin_sessions(expires_at);
+CREATE INDEX IF NOT EXISTS idx_rfqs_phone ON rfqs(phone);
+CREATE INDEX IF NOT EXISTS idx_stock_slug ON stock(slug);
 `;
 
 export function nowIso(): string {
