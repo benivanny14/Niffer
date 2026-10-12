@@ -59,7 +59,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="sw"
-      className={`${inter.variable} ${playfair.variable} h-full antialiased`}
+      translate="no"
+      className={`${inter.variable} ${playfair.variable} h-full antialiased notranslate`}
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col bg-cream-50 text-ink-900">

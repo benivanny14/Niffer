@@ -298,3 +298,15 @@ body {
 @utility badge {
   @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide;
 }
+
+/* Zuia browser translation (Edge/Google Translate) — inaharibu React DOM. */
+html[translate="no"],
+html.notranslate,
+html.notranslate * {
+  -webkit-transform: none;
+}
+
+.notranslate {
+  -webkit-translate: none !important;
+  translate: none !important;
+}
