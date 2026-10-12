@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import type { Product } from "@/lib/data/catalog";
 import { formatTsh, discountPercent } from "@/lib/format";
 import { RatingStars } from "@/components/ui/RatingStars";
@@ -27,6 +28,9 @@ export function ProductCard({ product }: { product: Product }) {
   const discount = discountPercent(product.priceTsh, product.compareAtTsh);
   const stock = useStock(product.slug);
   const outOfStock = stock === 0;
+  // PPR: stock badge hubadilika DOM wakati wa hydration — onyesha baada ya mount tu.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   return (
     <article className="card group flex h-full flex-col overflow-hidden">
@@ -91,18 +95,18 @@ export function ProductCard({ product }: { product: Product }) {
           ) : null}
         </div>
 
-        {outOfStock ? (
+        {mounted && outOfStock ? (
           <span className="mt-1 text-sm font-medium text-danger-600">
             Imeisha
           </span>
-        ) : stock <= 5 ? (
+        ) : mounted && stock <= 5 ? (
           <span className="mt-1 text-sm font-medium text-warning-600">
             Zimebaki {stock} tu
           </span>
         ) : null}
 
         <div className="mt-auto pt-2">
-          <AddToCartButton slug={product.slug} disabled={outOfStock} />
+          <AddToCartButton slug={product.slug} disabled={mounted && outOfStock} />
         </div>
       </div>
     </article>
