@@ -14,6 +14,8 @@ const posts = [
     id: "DeGXQugN1LN",
     title: "NO 1 MPAKA KUMI NI MIXA BODY LOTION",
     detail: "Bei haijaelezwa kwenye chapisho.",
+    price: undefined,
+    note: undefined,
     message:
       "Habari, naomba bei na maelezo ya chapisho la Mixa Body Lotion kwenye Instagram.",
   },
@@ -21,6 +23,7 @@ const posts = [
     id: "DeGVxphNoFu",
     title: "Bidhaa zinazopendwa zaidi zimejazwa tena",
     detail: "Majina na bei za bidhaa hazijaelezwa kwenye chapisho.",
+    price: undefined,
     note: "Ulizia majina na upatikanaji kwa WhatsApp.",
     message:
       "Habari, naomba majina, bei na upatikanaji wa bidhaa kwenye chapisho la Instagram kuhusu bidhaa zilizojazwa tena.",
@@ -74,17 +77,6 @@ export function InstagramShowcase() {
                     />
                   </div>
 
-                  <div className="overflow-hidden bg-white">
-                    <iframe
-                      title={`Chapisho la Instagram: ${post.title}`}
-                      src={`${postUrl}embed/`}
-                      loading="lazy"
-                      allowFullScreen
-                      referrerPolicy="strict-origin-when-cross-origin"
-                      className="block h-[580px] w-full max-w-full border-0 bg-white sm:h-[620px]"
-                    />
-                  </div>
-
                   <div className="flex flex-1 flex-col p-5">
                     <h3 className="font-display text-lg leading-snug text-ink-900">
                       {post.title}
@@ -124,6 +116,22 @@ export function InstagramShowcase() {
                       </a>
                     </div>
                   </div>
+
+                  <details className="border-t border-cream-300">
+                    <summary className="cursor-pointer px-5 py-3 text-sm font-semibold text-accent underline decoration-brand-300 underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
+                      Tazama chapisho halisi la Instagram
+                    </summary>
+                    <div className="overflow-hidden bg-white">
+                      <iframe
+                        title={`Chapisho la Instagram: ${post.title}`}
+                        src={`${postUrl}embed/`}
+                        loading="lazy"
+                        allowFullScreen
+                        referrerPolicy="strict-origin-when-cross-origin"
+                        className="block h-[580px] w-full max-w-full border-0 bg-white sm:h-[620px]"
+                      />
+                    </div>
+                  </details>
                 </article>
               </li>
             );
