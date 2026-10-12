@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { site, waLink } from "@/lib/site";
-import {
-  ChatIcon,
-  ClockIcon,
-  MapPinIcon,
-  PhoneIcon,
-} from "@/components/ui/icons";
+import { Suspense } from "react";
+import { site } from "@/lib/site";
+import { MapPinIcon } from "@/components/ui/icons";
+import { BranchExplorer } from "@/components/branches/BranchExplorer";
 
 export const metadata: Metadata = {
   title: "Matawi Yetu",
@@ -57,63 +54,14 @@ export default function BranchesPage() {
         bure, na kulipa kwa mobile money. Kwa oda za haraka, tumia WhatsApp.
       </p>
 
-      <ul className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-        {branches.map((branch) => (
-          <li
-            key={branch.name}
-            className={`card flex flex-col p-6 ${
-              branch.flagship ? "border-brand-300" : ""
-            }`}
-          >
-            {branch.flagship ? (
-              <span className="badge mb-3 self-start bg-gold-100 text-gold-700">
-                Tawi kuu
-              </span>
-            ) : null}
-            <h2 className="font-display text-xl text-ink-900">{branch.name}</h2>
-            <ul className="mt-4 flex-1 space-y-3 text-sm text-ink-500">
-              <li className="flex items-start gap-2.5">
-                <MapPinIcon className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
-                {branch.address}
-              </li>
-              <li className="flex items-start gap-2.5">
-                <ClockIcon className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
-                {branch.hours}
-              </li>
-              <li className="flex items-start gap-2.5">
-                <PhoneIcon className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
-                <a
-                  href={`tel:${branch.phoneTel}`}
-                  className="transition-colors hover:text-accent"
-                >
-                  {branch.phone}
-                </a>
-              </li>
-            </ul>
-            <ul className="mt-4 flex flex-wrap gap-1.5">
-              {branch.services.map((service) => (
-                <li
-                  key={service}
-                  className="rounded-full bg-cream-100 px-2.5 py-1 text-[11px] font-medium text-ink-500"
-                >
-                  {service}
-                </li>
-              ))}
-            </ul>
-            <a
-              href={waLink(
-                `Habari ${site.name}, nina swali kuhusu tawi la ${branch.city}.`,
-              )}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-outline mt-5 w-full"
-            >
-              <ChatIcon className="h-4 w-4" />
-              WhatsApp tawi la {branch.city}
-            </a>
-          </li>
-        ))}
-      </ul>
+      {/* Uchujaji wa mji (?eneo=) */}
+      <div className="mt-10">
+        <Suspense
+          fallback={<div className="h-10 w-64 animate-pulse rounded-full bg-cream-200" />}
+        >
+          <BranchExplorer branches={branches} />
+        </Suspense>
+      </div>
 
       {/* Ramani ya eneo */}
       <section className="card mt-12 overflow-hidden">

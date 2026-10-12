@@ -26,11 +26,14 @@ async function request<T>(path: string, options: Options = {}): Promise<T> {
       credentials: "same-origin",
       cache: "no-store",
       ...rest,
-      headers: {
-        Accept: "application/json",
-        ...(rest.body ? { "Content-Type": "application/json" } : {}),
-        ...(headers ?? {}),
-      },
+    headers: {
+      Accept: "application/json",
+      // JSON body pekee — FormData ina SURD yake ya mipaka (multipart).
+      ...(typeof rest.body === "string"
+        ? { "Content-Type": "application/json" }
+        : {}),
+      ...(headers ?? {}),
+    },
       signal: controller.signal,
     });
   } catch {
@@ -85,6 +88,19 @@ export function apiPatch<T>(
     method: "PATCH",
     body: JSON.stringify(body ?? {}),
   });
+}
+
+export function apiDelete<T>(path: string, options?: Options): Promise<T> {
+  return request<T>(path, { ...options, method: "DELETE" });
+}
+
+/** Pilisha faili (multipart) — mfano: picha ya bidhaa. */
+export function apiForm<T>(
+  path: string,
+  formData: FormData,
+  options?: Options,
+): Promise<T> {
+  return request<T>(path, { ...options, method: "POST", body: formData });
 }
 
 /** Ujumbe wa hitilafu unaonyesha kwenye fomu (daima wa Kiswahili). */

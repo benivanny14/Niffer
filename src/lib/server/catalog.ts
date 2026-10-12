@@ -1,18 +1,105 @@
-import { products, type Product } from "@/lib/data/catalog";
+import { getDb } from "@/lib/server/db";
+import {
+  products as catalogProducts,
+  type CategorySlug,
+  type Product,
+  type ProductBadge,
+} from "@/lib/data/catalog";
 import { articles, type Article } from "@/lib/data/articles";
 import { getStockMap } from "@/lib/server/orders";
 
-/** Bidhaa zote na stoo halisi kutoka DB. */
-export function listProducts(): Product[] {
-  const stock = getStockMap();
-  return products.map((p) => ({ ...p, stock: stock[p.slug] ?? p.stock }));
+/**
+ * Katalogi ya server — DB ndio mwanzo wa ukweli (admin anaweza kurekebisha
+ * bei, jina na picha kupitia dashibodi). Mdunzo wa code hutumika kama fallback
+ * kwa DB mpya/tupu.
+ */
+
+type ProductRow = {
+  slug: string;
+  id: string;
+  name: string;
+  category: string;
+  price_tsh: number;
+  compare_at_tsh: number | null;
+  short_description: string;
+  description: string;
+  ingredients: string;
+  how_to_use: string;
+  rating: number;
+  review_count: number;
+  stock_base: number;
+  badges: string;
+  image: string;
+  image_alt: string;
+  region: string;
+  city: string;
+  updated_at: string;
+};
+
+function rowToProduct(row: ProductRow): Product {
+  let badges: ProductBadge[] = [];
+  try {
+    const parsed = JSON.parse(row.badges ?? "[]");
+    if (Array.isArray(parsed)) badges = parsed as ProductBadge[];
+  } catch {
+    badges = [];
+  }
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    category: row.category as CategorySlug,
+    priceTsh: row.price_tsh,
+    compareAtTsh: row.compare_at_tsh ?? undefined,
+    shortDescription: row.short_description,
+    description: row.description,
+    ingredients: row.ingredients,
+    howToUse: row.how_to_use,
+    rating: row.rating,
+    reviewCount: row.review_count,
+    stock: row.stock_base,
+    badges,
+    image: row.image,
+    imageAlt: row.image_alt,
+    region: row.region || undefined,
+    city: row.city || undefined,
+  };
 }
 
+/** Bidhaa zote (DB) pamoja na stoo halisi — mpangilio wa asili wa katalogi. */
+export function listProducts(): Product[] {
+  let rows: ProductRow[] = [];
+  try {
+    rows = getDb()
+      .prepare("SELECT * FROM products ORDER BY rowid")
+      .all() as unknown as ProductRow[];
+  } catch {
+    rows = [];
+  }
+
+  const base = rows.length > 0 ? rows.map(rowToProduct) : catalogProducts;
+  const stock = getStockMap();
+  return base.map((p) => ({ ...p, stock: stock[p.slug] ?? p.stock }));
+}
+
+/** Bidhaa moja kutoka DB. */
 export function findProduct(slug: string): Product | undefined {
-  const product = products.find((p) => p.slug === slug);
-  if (!product) return undefined;
-  const stock = getStockMap()[product.slug];
-  return { ...product, stock: stock ?? product.stock };
+  try {
+    const row = getDb()
+      .prepare("SELECT * FROM products WHERE slug = ?")
+      .get(slug) as ProductRow | undefined;
+    if (row) {
+      const stock = getStockMap()[slug];
+      const product = rowToProduct(row);
+      return { ...product, stock: stock ?? product.stock };
+    }
+  } catch {
+    /* DB haijasoma — angalia fallback */
+  }
+  const fallback = catalogProducts.find((p) => p.slug === slug);
+  if (!fallback) return undefined;
+  const stock = getStockMap()[fallback.slug];
+  return { ...fallback, stock: stock ?? fallback.stock };
 }
 
 export type SearchResult =
@@ -21,7 +108,7 @@ export type SearchResult =
 
 const norm = (value: string) => value.toLowerCase().trim();
 
-/** Utafitaji kwenye bidhaa na makala (kupitia API). */
+/** Utafitaji kwenye bidhaa (DB) na makala (kupitia API). */
 export function searchCatalog(query: string, limit = 24): SearchResult[] {
   const q = norm(query);
   if (!q) return [];
@@ -37,7 +124,7 @@ export function searchCatalog(query: string, limit = 24): SearchResult[] {
     return total;
   };
 
-  const productHits = products
+  const productHits = listProducts()
     .map((p) => ({
       p,
       value: score(
@@ -79,7 +166,7 @@ export function catalogStats(): {
   productCount: number;
   articleCount: number;
 } {
-  return { productCount: products.length, articleCount: articles.length };
+  return { productCount: listProducts().length, articleCount: articles.length };
 }
 
 export type { Article };

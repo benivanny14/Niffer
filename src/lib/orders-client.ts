@@ -49,6 +49,7 @@ export type CreateOrderPayload = {
     region: string;
     address: string;
     note?: string;
+    email?: string;
   };
   payment: string;
   lines: { slug: string; qty: number }[];

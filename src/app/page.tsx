@@ -1,12 +1,8 @@
 import Link from "next/link";
-import {
-  beautyVideos,
-  categories,
-  newArrivals,
-  products,
-  reviews,
-  saleProducts,
-} from "@/lib/data/catalog";
+import { connection } from "next/server";
+import { beautyVideos, categories } from "@/lib/data/catalog";
+import { listProducts } from "@/lib/server/catalog";
+import { listReviews } from "@/lib/server/leads";
 import { latestArticles, formatDate } from "@/lib/data/articles";
 import { formatTsh } from "@/lib/format";
 import { ProductCard } from "@/components/catalog/ProductCard";
@@ -47,9 +43,13 @@ const trustPoints = [
   },
 ];
 
-export default function Home() {
-  const onSale = saleProducts();
-  const freshIn = newArrivals();
+export default async function Home() {
+  // Katalogi na hakiki kutoka DB (admin + wateja) — dynamic render.
+  await connection();
+  const products = listProducts();
+  const onSale = products.filter((p) => p.compareAtTsh);
+  const freshIn = products.filter((p) => p.badges.includes("new"));
+  const reviews = listReviews(8);
   const latest = latestArticles(3);
 
   return (

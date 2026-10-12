@@ -25,7 +25,10 @@ const exploreLinks = [
   { href: "/ofa", label: "Ofa na Punguzo" },
   { href: "/zawadi", label: "Kadi za Zawadi" },
   { href: "/jumla", label: "Uuzaji wa Jumla" },
+  { href: "/jumla/ombi", label: "Fuatilia Ombi la Bei" },
   { href: "/matawi", label: "Matawi Yetu" },
+  { href: "/swali", label: "Swali la Utunzaji" },
+  { href: "/harufu", label: "Tafuta Harufu" },
 ];
 
 export function SiteFooter() {

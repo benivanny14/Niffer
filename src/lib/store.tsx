@@ -9,9 +9,14 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
-import { getProductBySlug, type Product } from "@/lib/data/catalog";
+import { type Product } from "@/lib/data/catalog";
 import { createLocalStore } from "@/lib/local-store";
 import { applyServerStock, getStock } from "@/lib/stock";
+import {
+  applyServerProducts,
+  getProduct,
+  productsStore,
+} from "@/lib/catalog-client";
 import { apiGet } from "@/lib/api";
 
 const CART_KEY = "niffer.cart.v1";
@@ -60,8 +65,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     getClientReady,
     getServerReady,
   );
+  // Bidhaa za DB (admin) — zinabadilisha bei/jina mara tu zikipakuliwa.
+  const serverProducts = useSyncExternalStore(
+    productsStore.subscribe,
+    productsStore.getSnapshot,
+    productsStore.getServerSnapshot,
+  );
 
-  // Pakia stoo halisi kutoka backend mara tu duka likifunguliwa.
+  // Pakia stoo na katalogi halisi kutoka backend mara tu duka likifunguliwa.
   useEffect(() => {
     let alive = true;
     apiGet<{ ok: boolean; stock: Record<string, number> }>("/api/stock")
@@ -70,6 +81,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       })
       .catch(() => {
         /* server hai / mtandao — tumia stoo ya ndani */
+      });
+    apiGet<{ ok: boolean; products: Product[] }>("/api/products")
+      .then((data) => {
+        if (alive && Array.isArray(data?.products) && data.products.length > 0) {
+          applyServerProducts(data.products);
+        }
+      })
+      .catch(() => {
+        /* fallback: katalogi ya ndani */
       });
     return () => {
       alive = false;
@@ -127,16 +147,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [wishlist],
   );
 
-  const lines = useMemo(
-    () =>
-      items
-        .map((i) => {
-          const product = getProductBySlug(i.slug);
-          return product ? { product, qty: i.qty } : null;
-        })
-        .filter((x): x is { product: Product; qty: number } => x !== null),
-    [items],
-  );
+  const lines = useMemo(() => {
+    // `serverProducts` inahakikisha bei/jina jipya la DB linapotumika.
+    const catalog = serverProducts;
+    return items
+      .map((i) => {
+        const product =
+          catalog?.find((p) => p.slug === i.slug) ?? getProduct(i.slug);
+        return product ? { product, qty: i.qty } : null;
+      })
+      .filter((x): x is { product: Product; qty: number } => x !== null);
+  }, [items, serverProducts]);
 
   const subtotalTsh = useMemo(
     () => lines.reduce((sum, l) => sum + l.product.priceTsh * l.qty, 0),

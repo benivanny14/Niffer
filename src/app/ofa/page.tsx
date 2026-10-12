@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { formatTsh } from "@/lib/format";
-import { products, saleProducts, newArrivals } from "@/lib/data/catalog";
+import { connection } from "next/server";
+import { listProducts } from "@/lib/server/catalog";
 import { promoCodes } from "@/lib/promo";
 import { ProductCard } from "@/components/catalog/ProductCard";
 import { site } from "@/lib/site";
@@ -45,9 +46,12 @@ const bundles = [
   },
 ];
 
-export default function OffersPage() {
-  const onSale = saleProducts();
-  const fresh = newArrivals();
+export default async function OffersPage() {
+  // Ofa kutoka DB (bei za admin) — dynamic render.
+  await connection();
+  const products = listProducts();
+  const onSale = products.filter((p) => p.compareAtTsh);
+  const fresh = products.filter((p) => p.badges.includes("new"));
 
   return (
     <div className="container-x py-12 lg:py-16">

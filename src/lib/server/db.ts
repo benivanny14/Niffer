@@ -31,6 +31,8 @@ CREATE TABLE IF NOT EXISTS products (
   badges           TEXT NOT NULL DEFAULT '[]',
   image            TEXT NOT NULL DEFAULT '',
   image_alt        TEXT NOT NULL DEFAULT '',
+  region           TEXT NOT NULL DEFAULT '',
+  city             TEXT NOT NULL DEFAULT '',
   updated_at       TEXT NOT NULL
 );
 
@@ -110,6 +112,39 @@ CREATE TABLE IF NOT EXISTS meta (
   key   TEXT PRIMARY KEY,
   value TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS customers (
+  id            TEXT PRIMARY KEY,
+  name          TEXT NOT NULL,
+  phone         TEXT NOT NULL UNIQUE,
+  email         TEXT,
+  password_hash TEXT NOT NULL,
+  created_at    TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS customer_sessions (
+  token       TEXT PRIMARY KEY,
+  customer_id TEXT NOT NULL,
+  expires_at  TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS rfqs (
+  code          TEXT PRIMARY KEY,
+  business      TEXT NOT NULL DEFAULT '',
+  name          TEXT NOT NULL,
+  phone         TEXT NOT NULL,
+  email         TEXT NOT NULL DEFAULT '',
+  region        TEXT NOT NULL DEFAULT '',
+  product_slug  TEXT NOT NULL DEFAULT '',
+  product_name  TEXT NOT NULL DEFAULT '',
+  qty           INTEGER NOT NULL DEFAULT 0,
+  note          TEXT NOT NULL DEFAULT '',
+  status        TEXT NOT NULL DEFAULT 'new',
+  quote_tsh     INTEGER,
+  unit_quote_tsh INTEGER,
+  created_at    TEXT NOT NULL,
+  updated_at    TEXT NOT NULL
+);
 `;
 
 export function nowIso(): string {
@@ -132,8 +167,36 @@ function openDatabase(): DatabaseSync {
   db.exec("PRAGMA journal_mode = WAL;");
   db.exec("PRAGMA foreign_keys = ON;");
   db.exec(SCHEMA);
+  migrate(db);
   seed(db);
   return db;
+}
+
+/** Ongeza safu mpya kwa jedwali lililokuwepo (hatua ya usalama kwa DB za zamani). */
+function migrate(db: DatabaseSync): void {
+  const columns = (table: string) =>
+    (db.prepare(`PRAGMA table_info(${table})`).all() as unknown as {
+      name: string;
+    }[]).map((c) => c.name);
+
+  const orders = columns("orders");
+  if (!orders.includes("customer_id")) {
+    db.exec("ALTER TABLE orders ADD COLUMN customer_id TEXT");
+  }
+  if (!orders.includes("payment_status")) {
+    db.exec("ALTER TABLE orders ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'pending'");
+  }
+  if (!orders.includes("payment_ref")) {
+    db.exec("ALTER TABLE orders ADD COLUMN payment_ref TEXT");
+  }
+
+  const productCols = columns("products");
+  if (!productCols.includes("region")) {
+    db.exec("ALTER TABLE products ADD COLUMN region TEXT NOT NULL DEFAULT ''");
+  }
+  if (!productCols.includes("city")) {
+    db.exec("ALTER TABLE products ADD COLUMN city TEXT NOT NULL DEFAULT ''");
+  }
 }
 
 /** Muunganiko wa pamoja (singleton). */
@@ -152,25 +215,12 @@ function seed(db: DatabaseSync) {
     INSERT INTO products (
       slug, id, name, category, price_tsh, compare_at_tsh,
       short_description, description, ingredients, how_to_use,
-      rating, review_count, stock_base, badges, image, image_alt, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(slug) DO UPDATE SET
-      id = excluded.id,
-      name = excluded.name,
-      category = excluded.category,
-      price_tsh = excluded.price_tsh,
-      compare_at_tsh = excluded.compare_at_tsh,
-      short_description = excluded.short_description,
-      description = excluded.description,
-      ingredients = excluded.ingredients,
-      how_to_use = excluded.how_to_use,
-      rating = excluded.rating,
-      review_count = excluded.review_count,
-      stock_base = excluded.stock_base,
-      badges = excluded.badges,
-      image = excluded.image,
-      image_alt = excluded.image_alt,
-      updated_at = excluded.updated_at
+      rating, review_count, stock_base, badges, image, image_alt,
+      region, city, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    /* Usibadilishe bidhaa zilizopo — DB ndio mwanzo wa ukweli baada ya
+       admin kuhariri (bei/jina/picha). Bidhaa mpya zinaingizwa mara moja. */
+    ON CONFLICT(slug) DO NOTHING
   `);
 
   for (const p of catalogProducts) {
@@ -191,8 +241,18 @@ function seed(db: DatabaseSync) {
       JSON.stringify(p.badges ?? []),
       p.image,
       p.imageAlt,
+      p.region ?? "",
+      p.city ?? "",
       now,
     );
+  }
+
+  // Rejesha eneo kwa bidhaa za zamani zilizokuwa bila mkoa/mji.
+  const backfillLocation = db.prepare(
+    `UPDATE products SET region = ?, city = ? WHERE slug = ? AND region = ''`,
+  );
+  for (const p of catalogProducts) {
+    if (p.region) backfillLocation.run(p.region, p.city ?? "", p.slug);
   }
   // Stoo: hazibadiliki kwa kila kuanza — marekebisho ya admin na manunuzi ndio yanayoamua.
   const stockInsert = db.prepare(

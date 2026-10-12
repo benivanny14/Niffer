@@ -11,6 +11,7 @@ const navLinks = [
   { href: "/ofa", label: "Ofa" },
   { href: "/zawadi", label: "Zawadi" },
   { href: "/makala", label: "Makala" },
+  { href: "/swali", label: "Zana Bure" },
   { href: "/matawi", label: "Matawi" },
   { href: "/kuhusu", label: "Kuhusu" },
   { href: "/wasiliana", label: "Wasiliana" },

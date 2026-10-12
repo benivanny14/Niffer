@@ -11,7 +11,7 @@ const id = (prefix: string) =>
     .toString(36)
     .slice(2, 6)}`;
 
-export type MessageKind = "contact" | "wholesale" | "giftcard";
+export type MessageKind = "contact" | "wholesale" | "giftcard" | "rfq";
 
 export type MessageRecord = {
   id: string;
@@ -35,7 +35,9 @@ export function addMessage(input: {
   const phone = (input.phone ?? "").trim();
   const email = (input.email ?? "").trim();
   const kind: MessageKind =
-    input.kind === "wholesale" || input.kind === "giftcard"
+    input.kind === "wholesale" ||
+    input.kind === "giftcard" ||
+    input.kind === "rfq"
       ? input.kind
       : "contact";
 

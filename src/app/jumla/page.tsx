@@ -1,19 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { WholesaleForm } from "@/components/ui/WholesaleForm";
+import { connection } from "next/server";
+import { BulkCalculator, RfqForm } from "@/components/wholesale/JumlaPortal";
+import { listProducts } from "@/lib/server/catalog";
+import { bulkTiers as tiers } from "@/lib/wholesale";
 import { ShieldIcon, TruckIcon, TagIcon } from "@/components/ui/icons";
 
 export const metadata: Metadata = {
   title: "Uuzaji wa Jumla",
   description:
-    "Uza bidhaa za Niffer Cosmetics kwa jumla — bei za jumla kwa wauzaji, saluni na maduka ya urembo Tanzania.",
+    "Portali ya jumla ya Niffer Cosmetics — bei za wingi kwa wauzaji, saluni na maduka ya urembo Tanzania. Ombi la bei (RFQ) na kufuatilia ombi lako.",
 };
-
-const tiers = [
-  { min: 10, max: 24, discount: 10, label: "Jumla ya Daraja 1" },
-  { min: 25, max: 49, discount: 15, label: "Jumla ya Daraja 2" },
-  { min: 50, max: null, discount: 22, label: "Jumla ya Daraja 3" },
-];
 
 const benefits = [
   {
@@ -33,16 +30,36 @@ const benefits = [
   },
 ];
 
-export default function WholesalePage() {
+export default async function WholesalePage() {
+  // Bidhaa za DB kwa kikokotoo na fomu ya RFQ.
+  await connection();
+  const products = listProducts();
+
   return (
     <div className="container-x py-12 lg:py-16">
-      <p className="eyebrow">Biashara</p>
+      <p className="eyebrow">Biashara · Portali ya jumla</p>
       <h1 className="heading-display mt-2">Uuzaji wa jumla</h1>
       <p className="mt-3 max-w-2xl text-ink-500">
         Uza bidhaa za Niffer Cosmetics kwenye saluni, maduka yako au mtandaoni.
         Tunatoa bei za jumla kwa wauzaji wote Tanzania, na msaada wa kuanza
         biashara.
       </p>
+
+      {/* Portali: fuatilia ombi */}
+      <div className="card mt-8 flex flex-wrap items-center justify-between gap-4 border-brand-300 p-6">
+        <div>
+          <h2 className="font-display text-xl text-ink-900">
+            Tayari umeweka ombi la bei?
+          </h2>
+          <p className="mt-1 text-sm text-ink-500">
+            Fuatilia hatua ya RFQ yako na bei iliyowekwa na timu — kwa namba ya
+            simu uliyotumia.
+          </p>
+        </div>
+        <Link href="/jumla/ombi" className="btn-primary">
+          Fuatilia ombi langu
+        </Link>
+      </div>
 
       {/* Faida */}
       <div className="mt-10 grid gap-4 sm:grid-cols-3">
@@ -107,6 +124,16 @@ export default function WholesalePage() {
         </p>
       </section>
 
+      {/* Kikokotoo cha bei ya jumla */}
+      <section className="mt-12">
+        <h2 className="font-display text-2xl text-ink-900">
+          Kokotoa bei yako mara moja
+        </h2>
+        <div className="mt-6">
+          <BulkCalculator products={products} />
+        </div>
+      </section>
+
       {/* Fomu */}
       <section className="mt-12 grid gap-10 lg:grid-cols-2">
         <div>
@@ -133,7 +160,7 @@ export default function WholesalePage() {
             au piga simu.
           </p>
         </div>
-        <WholesaleForm />
+        <RfqForm products={products} />
       </section>
     </div>
   );

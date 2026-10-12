@@ -45,6 +45,43 @@ export const tanzaniaRegions = [
   "Kigoma",
 ] as const;
 
+export type TanzaniaRegion = (typeof tanzaniaRegions)[number];
+
+/**
+ * Miji ndani ya kila mkoa — mtindo wa jiji.com (chagua mkoa kisha mji).
+ * Bidhaa na matawi hutumia orodha hii katika uchujaji wa eneo.
+ */
+export const tanzaniaCities: Record<TanzaniaRegion, readonly string[]> = {
+  "Dar es Salaam": ["Kinondoni", "Ilala", "Temeke", "Ubungo", "Kigamboni"],
+  Arusha: ["Arusha Jiji", "Meru", "Karatu", "Monduli"],
+  Dodoma: ["Dodoma Jiji", "Chamwino", "Bahi"],
+  Mbeya: ["Mbeya Jiji", "Rungwe", "Kyela"],
+  Mwanza: ["Nyamagana", "Ilemela", "Sengerema", "Magu"],
+  Tanga: ["Tanga Jiji", "Pangani", "Muheza"],
+  Morogoro: ["Morogoro Jiji", "Kilosa", "Kilombero"],
+  Iringa: ["Iringa Jiji", "Mafinga"],
+  Kilimanjaro: ["Moshi Jiji", "Hai", "Rombo"],
+  Zanzibar: ["Unguja Kaskazini", "Unguja Kusini", "Mjini Magharibi"],
+  Songea: ["Songea Jiji", "Mbinga"],
+  Musoma: ["Musoma Jiji", "Bariadi"],
+  Tabora: ["Tabora Jiji", "Nzega"],
+  Kigoma: ["Kigoma Jiji", "Kasulu"],
+};
+
+/** Miji yote (bila kujali mkoa). */
+export const allCities: string[] = Object.values(tanzaniaCities).flat();
+
+/** Angalia kama mkoa upo orodhani. */
+export function isRegion(value: string): value is TanzaniaRegion {
+  return (tanzaniaRegions as readonly string[]).includes(value);
+}
+
+/** Angalia kama mji upo ndani ya mkoa fulani. */
+export function isCityInRegion(region: string, city: string): boolean {
+  if (!isRegion(region)) return false;
+  return tanzaniaCities[region].includes(city);
+}
+
 /** Muda wa kazi kwa siku (Jumatatu=1 ... Jumapili=0). */
 export const isShopOpen = (now = new Date()): boolean => {
   const day = now.getDay();

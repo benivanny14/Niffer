@@ -19,6 +19,10 @@ export type Product = {
   reviewCount: number;
   stock: number;
   badges: ProductBadge[];
+  /** Mkoa ambapo bidhaa hii inapatikana zaidi (uchujaji wa eneo kama jiji.com). */
+  region?: string;
+  /** Mji/taasisi ndani ya mkoa (uchujaji kwa mji). */
+  city?: string;
   /**
    * Media module: ProductImage hutumia `image` kama `/images/products/<slug>.svg`.
    * Baada ya media module halisi, badilisha na ProductMedia (picha + video).
@@ -110,6 +114,8 @@ export const products: Product[] = [
     reviewCount: 126,
     stock: 40,
     badges: ["bestseller", "sale"],
+    region: "Dar es Salaam",
+    city: "Kinondoni",
     image: "/images/products/radiance-vitamin-c-serum.svg",
     imageAlt: "Radiance Vitamin C Serum chupa ya glasi ya dhahabu",
   },
@@ -131,6 +137,8 @@ export const products: Product[] = [
     reviewCount: 89,
     stock: 25,
     badges: ["new"],
+    region: "Dar es Salaam",
+    city: "Ilala",
     image: "/images/products/velvet-matte-lipstick-set.svg",
     imageAlt: "Velvet Matte Lipstick Set ya vipande viwili vya rangi",
   },
@@ -152,6 +160,8 @@ export const products: Product[] = [
     reviewCount: 203,
     stock: 5,
     badges: ["bestseller", "low-stock"],
+    region: "Dar es Salaam",
+    city: "Kinondoni",
     image: "/images/products/hydra-glow-moisturizer.svg",
     imageAlt: "Hydra Glow Moisturizer kasha la nyeupe",
   },
@@ -173,6 +183,8 @@ export const products: Product[] = [
     reviewCount: 54,
     stock: 60,
     badges: [],
+    region: "Mwanza",
+    city: "Nyamagana",
     image: "/images/products/silk-touch-conditioner.svg",
     imageAlt: "Silk Touch Conditioner chupa ya dhahabu",
   },
@@ -195,6 +207,8 @@ export const products: Product[] = [
     reviewCount: 72,
     stock: 18,
     badges: ["sale"],
+    region: "Dar es Salaam",
+    city: "Ubungo",
     image: "/images/products/amber-nights-eau-de-parfum.svg",
     imageAlt: "Amber Nights perfume chupa ya dhahabu na nyeusi",
   },
@@ -216,6 +230,8 @@ export const products: Product[] = [
     reviewCount: 41,
     stock: 80,
     badges: ["new"],
+    region: "Mwanza",
+    city: "Ilemela",
     image: "/images/products/nourishing-body-lotion.svg",
     imageAlt: "Nourishing Body Lotion chupa ya cream",
   },
@@ -237,6 +253,8 @@ export const products: Product[] = [
     reviewCount: 98,
     stock: 55,
     badges: ["bestseller"],
+    region: "Arusha",
+    city: "Arusha Jiji",
     image: "/images/products/gentle-foam-cleanser.svg",
     imageAlt: "Gentle Foam Cleanser chupa nyeupe",
   },
@@ -258,6 +276,8 @@ export const products: Product[] = [
     reviewCount: 167,
     stock: 35,
     badges: ["bestseller"],
+    region: "Dar es Salaam",
+    city: "Temeke",
     image: "/images/products/sun-shield-spf50.svg",
     imageAlt: "Sun Shield SPF 50 chupa ya machungwa",
   },
@@ -279,6 +299,8 @@ export const products: Product[] = [
     reviewCount: 112,
     stock: 42,
     badges: ["new"],
+    region: "Arusha",
+    city: "Arusha Jiji",
     image: "/images/products/volumizing-mascara.svg",
     imageAlt: "Volumizing Mascara nyeusi na brush",
   },
@@ -300,6 +322,8 @@ export const products: Product[] = [
     reviewCount: 88,
     stock: 48,
     badges: [],
+    region: "Mwanza",
+    city: "Nyamagana",
     image: "/images/products/argan-repair-shampoo.svg",
     imageAlt: "Argan Repair Shampoo chupa ya kahawia",
   },
@@ -321,6 +345,8 @@ export const products: Product[] = [
     reviewCount: 63,
     stock: 70,
     badges: ["new"],
+    region: "Dar es Salaam",
+    city: "Kigamboni",
     image: "/images/products/tropical-bloom-body-mist.svg",
     imageAlt: "Tropical Bloom Body Mist chupa ya rangi ya machungwa",
   },
@@ -342,6 +368,8 @@ export const products: Product[] = [
     reviewCount: 45,
     stock: 20,
     badges: ["bestseller"],
+    region: "Arusha",
+    city: "Karatu",
     image: "/images/products/pro-makeup-brush-set.svg",
     imageAlt: "Pro Makeup Brush Set ya brashi 8",
   },

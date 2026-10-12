@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await readBody<{
-      kind?: "contact" | "wholesale" | "giftcard";
+      kind?: "contact" | "wholesale" | "giftcard" | "rfq";
       name?: string;
       phone?: string;
       email?: string;

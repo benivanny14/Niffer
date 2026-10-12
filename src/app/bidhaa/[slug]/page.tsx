@@ -4,18 +4,20 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import {
-  getProductBySlug,
   products,
   type Product,
 } from "@/lib/data/catalog";
+import { findProduct, listProducts } from "@/lib/server/catalog";
 import { listReviews } from "@/lib/server/leads";
 import { formatTsh, discountPercent } from "@/lib/format";
 import { productJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { RatingStars } from "@/components/ui/RatingStars";
 import { ProductCard } from "@/components/catalog/ProductCard";
 import { BuyBox } from "@/components/catalog/BuyBox";
+import { ReviewForm } from "@/components/ui/ReviewForm";
 import {
   ArrowRightIcon,
+  MapPinIcon,
   ShieldIcon,
   SparkleIcon,
   TruckIcon,
@@ -31,7 +33,7 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = findProduct(slug);
   if (!product) return { title: "Bidhaa haipo" };
 
   return {
@@ -71,7 +73,7 @@ export default function ProductPage({ params }: PageProps) {
 
 async function ProductDetail({ params }: PageProps) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = findProduct(slug);
   if (!product) notFound();
 
   const discount = discountPercent(product.priceTsh, product.compareAtTsh);
@@ -80,7 +82,8 @@ async function ProductDetail({ params }: PageProps) {
   const productReviews = listReviews(300).filter(
     (r) => r.productSlug === product.slug,
   );
-  const related = products
+  // Bidhaa zinazohusiana kutoka DB (kategoria ile ile).
+  const related = listProducts()
     .filter((p) => p.slug !== product.slug && p.category === product.category)
     .slice(0, 4);
 
@@ -190,16 +193,27 @@ async function ProductDetail({ params }: PageProps) {
               <ShieldIcon className="h-4 w-4 shrink-0 text-brand-600" />
               Bidhaa halisi 100% · malipo poa baada ya kupokea
             </li>
+            {product.region || product.city ? (
+              <li className="flex items-center gap-2.5">
+                <MapPinIcon className="h-4 w-4 shrink-0 text-brand-600" />
+                Inapatikana:{" "}
+                {[product.city, product.region].filter(Boolean).join(", ")}
+              </li>
+            ) : null}
           </ul>
 
           <BuyBox product={product} />
         </div>
       </div>
 
-      {/* Maoni ya bidhaa hii */}
-      {productReviews.length > 0 ? (
-        <section className="mt-16">
-          <h2 className="heading-display">Maoni ya bidhaa hii</h2>
+      {/* Maoni ya bidhaa hii + fomu ya kuacha hakiki */}
+      <section className="mt-16">
+        <h2 className="heading-display">
+          {productReviews.length > 0
+            ? "Maoni ya bidhaa hii"
+            : "Acha hakiki yako"}
+        </h2>
+        {productReviews.length > 0 ? (
           <ul className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {productReviews.map((review) => (
               <li key={review.id}>
@@ -218,8 +232,16 @@ async function ProductDetail({ params }: PageProps) {
               </li>
             ))}
           </ul>
-        </section>
-      ) : null}
+        ) : (
+          <p className="mt-4 text-sm text-ink-500">
+            Kuwa wa kwanza kustaafisha bidhaa hii — hakiki yako inasaidia
+            wateja wengine kuchagua vizuri.
+          </p>
+        )}
+        <div className="mt-8 max-w-2xl">
+          <ReviewForm defaultSlug={product.slug} defaultName={product.name} />
+        </div>
+      </section>
 
       {/* Bidhaa zinazohusiana */}
       {related.length > 0 ? (

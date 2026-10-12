@@ -94,6 +94,13 @@ export default function OrderPage() {
           <span className="font-semibold text-ink-900">{order.code}</span>.
           Tutakupigia simu kuthibitisha ndani ya dakika chache.
         </p>
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="btn-outline no-print mt-5"
+        >
+          Chapisha risiti
+        </button>
       </div>
 
       <div className="card mt-10 p-6">

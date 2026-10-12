@@ -9,13 +9,24 @@ import { CheckIcon, StarIcon } from "@/components/ui/icons";
 const field =
   "w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
 
-/** Fomu ya kuacha hakiki — huhifadhi kwenye database ya seva. */
-export function ReviewForm() {
+/**
+ * Fomu ya kuacha hakiki — huhifadhi kwenye database ya seva.
+ * `defaultSlug` hutumika kwenye ukurasa wa bidhaa (bidhaa tayari imechaguliwa).
+ */
+export function ReviewForm({
+  defaultSlug,
+  defaultName,
+}: {
+  defaultSlug?: string;
+  defaultName?: string;
+}) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [rating, setRating] = useState(5);
-  const [productSlug, setProductSlug] = useState(products[0].slug);
+  const [productSlug, setProductSlug] = useState(
+    defaultSlug || products[0]?.slug || "",
+  );
   const [comment, setComment] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
@@ -88,20 +99,31 @@ export function ReviewForm() {
         </label>
       </div>
 
-      <label className="block text-sm">
-        <span className="mb-1.5 block font-medium text-ink-700">Bidhaa</span>
-        <select
-          value={productSlug}
-          onChange={(e) => setProductSlug(e.target.value)}
-          className={field}
-        >
-          {products.map((p) => (
-            <option key={p.id} value={p.slug}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      {defaultSlug ? (
+        <p className="rounded-xl bg-cream-100 px-4 py-3 text-sm text-ink-500">
+          Hakiki kwa:{" "}
+          <span className="font-semibold text-ink-900">
+            {defaultName ??
+              products.find((p) => p.slug === defaultSlug)?.name ??
+              defaultSlug}
+          </span>
+        </p>
+      ) : (
+        <label className="block text-sm">
+          <span className="mb-1.5 block font-medium text-ink-700">Bidhaa</span>
+          <select
+            value={productSlug}
+            onChange={(e) => setProductSlug(e.target.value)}
+            className={field}
+          >
+            {products.map((p) => (
+              <option key={p.id} value={p.slug}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
 
       <div>
         <span className="mb-1.5 block text-sm font-medium text-ink-700">

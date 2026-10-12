@@ -1,26 +1,35 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import {
-  categories,
-  products,
-  type CategorySlug,
-} from "@/lib/data/catalog";
+import { connection } from "next/server";
+import { categories } from "@/lib/data/catalog";
+import { listProducts } from "@/lib/server/catalog";
 import { ProductCard } from "@/components/catalog/ProductCard";
+import { CatalogFilters } from "@/components/catalog/CatalogFilters";
+import {
+  filterCounts,
+  filterProducts,
+  isSortKey,
+  type ProductFilters,
+} from "@/lib/product-filter";
 
 export const metadata: Metadata = {
   title: "Bidhaa zote",
   description:
-    "Vinjari bidhaa za Niffer Cosmetics: skincare, makeup, nywele, perfume na zaidi — bei za Tanzania kwa Shilingi ya Tanzania.",
+    "Vinjari bidhaa za Niffer Cosmetics: skincare, makeup, nywele, perfume na zaidi — chuja kwa mkoa, mji, bei na kategoria. Bei za Tanzania kwa Shilingi ya Tanzania.",
 };
 
 type PageProps = {
-  searchParams: Promise<{ kategoria?: string; kipengele?: string }>;
+  searchParams: Promise<{
+    kategoria?: string;
+    kipengele?: string;
+    mkoa?: string;
+    mji?: string;
+    bei?: string;
+    q?: string;
+    sort?: string;
+  }>;
 };
-
-
-const isValidCategory = (value: string): value is CategorySlug =>
-  categories.some((category) => category.slug === value);
 
 export default function AllProductsPage({ searchParams }: PageProps) {
   return (
@@ -49,74 +58,78 @@ export default function AllProductsPage({ searchParams }: PageProps) {
   );
 }
 
+function parseFilters(params: Awaited<PageProps["searchParams"]>): ProductFilters {
+  const { kategoria, kipengele, mkoa, mji, bei, q, sort } = params;
+  let minPrice: number | null = null;
+  let maxPrice: number | null = null;
+  if (bei === "chini-20") maxPrice = 19_999;
+  else if (bei === "20-40") {
+    minPrice = 20_000;
+    maxPrice = 40_000;
+  } else if (bei === "juu-40") minPrice = 40_001;
+
+  return {
+    category: kategoria || null,
+    feature: kipengele || null,
+    region: mkoa || null,
+    city: mji || null,
+    minPrice,
+    maxPrice,
+    query: q || null,
+    sort: isSortKey(sort) ? sort : "maarufu",
+  };
+}
+
 async function ProductGrid({ searchParams }: PageProps) {
-  const { kategoria, kipengele } = await searchParams;
-  const active = kategoria && isValidCategory(kategoria) ? kategoria : null;
+  const params = await searchParams;
+  const filters = parseFilters(params);
+  // Bidhaa kutoka DB (admin ndio mwanzo wa ukweli).
+  await connection();
+  const all = listProducts();
+  const filtered = filterProducts(all, filters);
+  const counts = filterCounts(all, filters);
 
-  let filtered = products;
-  if (active) {
-    filtered = filtered.filter((product) => product.category === active);
-  }
-  if (kipengele === "mpya") {
-    filtered = filtered.filter((product) => product.badges.includes("new"));
-  }
-  if (kipengele === "punguzo") {
-    filtered = filtered.filter((product) => product.badges.includes("sale"));
-  }
-
-  const activeCategory = active
-    ? categories.find((category) => category.slug === active)
+  const activeCategory = filters.category
+    ? categories.find((category) => category.slug === filters.category)
     : undefined;
   const heading =
-    kipengele === "mpya"
+    filters.feature === "mpya"
       ? "Bidhaa mpya"
-      : kipengele === "punguzo"
+      : filters.feature === "punguzo"
         ? "Punguzo"
-        : "Bidhaa zote";
+        : filters.query
+          ? `Matokeo ya "${filters.query}"`
+          : filters.city
+            ? `Bidhaa — ${filters.city}`
+            : filters.region
+              ? `Bidhaa — ${filters.region}`
+              : "Bidhaa zote";
 
   return (
     <>
-      <div className="mt-6">
-        <p className="eyebrow">Duka letu</p>
-        <h1 className="heading-display mt-2">
-          {activeCategory ? activeCategory.name : heading}
-        </h1>
-        <p className="mt-3 max-w-2xl text-ink-500">
-          {activeCategory
-            ? activeCategory.description
-            : "Chagua kategoria au vinjari bidhaa zote zilizochaguliwa kwa makini."}
-        </p>
+      <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="eyebrow">Duka letu</p>
+          <h1 className="heading-display mt-2">
+            {activeCategory ? activeCategory.name : heading}
+          </h1>
+          <p className="mt-3 max-w-2xl text-ink-500">
+            {activeCategory
+              ? activeCategory.description
+              : "Chuja kwa mkoa, mji, bei au kategoria — kama unavyotafuta kwenye jiji.com."}
+          </p>
+        </div>
+        <p className="text-sm text-ink-400">{filtered.length} bidhaa zimepatikana</p>
       </div>
 
-      {/* Kichujio cha kategoria */}
-      <ul className="mt-8 flex flex-wrap gap-2">
-        <li>
-          <Link
-            href="/bidhaa"
-            className={`badge border transition-colors ${
-              !active
-                ? "border-brand-700 bg-brand-700 text-white"
-                : "border-cream-300 bg-surface text-ink-500 hover:border-brand-300 hover:text-accent"
-            }`}
-          >
-            Zote
-          </Link>
-        </li>
-        {categories.map((category) => (
-          <li key={category.slug}>
-            <Link
-              href={`/bidhaa?kategoria=${category.slug}`}
-              className={`badge border transition-colors ${
-                active === category.slug
-                  ? "border-brand-700 bg-brand-700 text-white"
-                  : "border-cream-300 bg-surface text-ink-500 hover:border-brand-300 hover:text-accent"
-              }`}
-            >
-              {category.name}
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {/* Vichujio: kategoria, eneo (mkoa/mji), bei, upangaji */}
+      <div className="mt-8">
+        <Suspense
+          fallback={<div className="h-32 animate-pulse rounded-2xl bg-cream-200" />}
+        >
+          <CatalogFilters counts={counts} />
+        </Suspense>
+      </div>
 
       {filtered.length > 0 ? (
         <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -129,10 +142,10 @@ async function ProductGrid({ searchParams }: PageProps) {
       ) : (
         <div className="card mt-10 p-10 text-center">
           <p className="font-display text-xl text-ink-900">
-            Hakuna bidhaa kwenye kategoria hii bado
+            Hakuna bidhaa zinazolingana na vichujio vyako
           </p>
           <p className="mt-2 text-sm text-ink-500">
-            Jaribu kategoria nyingine au vinjari bidhaa zote.
+            Jaribu kuondoa kichujio kimoja au vinjari bidhaa zote.
           </p>
           <Link href="/bidhaa" className="btn-primary mt-6">
             Ona bidhaa zote

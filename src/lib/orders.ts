@@ -30,6 +30,7 @@ export type Order = {
     region: string;
     address: string;
     note?: string;
+    email?: string;
   };
   payment: PaymentId;
   lines: CartLine[];
@@ -42,6 +43,12 @@ export type Order = {
   discountTsh?: number;
   /** Historia ya hatua (kwa oda halisi zilizowekwa). */
   history?: StatusEvent[];
+  /** Hali ya malipo kwenye gateway: pending / paid / failed. */
+  paymentStatus?: "pending" | "paid" | "failed";
+  /** Rejea ya malipo kwenye gateway (AzamPay n.k.). */
+  paymentRef?: string;
+  /** Mteja aliyeingia alipoweka oda (akaunti). */
+  customerId?: string;
   /** Oda ya majaribio — inasonga "live" kila sekunde 45. */
   demo?: boolean;
 };

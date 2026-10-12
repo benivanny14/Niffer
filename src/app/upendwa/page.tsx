@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useStore } from "@/lib/store";
-import { getProductBySlug } from "@/lib/data/catalog";
+import { getProduct } from "@/lib/catalog-client";
 import { ProductCard } from "@/components/catalog/ProductCard";
 import { HeartIcon } from "@/components/ui/icons";
 
@@ -12,7 +12,7 @@ export default function WishlistPage() {
   if (!ready) return null;
 
   const items = wishlist
-    .map((slug) => getProductBySlug(slug))
+    .map((slug) => getProduct(slug))
     .filter((p): p is NonNullable<typeof p> => p !== undefined);
 
   return (

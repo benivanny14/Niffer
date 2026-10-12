@@ -8,6 +8,7 @@ import {
 } from "@/lib/server/http";
 import { createOrder, listOrders, type CreateOrderInput } from "@/lib/server/orders";
 import { isAdminRequest } from "@/lib/server/auth";
+import { currentCustomer } from "@/lib/server/customers";
 
 /** Oda zote (admin pekee). */
 export async function GET(req: NextRequest) {
@@ -28,7 +29,12 @@ export async function POST(req: NextRequest) {
   try {
     const body = await readBody<CreateOrderInput>(req);
     if (!body) return fail("Taarifa za oda hazisahihi.");
-    const { order, stock } = createOrder(body);
+    // Ikiwa mteja ameingia,unganisha oda na akaunti yake.
+    const customer = await currentCustomer();
+    const { order, stock } = createOrder({
+      ...body,
+      customerId: customer?.id,
+    });
     return json({ ok: true, order, stock }, 201);
   } catch (error) {
     return toErrorResponse(error);

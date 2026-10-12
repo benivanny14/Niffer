@@ -20,7 +20,7 @@ export class InputError extends Error {
   }
 }
 
-type OrderRow = {
+export type OrderRow = {
   code: string;
   created_at: string;
   status: string;
@@ -34,6 +34,9 @@ type OrderRow = {
   discount_tsh: number | null;
   history: string;
   demo: number;
+  customer_id?: string | null;
+  payment_status?: string | null;
+  payment_ref?: string | null;
 };
 
 function parseJson<T>(raw: string | null, fallback: T): T {
@@ -45,7 +48,7 @@ function parseJson<T>(raw: string | null, fallback: T): T {
   }
 }
 
-function rowToOrder(row: OrderRow): Order {
+export function rowToOrder(row: OrderRow): Order {
   return {
     code: row.code,
     createdAt: row.created_at,
@@ -65,6 +68,9 @@ function rowToOrder(row: OrderRow): Order {
     discountTsh: row.discount_tsh ?? undefined,
     history: parseJson<StatusEvent[]>(row.history, []),
     demo: row.demo === 1,
+    paymentStatus: (row.payment_status as Order["paymentStatus"]) ?? "pending",
+    paymentRef: row.payment_ref ?? undefined,
+    customerId: row.customer_id ?? undefined,
   };
 }
 
@@ -73,6 +79,8 @@ export type CreateOrderInput = {
   payment?: string;
   lines?: CartLine[];
   promoCode?: string;
+  /** Mteja aliyeingia (session) — huunganishwa na akaunti yake. */
+  customerId?: string;
 };
 
 const VALID_STATUSES: OrderStatus[] = statusSteps.map((s) => s.id);
@@ -93,6 +101,34 @@ export function getStockMap(): Record<string, number> {
   // Hakikisha kila bidhaa ya katalogi ipo.
   for (const p of products) if (!(p.slug in map)) map[p.slug] = p.stock;
   return map;
+}
+
+type CatalogItem = { slug: string; name: string; priceTsh: number };
+
+/**
+ * Katalogi ya bei kutoka DB (bidhaa za admin zikiwemo) na fallback ya
+ * katalogi ya ndani. Inatumika kuhesabu upya bei salama kwenye oda.
+ */
+function pricedCatalog(): CatalogItem[] {
+  try {
+    const rows = getDb()
+      .prepare("SELECT slug, name, price_tsh FROM products")
+      .all() as { slug: string; name: string; price_tsh: number }[];
+    if (rows.length > 0) {
+      return rows.map((r) => ({
+        slug: r.slug,
+        name: r.name,
+        priceTsh: r.price_tsh,
+      }));
+    }
+  } catch {
+    /* DB haijasoma — tumia fallback */
+  }
+  return products.map((p) => ({
+    slug: p.slug,
+    name: p.name,
+    priceTsh: p.priceTsh,
+  }));
 }
 
 /** Weka stoo ya bidhaa moja (admin). */
@@ -121,6 +157,7 @@ export function createOrder(input: CreateOrderInput): {
     region: (input.customer?.region ?? "").trim(),
     address: (input.customer?.address ?? "").trim(),
     note: input.customer?.note?.trim() || undefined,
+    email: input.customer?.email?.trim() || undefined,
   };
 
   if (customer.name.length < 2) throw new InputError("Jina halisi linahitajika.");
@@ -139,13 +176,14 @@ export function createOrder(input: CreateOrderInput): {
   if (rawLines.length > 30) throw new InputError("Oda imezidi kiwango.");
 
   // Pooza kiasi na bidhaa.
+  const catalog = pricedCatalog();
   const lines: CartLine[] = [];
   for (const line of rawLines) {
     const qty = Math.floor(Number(line.qty));
     if (!line.slug || !Number.isFinite(qty) || qty < 1 || qty > 99) {
       throw new InputError("Kiasi cha bidhaa si sahihi.");
     }
-    const product = products.find((p) => p.slug === line.slug);
+    const product = catalog.find((p) => p.slug === line.slug);
     if (!product) throw new InputError(`Bidhaa "${line.slug}" haipo.`);
     if (!lines.some((l) => l.slug === line.slug)) {
       lines.push({ slug: line.slug, qty });
@@ -156,7 +194,7 @@ export function createOrder(input: CreateOrderInput): {
   for (const line of lines) {
     const available = stock[line.slug] ?? 0;
     if (line.qty > available) {
-      const name = products.find((p) => p.slug === line.slug)?.name ?? line.slug;
+      const name = catalog.find((p) => p.slug === line.slug)?.name ?? line.slug;
       throw new InputError(
         available === 0
           ? `${name} imeisha stoo. Ondoa kutoka kikapu.`
@@ -166,9 +204,9 @@ export function createOrder(input: CreateOrderInput): {
     }
   }
 
-  // Hesabu upya bei (server ndio mwanzo wa ukweli).
+  // Hesabu upya bei (server ndio mwanzo wa ukweli — DB katalogi).
   const subtotalTsh = lines.reduce((sum, line) => {
-    const p = products.find((x) => x.slug === line.slug)!;
+    const p = catalog.find((x) => x.slug === line.slug)!;
     return sum + p.priceTsh * line.qty;
   }, 0);
 
@@ -205,8 +243,8 @@ export function createOrder(input: CreateOrderInput): {
     db.prepare(
       `INSERT INTO orders (
          code, created_at, status, customer, payment, lines,
-         subtotal_tsh, shipping_tsh, total_tsh, promo_code, discount_tsh, history, demo
-       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+         subtotal_tsh, shipping_tsh, total_tsh, promo_code, discount_tsh, history, demo, customer_id
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
     ).run(
       code,
       createdAt,
@@ -220,6 +258,7 @@ export function createOrder(input: CreateOrderInput): {
       applied ? applied.code : null,
       discountTsh > 0 ? discountTsh : null,
       JSON.stringify(history),
+      input.customerId ?? null,
     );
 
     db.prepare(

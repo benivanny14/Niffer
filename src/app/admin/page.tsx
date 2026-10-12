@@ -11,9 +11,9 @@ import {
   type OrderStatus,
 } from "@/lib/orders";
 import { useAdminOrders, patchOrderStatus } from "@/lib/orders-client";
-import { setStock, getStock } from "@/lib/stock";
 import { apiGet, apiPatch, apiPost, errorMessage } from "@/lib/api";
-import { products, categories } from "@/lib/data/catalog";
+import { products } from "@/lib/data/catalog";
+import { ProductManager } from "@/components/admin/ProductManager";
 import { formatTsh, formatPhone } from "@/lib/format";
 import { site } from "@/lib/site";
 import {
@@ -30,7 +30,7 @@ import {
 const AUTH_KEY = "niffer.admin.auth.v1";
 const authStore = createLocalStore<boolean>(AUTH_KEY, false);
 
-type Tab = "muhtasari" | "bidhaa" | "oda" | "ujumbe";
+type Tab = "muhtasari" | "bidhaa" | "oda" | "jumla" | "ujumbe";
 
 type Stats = {
   orders: { orderCount: number; revenueTsh: number; pendingCount: number };
@@ -43,13 +43,31 @@ type Stats = {
 
 type MessageRecord = {
   id: string;
-  kind: "contact" | "wholesale" | "giftcard";
+  kind: "contact" | "wholesale" | "giftcard" | "rfq";
   name: string;
   phone: string;
   email: string;
   body: Record<string, string>;
   status: "new" | "read" | "done";
   createdAt: string;
+};
+
+type RfqRecord = {
+  code: string;
+  business: string;
+  name: string;
+  phone: string;
+  email: string;
+  region: string;
+  productSlug: string;
+  productName: string;
+  qty: number;
+  note: string;
+  status: "new" | "reviewed" | "quoted" | "accepted" | "declined";
+  quoteTsh: number | null;
+  unitQuoteTsh: number | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 const field =
@@ -161,21 +179,27 @@ function AdminDashboard() {
   const [tab, setTab] = useState<Tab>("muhtasari");
   const { orders: serverOrders, loading, error, refresh } = useAdminOrders();
 
-  // Takwimu + ujumbe (pamoja) — zinasasishwa kila dakika.
-  const adminData = useAsync<{ stats: Stats; messages: MessageRecord[] }>(
+  // Takwimu + ujumbe + ombi za jumla (pamoja) — zinasasishwa kila dakika.
+  const adminData = useAsync<{
+    stats: Stats;
+    messages: MessageRecord[];
+    rfqs: RfqRecord[];
+  }>(
     "admin-data",
     async () => {
-      const [s, m] = await Promise.all([
+      const [s, m, r] = await Promise.all([
         apiGet<Stats>("/api/stats"),
         apiGet<{ ok: boolean; messages: MessageRecord[] }>("/api/messages"),
+        apiGet<{ ok: boolean; rfqs: RfqRecord[] }>("/api/rfq"),
       ]);
-      return { stats: s, messages: m.messages };
+      return { stats: s, messages: m.messages, rfqs: r.rfqs };
     },
     { intervalMs: 60_000 },
   );
 
   const stats = adminData.data?.stats ?? null;
   const messages = adminData.data?.messages ?? [];
+  const rfqs = adminData.data?.rfqs ?? [];
   const dataError = adminData.error;
 
   // Oda zote: za server (DB) + demo.
@@ -186,10 +210,13 @@ function AdminDashboard() {
 
   const unread = messages.filter((m) => m.status === "new").length;
 
+  const newRfqs = rfqs.filter((r) => r.status === "new").length;
+
   const tabs: { id: Tab; label: string }[] = [
     { id: "muhtasari", label: "Muhtasari" },
     { id: "bidhaa", label: "Bidhaa" },
     { id: "oda", label: `Oda (${allOrders.length})` },
+    { id: "jumla", label: `Jumla${newRfqs ? ` (${newRfqs})` : ""}` },
     { id: "ujumbe", label: `Ujumbe${unread ? ` (${unread})` : ""}` },
   ];
 
@@ -250,8 +277,11 @@ function AdminDashboard() {
         {tab === "muhtasari" ? (
           <Muhtasari stats={stats} orders={allOrders} messages={messages} loading={loading} />
         ) : null}
-        {tab === "bidhaa" ? <BidhaaTab /> : null}
+        {tab === "bidhaa" ? <ProductManager /> : null}
         {tab === "oda" ? <OdaTab orders={allOrders} loading={loading} onRefresh={refresh} /> : null}
+        {tab === "jumla" ? (
+          <JumlaTab rfqs={rfqs} onChanged={() => adminData.refresh()} />
+        ) : null}
         {tab === "ujumbe" ? <UjumbeTab messages={messages} /> : null}
       </div>
     </div>
@@ -403,9 +433,11 @@ function Muhtasari({
                 <span className="badge bg-cream-100 text-ink-500">
                   {message.kind === "wholesale"
                     ? "Jumla"
-                    : message.kind === "giftcard"
-                      ? "Kadi"
-                      : "Wasiliana"}
+                    : message.kind === "rfq"
+                      ? "RFQ"
+                      : message.kind === "giftcard"
+                        ? "Kadi"
+                        : "Wasiliana"}
                 </span>
                 <span className="min-w-0 flex-1 truncate text-sm text-ink-500">
                   {message.body.message ??
@@ -447,125 +479,6 @@ function Muhtasari({
   );
 }
 
-/* ============ Bidhaa ============ */
-function BidhaaTab() {
-  const [categoryFilter, setCategoryFilter] = useState<string>("zote");
-  const [saved, setSaved] = useState("");
-  const [saveError, setSaveError] = useState("");
-
-  async function saveStock(slug: string, qty: number) {
-    setStock(slug, qty); // mara moja kwenye duka
-    setSaved(slug);
-    setSaveError("");
-    try {
-      await apiPatch("/api/stock", { slug, qty });
-    } catch (err) {
-      setSaveError(errorMessage(err));
-    } finally {
-      window.setTimeout(() => setSaved(""), 1500);
-    }
-  }
-
-  const filtered = products.filter(
-    (p) => categoryFilter === "zote" || p.category === categoryFilter,
-  );
-
-  return (
-    <div>
-      <div className="flex flex-wrap items-center gap-3">
-        <label className="text-sm font-medium text-ink-700">Kategoria:</label>
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="rounded-xl border border-cream-300 bg-surface px-3 py-2 text-sm"
-        >
-          <option value="zote">Zote</option>
-          {categories.map((c) => (
-            <option key={c.slug} value={c.slug}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-        {saved ? (
-          <span className="badge bg-success-100 text-success-600">
-            <CheckIcon className="h-3 w-3" /> Imehifadhiwa kwenye database
-          </span>
-        ) : null}
-        {saveError ? (
-          <span className="text-xs text-danger-600">{saveError}</span>
-        ) : null}
-      </div>
-
-      <div className="card mt-6 overflow-x-auto">
-        <table className="w-full min-w-[640px] text-left text-sm">
-          <thead>
-            <tr className="border-b border-cream-300 text-xs uppercase tracking-wide text-ink-400">
-              <th className="px-5 py-3 font-semibold">Bidhaa</th>
-              <th className="px-5 py-3 font-semibold">Kategoria</th>
-              <th className="px-5 py-3 font-semibold">Bei</th>
-              <th className="px-5 py-3 font-semibold">Stoo</th>
-              <th className="px-5 py-3 font-semibold">Hali</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((product) => {
-              const stock = getStock(product.slug);
-              const low = stock <= 10;
-              return (
-                <tr
-                  key={product.id}
-                  className="border-b border-cream-200 last:border-0"
-                >
-                  <td className="px-5 py-3">
-                    <span className="block font-medium text-ink-900">
-                      {product.name}
-                    </span>
-                    <span className="block text-xs text-ink-400">
-                      {product.slug}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 text-ink-700">{product.category}</td>
-                  <td className="px-5 py-3 text-ink-700">
-                    {formatTsh(product.priceTsh)}
-                  </td>
-                  <td className="px-5 py-3">
-                    <input
-                      type="number"
-                      min={0}
-                      value={stock}
-                      onChange={(e) => {
-                        const v = Math.max(0, Number(e.target.value) || 0);
-                        void saveStock(product.slug, v);
-                      }}
-                      className="w-20 rounded-lg border border-cream-300 px-2 py-1 text-sm"
-                      aria-label={`Stoo ya ${product.name}`}
-                    />
-                  </td>
-                  <td className="px-5 py-3">
-                    {low ? (
-                      <span className="badge bg-warning-100 text-warning-600">
-                        Stoo ndogo
-                      </span>
-                    ) : (
-                      <span className="badge bg-success-100 text-success-600">
-                        Inapatikana
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      <p className="mt-3 text-xs text-ink-400">
-        Mabadiliko ya stoo huhifadhiwa moja kwa moja kwenye database ya seva na
-        kuonekana kwenye duka lote.
-      </p>
-    </div>
-  );
-}
-
 /* ============ Oda ============ */
 function OdaTab({
   orders,
@@ -598,6 +511,50 @@ function OdaTab({
     }
   }
 
+  /** Pakua oda zilizochujwa kama CSV (Excel / Google Sheets). */
+  function exportCsv() {
+    const header = [
+      "Nambari",
+      "Tarehe",
+      "Hali",
+      "Jina",
+      "Simu",
+      "Mkoa",
+      "Bidhaa",
+      "Jumla ndogo",
+      "Usafirishaji",
+      "Punguzo",
+      "Jumla",
+      "Malipo",
+    ];
+    const rows = filtered.map((o) => [
+      o.code,
+      o.createdAt,
+      liveStatus(o),
+      o.customer.name,
+      o.customer.phone,
+      o.customer.region,
+      o.lines.map((l) => `${l.slug} x${l.qty}`).join(" + "),
+      o.subtotalTsh,
+      o.shippingTsh,
+      o.discountTsh ?? 0,
+      o.totalTsh,
+      o.payment,
+    ]);
+    const csv = [header, ...rows]
+      .map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","),
+      )
+      .join("\r\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `oda-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2">
@@ -618,6 +575,14 @@ function OdaTab({
               : statusSteps.find((s) => s.id === id)?.label}
           </button>
         ))}
+        <button
+          type="button"
+          onClick={exportCsv}
+          disabled={filtered.length === 0}
+          className="btn-outline ml-auto px-4 py-2 text-xs disabled:opacity-50"
+        >
+          Pakua CSV ({filtered.length})
+        </button>
       </div>
 
       {actionError ? (
@@ -749,11 +714,182 @@ function OdaTab({
   );
 }
 
+/* ============ Jumla (RFQ) ============ */
+const rfqStatusLabels: Record<RfqRecord["status"], string> = {
+  new: "Imepokelewa",
+  reviewed: "Inapitiwa",
+  quoted: "Bei yamewekwa",
+  accepted: "Imekubalika",
+  declined: "Imekataliwa",
+};
+
+function JumlaTab({
+  rfqs,
+  onChanged,
+}: {
+  rfqs: RfqRecord[];
+  onChanged: () => void;
+}) {
+  const [saving, setSaving] = useState("");
+  const [error, setError] = useState("");
+  const [quotes, setQuotes] = useState<Record<string, string>>({});
+
+  async function patch(
+    code: string,
+    body: { status?: string; unitQuoteTsh?: number | null },
+  ) {
+    setSaving(code);
+    setError("");
+    try {
+      await apiPatch(`/api/rfq/${code}`, body);
+      onChanged();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSaving("");
+    }
+  }
+
+  if (rfqs.length === 0) {
+    return (
+      <div className="card p-10 text-center">
+        <TagIcon className="mx-auto h-12 w-12 text-ink-300" />
+        <p className="font-display mt-4 text-lg text-ink-900">
+          Hakuna ombi la bei ya jumla bado
+        </p>
+        <p className="mt-2 text-sm text-ink-500">
+          Ombi za RFQ kutoka kwenye ukurasa wa /jumla zitaonekana hapa.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {error ? (
+        <p className="mb-4 rounded-lg bg-danger-100 px-3 py-2 text-sm text-danger-600">
+          {error}
+        </p>
+      ) : null}
+      <ul className="space-y-3">
+        {rfqs.map((rfq) => (
+          <li key={rfq.code} className="card p-5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-mono text-lg font-semibold text-accent">
+                  {rfq.code}
+                </span>
+                <span className="badge bg-brand-100 text-accent">
+                  {rfqStatusLabels[rfq.status]}
+                </span>
+                {rfq.quoteTsh != null ? (
+                  <span className="badge bg-success-100 text-success-600">
+                    bei: {formatTsh(rfq.quoteTsh)}
+                  </span>
+                ) : null}
+              </div>
+              <span className="text-xs text-ink-400">
+                {new Date(rfq.createdAt).toLocaleString("sw-TZ")}
+              </span>
+            </div>
+
+            <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
+              <div>
+                <p className="text-ink-400">Biashara</p>
+                <p className="font-medium text-ink-900">{rfq.business}</p>
+                <p className="text-ink-500">{rfq.name}</p>
+              </div>
+              <div>
+                <p className="text-ink-400">Kwasiliana</p>
+                <p className="font-medium text-ink-900">
+                  {formatPhone(rfq.phone)}
+                </p>
+                <p className="truncate text-ink-500">
+                  {rfq.email || rfq.region || "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-ink-400">Ombi</p>
+                <p className="font-medium text-ink-900">
+                  {rfq.productName || "—"} × {rfq.qty} pcs
+                </p>
+                <p className="truncate text-ink-500">{rfq.note || "—"}</p>
+              </div>
+            </div>
+
+            {/* Vitendo: bei + hali */}
+            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-cream-200 pt-3">
+              <label className="flex items-center gap-2 text-xs font-medium text-ink-500">
+                Bei ya unit (TSh):
+                <input
+                  type="number"
+                  min={0}
+                  value={quotes[rfq.code] ?? (rfq.unitQuoteTsh != null ? String(rfq.unitQuoteTsh) : "")}
+                  onChange={(e) =>
+                    setQuotes({ ...quotes, [rfq.code]: e.target.value })
+                  }
+                  placeholder="mfano 15000"
+                  className="w-28 rounded-lg border border-cream-300 px-2 py-1 text-sm"
+                  aria-label={`Bei ya unit kwa ${rfq.code}`}
+                />
+                <button
+                  type="button"
+                  disabled={saving === rfq.code || !quotes[rfq.code]}
+                  onClick={() =>
+                    void patch(rfq.code, {
+                      unitQuoteTsh: Math.max(
+                        0,
+                        Math.round(Number(quotes[rfq.code]) || 0),
+                      ),
+                      status: rfq.status === "new" ? "quoted" : undefined,
+                    })
+                  }
+                  className="rounded-lg border border-cream-300 px-3 py-1 text-xs font-medium text-ink-700 transition-colors hover:border-brand-300 hover:text-accent disabled:opacity-50"
+                >
+                  {saving === rfq.code ? "Inahifadhi…" : "Weka bei"}
+                </button>
+              </label>
+
+              <span className="mx-1 hidden h-5 w-px bg-cream-300 sm:block" />
+
+              {(
+                [
+                  "reviewed",
+                  "quoted",
+                  "accepted",
+                  "declined",
+                ] as RfqRecord["status"][]
+              ).map((status) => (
+                <button
+                  key={status}
+                  type="button"
+                  disabled={saving === rfq.code || rfq.status === status}
+                  onClick={() => void patch(rfq.code, { status })}
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                    rfq.status === status
+                      ? "bg-brand-700 text-white"
+                      : "bg-cream-100 text-ink-500 hover:bg-cream-200 disabled:opacity-60"
+                  }`}
+                >
+                  {saving === rfq.code && rfq.status !== status
+                    ? "Inasasisha…"
+                    : rfqStatusLabels[status]}
+                </button>
+              ))}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 /* ============ Ujumbe ============ */
 const kindLabels: Record<MessageRecord["kind"], string> = {
   contact: "Wasiliana",
   wholesale: "Ombi la jumla",
   giftcard: "Kadi ya zawadi",
+  rfq: "RFQ — ombi la bei ya wingi",
 };
 
 function UjumbeTab({ messages }: { messages: MessageRecord[] }) {
