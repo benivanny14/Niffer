@@ -124,11 +124,7 @@ async function ProductGrid({ searchParams }: PageProps) {
 
       {/* Vichujio: kategoria, eneo (mkoa/mji), bei, upangaji */}
       <div className="mt-8">
-        <Suspense
-          fallback={<div className="h-32 animate-pulse rounded-2xl bg-cream-200" />}
-        >
-          <CatalogFilters counts={counts} />
-        </Suspense>
+        <CatalogFilters counts={counts} />
       </div>
 
       {filtered.length > 0 ? (
