@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { getDb, nowIso } from "@/lib/server/db";
-import { InputError } from "@/lib/server/orders";
+import { InputError } from "@/lib/server/errors";
 import type { Order } from "@/lib/orders";
 import { rowToOrder } from "@/lib/server/orders";
 

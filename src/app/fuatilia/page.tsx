@@ -46,7 +46,7 @@ export default function TrackOrderPage() {
       <h1 className="heading-display mt-2">Fuatilia oda yako</h1>
       <p className="mt-3 text-ink-500">
         Weka nambari ya oda uliyopata (mfano{" "}
-        <span className="font-medium text-ink-700">NCF-8F3K</span>) ili kuona
+        <span className="font-medium text-ink-700">NCF-XXXX</span>) ili kuona
         hatua iliyofikia.
       </p>
 

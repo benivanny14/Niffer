@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { InputError } from "@/lib/server/orders";
+import { InputError } from "@/lib/server/errors";
 
 /** JSON response ya kawaida. */
 export function json(data: unknown, status = 200): NextResponse {

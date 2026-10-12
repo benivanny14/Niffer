@@ -5,6 +5,7 @@ import {
   products as catalogProducts,
   reviews as catalogReviews,
 } from "@/lib/data/catalog";
+import { promoCodes } from "@/lib/promo";
 
 /**
  * Database (SQLite kupitia `node:sqlite` ya Node 22+ — hakuna dependency ya ziada).
@@ -43,19 +44,21 @@ CREATE TABLE IF NOT EXISTS stock (
 );
 
 CREATE TABLE IF NOT EXISTS orders (
-  code         TEXT PRIMARY KEY,
-  created_at   TEXT NOT NULL,
-  status       TEXT NOT NULL,
-  customer     TEXT NOT NULL,
-  payment      TEXT NOT NULL,
-  lines        TEXT NOT NULL,
-  subtotal_tsh INTEGER NOT NULL,
-  shipping_tsh INTEGER NOT NULL,
-  total_tsh    INTEGER NOT NULL,
-  promo_code   TEXT,
-  discount_tsh INTEGER,
-  history      TEXT NOT NULL DEFAULT '[]',
-  demo         INTEGER NOT NULL DEFAULT 0
+  code             TEXT PRIMARY KEY,
+  created_at       TEXT NOT NULL,
+  status           TEXT NOT NULL,
+  customer         TEXT NOT NULL,
+  payment          TEXT NOT NULL,
+  lines            TEXT NOT NULL,
+  subtotal_tsh     INTEGER NOT NULL,
+  shipping_tsh     INTEGER NOT NULL,
+  total_tsh        INTEGER NOT NULL,
+  promo_code       TEXT,
+  discount_tsh     INTEGER,
+  history          TEXT NOT NULL DEFAULT '[]',
+  demo             INTEGER NOT NULL DEFAULT 0,
+  gift_card_code   TEXT,
+  gift_discount_tsh INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS order_events (
@@ -100,7 +103,36 @@ CREATE TABLE IF NOT EXISTS gift_cards (
   recipient  TEXT NOT NULL DEFAULT '',
   message    TEXT NOT NULL DEFAULT '',
   status     TEXT NOT NULL DEFAULT 'issued',
+  created_at TEXT NOT NULL,
+  redeemed_at TEXT,
+  order_code  TEXT
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+  id         TEXT PRIMARY KEY,
+  kind       TEXT NOT NULL DEFAULT 'info',
+  title      TEXT NOT NULL,
+  body       TEXT NOT NULL DEFAULT '',
+  ref        TEXT NOT NULL DEFAULT '',
+  status     TEXT NOT NULL DEFAULT 'new',
   created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS wishlists (
+  customer_id TEXT NOT NULL,
+  slug        TEXT NOT NULL,
+  created_at  TEXT NOT NULL,
+  PRIMARY KEY (customer_id, slug)
+);
+
+CREATE TABLE IF NOT EXISTS promo_codes (
+  code             TEXT PRIMARY KEY,
+  label            TEXT NOT NULL,
+  percent_off      INTEGER,
+  free_shipping    INTEGER NOT NULL DEFAULT 0,
+  min_subtotal_tsh INTEGER,
+  active           INTEGER NOT NULL DEFAULT 1,
+  created_at       TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS admin_sessions (
@@ -189,6 +221,12 @@ function migrate(db: DatabaseSync): void {
   if (!orders.includes("payment_ref")) {
     db.exec("ALTER TABLE orders ADD COLUMN payment_ref TEXT");
   }
+  if (!orders.includes("gift_card_code")) {
+    db.exec("ALTER TABLE orders ADD COLUMN gift_card_code TEXT");
+  }
+  if (!orders.includes("gift_discount_tsh")) {
+    db.exec("ALTER TABLE orders ADD COLUMN gift_discount_tsh INTEGER");
+  }
 
   const productCols = columns("products");
   if (!productCols.includes("region")) {
@@ -196,6 +234,34 @@ function migrate(db: DatabaseSync): void {
   }
   if (!productCols.includes("city")) {
     db.exec("ALTER TABLE products ADD COLUMN city TEXT NOT NULL DEFAULT ''");
+  }
+
+  const giftCols = columns("gift_cards");
+  if (!giftCols.includes("redeemed_at")) {
+    db.exec("ALTER TABLE gift_cards ADD COLUMN redeemed_at TEXT");
+  }
+  if (!giftCols.includes("order_code")) {
+    db.exec("ALTER TABLE gift_cards ADD COLUMN order_code TEXT");
+  }
+
+  // Promo codes: ingiza katalogi ya ndani mara moja (seed) — DB ndio mwanzo
+  // wa ukweli baada ya admin kubadilisha au kuzima msimbo.
+  const promoInsert = db.prepare(
+    `INSERT INTO promo_codes (
+       code, label, percent_off, free_shipping, min_subtotal_tsh, active, created_at
+     ) VALUES (?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(code) DO NOTHING`,
+  );
+  for (const p of promoCodes) {
+    promoInsert.run(
+      p.code,
+      p.label,
+      p.percentOff ?? null,
+      p.freeShipping ? 1 : 0,
+      p.minSubtotalTsh ?? null,
+      p.active ? 1 : 0,
+      nowIso(),
+    );
   }
 }
 

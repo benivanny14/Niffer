@@ -7,6 +7,7 @@ import {
   rfqStats,
 } from "@/lib/server/rfq";
 import { isAdminRequest } from "@/lib/server/auth";
+import { rateLimit, rateLimitMessage } from "@/lib/server/rate-limit";
 
 /**
  * RFQ — ombi la bei ya wingi (portali ya jumla).
@@ -33,6 +34,10 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   await connection();
   try {
+    const limited = rateLimit(req, "rfq-create", 5, 600);
+    if (!limited.ok) {
+      return fail(rateLimitMessage(limited.retryAfterSec), 429);
+    }
     const body = await readBody<{
       business?: string;
       name?: string;

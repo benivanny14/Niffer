@@ -26,7 +26,21 @@ import {
 type PageProps = { params: Promise<{ slug: string }> };
 
 export function generateStaticParams() {
-  return products.map((product) => ({ slug: product.slug }));
+  // Union ya katalogi ya ndani + DB (bidhaa za admin).
+  try {
+    const fromDb = listProducts().map((p) => ({ slug: p.slug }));
+    const seen = new Set<string>();
+    const merged: { slug: string }[] = [];
+    for (const { slug } of [...products.map((p) => ({ slug: p.slug })), ...fromDb]) {
+      if (!seen.has(slug)) {
+        seen.add(slug);
+        merged.push({ slug });
+      }
+    }
+    return merged;
+  } catch {
+    return products.map((product) => ({ slug: product.slug }));
+  }
 }
 
 export async function generateMetadata({

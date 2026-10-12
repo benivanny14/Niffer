@@ -1,21 +1,35 @@
 import { connection, type NextRequest } from "next/server";
 import { json, fail, readBody, intParam, toErrorResponse } from "@/lib/server/http";
-import { addReview, listReviews } from "@/lib/server/leads";
+import { addReview, listAllReviews, listReviews } from "@/lib/server/leads";
+import { isAdminRequest } from "@/lib/server/auth";
+import { notifyAdmin } from "@/lib/server/notify";
+import { rateLimit, rateLimitMessage } from "@/lib/server/rate-limit";
 
-/** Hakiki zilizoidhinishwa. */
+/** Hakiki (umma: zilizoidhinishwa; admin: zote kwa `?all=1`). */
 export async function GET(req: NextRequest) {
   await connection();
   try {
     const limit = intParam(req.nextUrl.searchParams.get("limit"), 100, 300);
+    const wantAll = req.nextUrl.searchParams.get("all") === "1";
+    if (wantAll) {
+      if (!(await isAdminRequest())) {
+        return fail("Ingia kama admin.", 401);
+      }
+      return json({ ok: true, reviews: listAllReviews(limit) });
+    }
     return json({ ok: true, reviews: listReviews(limit) });
   } catch (error) {
     return toErrorResponse(error);
   }
 }
 
-/** Hifadhi hakiki mpya. */
+/** Hifadhi hakiki mpya (huingia kama pending — admin huidhisha). */
 export async function POST(req: NextRequest) {
   try {
+    const limited = rateLimit(req, "review-create", 5, 600);
+    if (!limited.ok) {
+      return fail(rateLimitMessage(limited.retryAfterSec), 429);
+    }
     const body = await readBody<{
       customerName?: string;
       location?: string;
@@ -25,7 +39,13 @@ export async function POST(req: NextRequest) {
     }>(req);
     if (!body) return fail("Hakiki haijajazwa vizuri.");
     const review = addReview(body);
-    return json({ ok: true, review }, 201);
+    notifyAdmin({
+      kind: "hakiki",
+      title: "Hakiki mpya inasubiri",
+      body: `${review.customerName} (${review.rating}★): ${review.comment.slice(0, 120)}…`,
+      ref: review.productSlug || undefined,
+    });
+    return json({ ok: true, review, pendingModeration: true }, 201);
   } catch (error) {
     return toErrorResponse(error);
   }

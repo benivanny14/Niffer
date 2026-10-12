@@ -51,6 +51,11 @@ export default async function Home() {
   const freshIn = products.filter((p) => p.badges.includes("new"));
   const reviews = listReviews(8);
   const latest = latestArticles(3);
+  // Idadi halisi ya bidhaa kwa kategoria (DB, si hardcoded).
+  const categoryCounts = new Map<string, number>();
+  for (const p of products) {
+    categoryCounts.set(p.category, (categoryCounts.get(p.category) ?? 0) + 1);
+  }
 
   return (
     <>
@@ -175,7 +180,7 @@ export default async function Home() {
                 </div>
                 <div className="mt-5 flex items-center justify-between">
                   <span className="text-xs font-semibold uppercase tracking-wide text-ink-400">
-                    Bidhaa {category.productCount}
+                    Bidhaa {categoryCounts.get(category.slug) ?? 0}
                   </span>
                   <ArrowRightIcon className="h-4 w-4 text-accent transition-transform group-hover:translate-x-1" />
                 </div>

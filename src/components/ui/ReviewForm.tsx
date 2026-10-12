@@ -67,7 +67,8 @@ export function ReviewForm({
           <CheckIcon className="h-5 w-5" />
         </span>
         <p className="text-sm text-ink-700">
-          Asante kwa hakiki yako! Imehifadhiwa na inaonekana kwenye ukurasa huu.
+          Asante kwa hakiki yako! Imewasilishwa na itaonekana kwenye ukurasa
+          huu baada ya kukaguliwa na timu yetu.
         </p>
       </div>
     );

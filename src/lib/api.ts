@@ -90,6 +90,18 @@ export function apiPatch<T>(
   });
 }
 
+export function apiPut<T>(
+  path: string,
+  body?: unknown,
+  options?: Options,
+): Promise<T> {
+  return request<T>(path, {
+    ...options,
+    method: "PUT",
+    body: JSON.stringify(body ?? {}),
+  });
+}
+
 export function apiDelete<T>(path: string, options?: Options): Promise<T> {
   return request<T>(path, { ...options, method: "DELETE" });
 }

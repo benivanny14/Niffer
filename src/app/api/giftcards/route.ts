@@ -2,6 +2,7 @@ import { connection, type NextRequest } from "next/server";
 import { json, fail, readBody, toErrorResponse } from "@/lib/server/http";
 import { issueGiftCard, listGiftCards } from "@/lib/server/leads";
 import { isAdminRequest } from "@/lib/server/auth";
+import { rateLimit, rateLimitMessage } from "@/lib/server/rate-limit";
 
 /** Kadi zote zilizotolewa (admin). */
 export async function GET() {
@@ -19,6 +20,10 @@ export async function GET() {
 /** Toa kadi ya zawadi mpya (msimbo wa pekee). */
 export async function POST(req: NextRequest) {
   try {
+    const limited = rateLimit(req, "giftcard-create", 10, 600);
+    if (!limited.ok) {
+      return fail(rateLimitMessage(limited.retryAfterSec), 429);
+    }
     const body = await readBody<{
       amountTsh?: number;
       recipient?: string;

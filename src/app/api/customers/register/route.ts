@@ -5,11 +5,16 @@ import {
   createCustomerSession,
   registerCustomer,
 } from "@/lib/server/customers";
+import { rateLimit, rateLimitMessage } from "@/lib/server/rate-limit";
 
 /** Jiandikishe — hufungua akaunti mpya na session cookie. */
 export async function POST(req: NextRequest) {
   await connection();
   try {
+    const limited = rateLimit(req, "customer-register", 3, 600);
+    if (!limited.ok) {
+      return fail(rateLimitMessage(limited.retryAfterSec), 429);
+    }
     const body = await readBody<{
       name?: string;
       phone?: string;

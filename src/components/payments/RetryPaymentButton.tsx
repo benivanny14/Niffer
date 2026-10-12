@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { apiPost, errorMessage } from "@/lib/api";
 
 /** Jaribu malipo upya kwa oda isiyolipwa. */
 export function RetryPaymentButton({ reference }: { reference: string }) {
+  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -22,7 +24,7 @@ export function RetryPaymentButton({ reference }: { reference: string }) {
         return;
       }
       // Malipo ya kawaida (COD) — rudi kwenye oda.
-      window.location.href = `/odha/${reference}`;
+      router.push(`/odha/${reference}`);
     } catch (err) {
       setError(errorMessage(err));
       setBusy(false);

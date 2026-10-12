@@ -230,6 +230,25 @@ export default function OrderPage() {
               </li>
             );
           })}
+          {order.discountTsh && order.discountTsh > 0 ? (
+            <li className="flex justify-between text-success-600">
+              <span>
+                Punguzo{order.promoCode ? ` (${order.promoCode})` : ""}
+              </span>
+              <span className="font-medium">−{formatTsh(order.discountTsh)}</span>
+            </li>
+          ) : null}
+          {order.giftDiscountTsh && order.giftDiscountTsh > 0 ? (
+            <li className="flex justify-between text-success-600">
+              <span>
+                Kadi ya zawadi
+                {order.giftCardCode ? ` (${order.giftCardCode})` : ""}
+              </span>
+              <span className="font-medium">
+                −{formatTsh(order.giftDiscountTsh)}
+              </span>
+            </li>
+          ) : null}
           <li className="flex justify-between border-t border-cream-200 pt-3">
             <span className="text-ink-500">Usafirishaji</span>
             <span className="font-medium">

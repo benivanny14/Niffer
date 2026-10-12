@@ -49,6 +49,10 @@ export type Order = {
   paymentRef?: string;
   /** Mteja aliyeingia alipoweka oda (akaunti). */
   customerId?: string;
+  /** Msimbo wa kadi ya zawadi iliyotumika. */
+  giftCardCode?: string;
+  /** Kiasi kilichopunguzwa na kadi ya zawadi. */
+  giftDiscountTsh?: number;
   /** Oda ya majaribio — inasonga "live" kila sekunde 45. */
   demo?: boolean;
 };

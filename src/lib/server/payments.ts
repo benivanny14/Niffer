@@ -162,6 +162,10 @@ export function getPaymentStatus(code: string): PaymentStatus | null {
 /** Hifadhi salama ya callback ya gateway (hakikisha ni token sahihi). */
 export function validCallbackToken(token: string | null): boolean {
   const expected = env("PAYMENT_CALLBACK_TOKEN");
-  if (!expected) return true; // hazijawekwa (dev) — kubali
+  if (!expected) {
+    // Dev/mock: kubali. Production: KATAA (fail-closed) — callback
+    // isiyo na token inaweza kubadilisha hali ya oda kwa udanganyifu.
+    return process.env.NODE_ENV !== "production" || env("AZAMPAY_MOCK") === "1";
+  }
   return Boolean(token) && token === expected;
 }

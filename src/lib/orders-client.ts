@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { createLocalStore } from "@/lib/local-store";
-import { demoOrders, type Order, type OrderStatus } from "@/lib/orders";
+import { type Order, type OrderStatus } from "@/lib/orders";
 import { apiGet, apiPatch, apiPost, ApiError } from "@/lib/api";
 import { useAsync } from "@/lib/use-async";
 
@@ -54,6 +54,7 @@ export type CreateOrderPayload = {
   payment: string;
   lines: { slug: string; qty: number }[];
   promoCode?: string;
+  giftCardCode?: string;
 };
 
 /** Weka oda mpya kwenye server. Hurusha `ApiError` kama kuna hitilafu. */
@@ -68,14 +69,12 @@ export async function createOrder(
   return { order: data.order, stock: data.stock };
 }
 
-/** Oda moja kutoka server (na oda za demo). */
+/** Oda moja kutoka server. */
 export async function fetchOrder(code: string): Promise<Order | undefined> {
   const key = code.trim().toUpperCase();
   if (!key) return undefined;
   // Kwanza ramani ya ndani (haraka), kisha server.
-  const local =
-    ordersStore.get().find((o) => o.code.toUpperCase() === key) ??
-    demoOrders().find((o) => o.code.toUpperCase() === key);
+  const local = ordersStore.get().find((o) => o.code.toUpperCase() === key);
   if (local) return local;
 
   try {

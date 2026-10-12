@@ -1,5 +1,5 @@
 import { getDb, nowIso } from "@/lib/server/db";
-import { InputError } from "@/lib/server/orders";
+import { InputError } from "@/lib/server/errors";
 
 /**
  * Lead/content repositories: ujumbe wa fomu (wasiliana/jumla), jarida,
@@ -234,6 +234,44 @@ export function listGiftCards(limit = 100): GiftCard[] {
   }));
 }
 
+/** Kadi moja kwa msimbo (redeem). */
+export function getGiftCard(code: string): GiftCard | undefined {
+  const key = code.trim().toUpperCase();
+  if (!key) return undefined;
+  const row = getDb()
+    .prepare("SELECT * FROM gift_cards WHERE code = ?")
+    .get(key) as
+    | {
+        code: string;
+        amount_tsh: number;
+        recipient: string;
+        message: string;
+        status: string;
+        created_at: string;
+      }
+    | undefined;
+  if (!row) return undefined;
+  return {
+    code: row.code,
+    amountTsh: row.amount_tsh,
+    recipient: row.recipient,
+    message: row.message,
+    status: row.status as GiftCard["status"],
+    createdAt: row.created_at,
+  };
+}
+
+/** Weka kadi kuwa imetumika (ndani ya transaction ya oda). */
+export function redeemGiftCard(code: string, orderCode: string): void {
+  getDb()
+    .prepare(
+      `UPDATE gift_cards
+         SET status = 'redeemed', redeemed_at = ?, order_code = ?
+       WHERE code = ? AND status = 'issued'`,
+    )
+    .run(nowIso(), orderCode, code.trim().toUpperCase());
+}
+
 /* ============ Hakiki ============ */
 
 export type StoredReview = {
@@ -270,7 +308,8 @@ export function addReview(input: {
     rating,
     comment: comment.slice(0, 800),
     productSlug: input.productSlug ?? "",
-    status: "approved",
+    // Haki: hakiki mpya zinasubiri uidhinishaji wa admin.
+    status: "pending",
     createdAt: nowIso(),
   };
 
@@ -320,4 +359,62 @@ export function listReviews(limit = 200): StoredReview[] {
     status: r.status as StoredReview["status"],
     createdAt: r.created_at,
   }));
+}
+
+function mapReviewRows(rows: {
+  id: string;
+  customer_name: string;
+  location: string;
+  rating: number;
+  comment: string;
+  product_slug: string;
+  status: string;
+  created_at: string | null;
+}[]): StoredReview[] {
+  return rows.map((r) => ({
+    id: r.id,
+    customerName: r.customer_name,
+    location: r.location,
+    rating: r.rating,
+    comment: r.comment,
+    productSlug: r.product_slug,
+    status: r.status as StoredReview["status"],
+    createdAt: r.created_at,
+  }));
+}
+
+/** Hakiki zote — admin (pamoja na pending/rejected). */
+export function listAllReviews(limit = 300): StoredReview[] {
+  const rows = getDb()
+    .prepare(
+      `SELECT * FROM reviews
+       ORDER BY COALESCE(created_at, '') DESC, id DESC LIMIT ?`,
+    )
+    .all(limit) as unknown as Parameters<typeof mapReviewRows>[0];
+  return mapReviewRows(rows);
+}
+
+/** Idhisha/kataa hakiki (admin). */
+export function setReviewStatus(
+  reviewId: string,
+  status: "approved" | "rejected",
+): StoredReview {
+  const result = getDb()
+    .prepare("UPDATE reviews SET status = ? WHERE id = ?")
+    .run(status, reviewId);
+  if (result.changes === 0) {
+    throw new InputError("Hakiki haipatikani.", 404);
+  }
+  const row = getDb()
+    .prepare("SELECT * FROM reviews WHERE id = ?")
+    .get(reviewId) as Parameters<typeof mapReviewRows>[0][number];
+  return mapReviewRows([row])[0];
+}
+
+/** Idadi ya hakiki zinazosubiri uidhinishaji (admin badge). */
+export function countPendingReviews(): number {
+  const row = getDb()
+    .prepare("SELECT COUNT(*) AS n FROM reviews WHERE status = 'pending'")
+    .get() as { n?: number } | undefined;
+  return Number(row?.n ?? 0);
 }

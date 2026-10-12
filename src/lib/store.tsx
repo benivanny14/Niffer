@@ -27,6 +27,13 @@ export type CartItem = { slug: string; qty: number };
 const cartStore = createLocalStore<CartItem[]>(CART_KEY, []);
 const wishlistStore = createLocalStore<string[]>(WISHLIST_KEY, []);
 
+/** Ongeza bidhaa kwenye upendwa (kutoka akaunti — merge). */
+export function mergeWishlist(slugs: string[]) {
+  const prev = wishlistStore.get();
+  const merged = Array.from(new Set([...prev, ...slugs]));
+  wishlistStore.set(merged);
+}
+
 /** `ready`: false kwenye server/first paint, true baada ya hydration. */
 const subscribeNoop = () => () => {};
 const getClientReady = () => true;

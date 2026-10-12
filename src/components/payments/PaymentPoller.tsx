@@ -19,7 +19,6 @@ type StatusResponse = {
  */
 export function PaymentPoller({ reference }: { reference: string }) {
   const router = useRouter();
-  const [error, setError] = useState("");
   const [order, setOrder] = useState<Order | null>(null);
   const [tries, setTries] = useState(0);
   const stopped = useRef(false);
@@ -100,7 +99,7 @@ export function PaymentPoller({ reference }: { reference: string }) {
         </div>
       ) : (
         <p className="mt-4 text-xs text-ink-400">
-          {error || "Inathibitisha kila baada ya sekunde 3…"}
+          Inathibitisha kila baada ya sekunde 3…
         </p>
       )}
     </div>

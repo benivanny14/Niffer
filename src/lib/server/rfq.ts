@@ -1,5 +1,5 @@
 import { getDb, nowIso } from "@/lib/server/db";
-import { InputError } from "@/lib/server/orders";
+import { InputError } from "@/lib/server/errors";
 import { bulkUnitPrice, tierFor } from "@/lib/wholesale";
 
 /**

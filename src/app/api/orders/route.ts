@@ -9,6 +9,7 @@ import {
 import { createOrder, listOrders, type CreateOrderInput } from "@/lib/server/orders";
 import { isAdminRequest } from "@/lib/server/auth";
 import { currentCustomer } from "@/lib/server/customers";
+import { rateLimit, rateLimitMessage } from "@/lib/server/rate-limit";
 
 /** Oda zote (admin pekee). */
 export async function GET(req: NextRequest) {
@@ -27,6 +28,10 @@ export async function GET(req: NextRequest) {
 /** Weka oda mpya (checkout). */
 export async function POST(req: NextRequest) {
   try {
+    const limited = rateLimit(req, "order-create", 10, 300);
+    if (!limited.ok) {
+      return fail(rateLimitMessage(limited.retryAfterSec), 429);
+    }
     const body = await readBody<CreateOrderInput>(req);
     if (!body) return fail("Taarifa za oda hazisahihi.");
     // Ikiwa mteja ameingia,unganisha oda na akaunti yake.

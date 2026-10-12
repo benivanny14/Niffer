@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { createLocalStore } from "@/lib/local-store";
 import { useAsync } from "@/lib/use-async";
 import {
-  demoOrders,
   liveStatus,
   statusSteps,
   type Order,
@@ -22,6 +21,7 @@ import {
   ChatIcon,
   MailIcon,
   ShieldIcon,
+  StarIcon,
   TagIcon,
   TruckIcon,
 } from "@/components/ui/icons";
@@ -30,7 +30,15 @@ import {
 const AUTH_KEY = "niffer.admin.auth.v1";
 const authStore = createLocalStore<boolean>(AUTH_KEY, false);
 
-type Tab = "muhtasari" | "bidhaa" | "oda" | "jumla" | "ujumbe";
+type Tab =
+  | "muhtasari"
+  | "bidhaa"
+  | "oda"
+  | "jumla"
+  | "hakiki"
+  | "promo"
+  | "hifadhi"
+  | "ujumbe";
 
 type Stats = {
   orders: { orderCount: number; revenueTsh: number; pendingCount: number };
@@ -39,6 +47,8 @@ type Stats = {
   subscribers: number;
   giftCards: number;
   lowStock: { slug: string; qty: number }[];
+  reviews?: { pending: number };
+  notifications?: { unread: number };
 };
 
 type MessageRecord = {
@@ -49,6 +59,46 @@ type MessageRecord = {
   email: string;
   body: Record<string, string>;
   status: "new" | "read" | "done";
+  createdAt: string;
+};
+
+type ReviewRecord = {
+  id: string;
+  customerName: string;
+  location: string;
+  rating: number;
+  comment: string;
+  productSlug: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string | null;
+};
+
+type PromoRecord = {
+  code: string;
+  label: string;
+  percentOff?: number;
+  freeShipping: boolean;
+  minSubtotalTsh?: number;
+  active: boolean;
+};
+
+type NotificationRecord = {
+  id: string;
+  kind: string;
+  title: string;
+  body: string;
+  ref: string;
+  status: "new" | "read";
+  createdAt: string;
+};
+
+type SubscriberRecord = { email: string; createdAt: string };
+type GiftCardRecord = {
+  code: string;
+  amountTsh: number;
+  recipient: string;
+  message: string;
+  status: string;
   createdAt: string;
 };
 
@@ -179,20 +229,48 @@ function AdminDashboard() {
   const [tab, setTab] = useState<Tab>("muhtasari");
   const { orders: serverOrders, loading, error, refresh } = useAdminOrders();
 
-  // Takwimu + ujumbe + ombi za jumla (pamoja) — zinasasishwa kila dakika.
+  // Takwimu + ujumbe + ombi za jumla + hakiki + promos + notifications
+  // + hifadhi (jarida/kadi) — zinasasishwa kila dakika.
   const adminData = useAsync<{
     stats: Stats;
     messages: MessageRecord[];
     rfqs: RfqRecord[];
+    reviews: ReviewRecord[];
+    promos: PromoRecord[];
+    notifications: NotificationRecord[];
+    subscribers: SubscriberRecord[];
+    giftCards: GiftCardRecord[];
   }>(
     "admin-data",
     async () => {
-      const [s, m, r] = await Promise.all([
+      const [s, m, r, rv, pr, nt, nl, gc] = await Promise.all([
         apiGet<Stats>("/api/stats"),
         apiGet<{ ok: boolean; messages: MessageRecord[] }>("/api/messages"),
         apiGet<{ ok: boolean; rfqs: RfqRecord[] }>("/api/rfq"),
+        apiGet<{ ok: boolean; reviews: ReviewRecord[] }>("/api/reviews?all=1"),
+        apiGet<{ ok: boolean; promos: PromoRecord[] }>("/api/promos"),
+        apiGet<{
+          ok: boolean;
+          notifications: NotificationRecord[];
+        }>("/api/notifications"),
+        apiGet<{
+          ok: boolean;
+          subscribers: SubscriberRecord[];
+        }>("/api/newsletter"),
+        apiGet<{ ok: boolean; giftCards: GiftCardRecord[] }>(
+          "/api/giftcards",
+        ),
       ]);
-      return { stats: s, messages: m.messages, rfqs: r.rfqs };
+      return {
+        stats: s,
+        messages: m.messages,
+        rfqs: r.rfqs,
+        reviews: rv.reviews,
+        promos: pr.promos,
+        notifications: nt.notifications,
+        subscribers: nl.subscribers,
+        giftCards: gc.giftCards,
+      };
     },
     { intervalMs: 60_000 },
   );
@@ -200,23 +278,40 @@ function AdminDashboard() {
   const stats = adminData.data?.stats ?? null;
   const messages = adminData.data?.messages ?? [];
   const rfqs = adminData.data?.rfqs ?? [];
+  const reviews = adminData.data?.reviews ?? [];
+  const promos = adminData.data?.promos ?? [];
+  const notifications = adminData.data?.notifications ?? [];
+  const subscribers = adminData.data?.subscribers ?? [];
+  const giftCards = adminData.data?.giftCards ?? [];
   const dataError = adminData.error;
 
-  // Oda zote: za server (DB) + demo.
-  const allOrders = useMemo<Order[]>(
-    () => [...serverOrders, ...demoOrders()],
-    [serverOrders],
-  );
+  // Oda zote za server (DB) — demo zimeondolewa.
+  const allOrders = useMemo<Order[]>(() => serverOrders, [serverOrders]);
 
   const unread = messages.filter((m) => m.status === "new").length;
 
   const newRfqs = rfqs.filter((r) => r.status === "new").length;
+
+  const pendingReviews = reviews.filter((r) => r.status === "pending").length;
+
+  const unreadNotifications = notifications.filter(
+    (n) => n.status === "new",
+  ).length;
 
   const tabs: { id: Tab; label: string }[] = [
     { id: "muhtasari", label: "Muhtasari" },
     { id: "bidhaa", label: "Bidhaa" },
     { id: "oda", label: `Oda (${allOrders.length})` },
     { id: "jumla", label: `Jumla${newRfqs ? ` (${newRfqs})` : ""}` },
+    {
+      id: "hakiki",
+      label: `Hakiki${pendingReviews ? ` (${pendingReviews})` : ""}`,
+    },
+    { id: "promo", label: "Promo" },
+    {
+      id: "hifadhi",
+      label: `Hifadhi${unreadNotifications ? ` (${unreadNotifications})` : ""}`,
+    },
     { id: "ujumbe", label: `Ujumbe${unread ? ` (${unread})` : ""}` },
   ];
 
@@ -282,6 +377,20 @@ function AdminDashboard() {
         {tab === "jumla" ? (
           <JumlaTab rfqs={rfqs} onChanged={() => adminData.refresh()} />
         ) : null}
+        {tab === "hakiki" ? (
+          <HakikiTab reviews={reviews} onChanged={() => adminData.refresh()} />
+        ) : null}
+        {tab === "promo" ? (
+          <PromoTab promos={promos} onChanged={() => adminData.refresh()} />
+        ) : null}
+        {tab === "hifadhi" ? (
+          <HifadhiTab
+            notifications={notifications}
+            subscribers={subscribers}
+            giftCards={giftCards}
+            onChanged={() => adminData.refresh()}
+          />
+        ) : null}
         {tab === "ujumbe" ? <UjumbeTab messages={messages} /> : null}
       </div>
     </div>
@@ -309,9 +418,7 @@ function Muhtasari({
     };
   });
 
-  const revenue =
-    (stats?.orders.revenueTsh ?? 0) +
-    demoOrders().reduce((sum, o) => sum + o.totalTsh, 0);
+  const revenue = stats?.orders.revenueTsh ?? 0;
 
   const cards = [
     { icon: BagIcon, label: "Oda zote", value: `${orders.length}` },
@@ -966,5 +1073,509 @@ function UjumbeTab({ messages }: { messages: MessageRecord[] }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+/* ============ Hakiki (moderation) ============ */
+const reviewStatusLabels: Record<ReviewRecord["status"], string> = {
+  pending: "Inasubiri",
+  approved: "Imeidhinishwa",
+  rejected: "Imekataliwa",
+};
+
+function HakikiTab({
+  reviews,
+  onChanged,
+}: {
+  reviews: ReviewRecord[];
+  onChanged: () => void;
+}) {
+  const [saving, setSaving] = useState("");
+  const [error, setError] = useState("");
+  const [filter, setFilter] = useState<"zote" | ReviewRecord["status"]>("zote");
+
+  const filtered = reviews.filter((r) =>
+    filter === "zote" ? true : r.status === filter,
+  );
+
+  async function setStatus(id: string, status: "approved" | "rejected") {
+    setSaving(id);
+    setError("");
+    try {
+      await apiPatch(`/api/reviews/${id}`, { status });
+      onChanged();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSaving("");
+    }
+  }
+
+  if (reviews.length === 0) {
+    return (
+      <div className="card p-10 text-center">
+        <StarIcon className="mx-auto h-12 w-12 text-ink-300" />
+        <p className="font-display mt-4 text-lg text-ink-900">
+          Hakuna hakiki bado
+        </p>
+        <p className="mt-2 text-sm text-ink-500">
+          Hakiki mpya kutoka wateja zitaonekana hapa kwa uidhinishaji.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm font-medium text-ink-700">Chuja:</span>
+        {(["zote", "pending", "approved", "rejected"] as const).map((id) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setFilter(id)}
+            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+              filter === id
+                ? "bg-brand-700 text-white"
+                : "bg-cream-100 text-ink-500 hover:bg-cream-200"
+            }`}
+          >
+            {id === "zote"
+              ? "Zote"
+              : reviewStatusLabels[id as ReviewRecord["status"]]}
+          </button>
+        ))}
+      </div>
+
+      {error ? (
+        <p className="mt-4 rounded-lg bg-danger-100 px-3 py-2 text-sm text-danger-600">
+          {error}
+        </p>
+      ) : null}
+
+      <ul className="mt-6 space-y-3">
+        {filtered.map((review) => (
+          <li key={review.id} className="card p-5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-display text-lg text-ink-900">
+                  {review.customerName}
+                </span>
+                <span className="badge bg-brand-100 text-accent">
+                  {"★".repeat(review.rating)}
+                  {"☆".repeat(5 - review.rating)}
+                </span>
+                <span
+                  className={`badge ${
+                    review.status === "approved"
+                      ? "bg-success-100 text-success-600"
+                      : review.status === "pending"
+                        ? "bg-warning-100 text-warning-600"
+                        : "bg-cream-100 text-ink-500"
+                  }`}
+                >
+                  {reviewStatusLabels[review.status]}
+                </span>
+              </div>
+              <span className="text-xs text-ink-400">
+                {review.createdAt
+                  ? new Date(review.createdAt).toLocaleString("sw-TZ")
+                  : "—"}
+              </span>
+            </div>
+
+            <p className="mt-3 text-sm text-ink-700">{review.comment}</p>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-cream-200 pt-3 text-xs text-ink-500">
+              <span>Bidhaa: {review.productSlug || "—"}</span>
+              <span>Mji: {review.location || "—"}</span>
+            </div>
+
+            {review.status === "pending" ? (
+              <div className="mt-3 flex flex-wrap gap-2 border-t border-cream-200 pt-3">
+                <button
+                  type="button"
+                  disabled={saving === review.id}
+                  onClick={() => void setStatus(review.id, "approved")}
+                  className="rounded-full bg-success-100 px-3 py-1 text-xs font-medium text-success-600 transition-colors hover:bg-success-200 disabled:opacity-60"
+                >
+                  {saving === review.id ? "Inahifadhi…" : "Idhinisha"}
+                </button>
+                <button
+                  type="button"
+                  disabled={saving === review.id}
+                  onClick={() => void setStatus(review.id, "rejected")}
+                  className="rounded-full bg-danger-100 px-3 py-1 text-xs font-medium text-danger-600 transition-colors hover:bg-danger-200 disabled:opacity-60"
+                >
+                  Kataa
+                </button>
+              </div>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/* ============ Promo ============ */
+function PromoTab({
+  promos,
+  onChanged,
+}: {
+  promos: PromoRecord[];
+  onChanged: () => void;
+}) {
+  const [code, setCode] = useState("");
+  const [label, setLabel] = useState("");
+  const [percentOff, setPercentOff] = useState("");
+  const [freeShipping, setFreeShipping] = useState(false);
+  const [minSubtotal, setMinSubtotal] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [toggling, setToggling] = useState("");
+  const [error, setError] = useState("");
+
+  async function create(e: React.FormEvent) {
+    e.preventDefault();
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      await apiPost("/api/promos", {
+        code,
+        label,
+        percentOff: percentOff ? Number(percentOff) : undefined,
+        freeShipping,
+        minSubtotalTsh: minSubtotal ? Number(minSubtotal) : undefined,
+      });
+      setCode("");
+      setLabel("");
+      setPercentOff("");
+      setFreeShipping(false);
+      setMinSubtotal("");
+      onChanged();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function toggle(c: string, active: boolean) {
+    setToggling(c);
+    setError("");
+    try {
+      await apiPatch(`/api/promos/${encodeURIComponent(c)}`, { active });
+      onChanged();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setToggling("");
+    }
+  }
+
+  return (
+    <div>
+      <form onSubmit={create} className="card space-y-4 p-6">
+        <h2 className="font-display text-xl text-ink-900">
+          Ongeza msimbo wa punguzo
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block text-sm">
+            <span className="mb-1.5 block font-medium text-ink-700">
+              Msimbo *
+            </span>
+            <input
+              required
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              className={field}
+              placeholder="MFANO10"
+            />
+          </label>
+          <label className="block text-sm">
+            <span className="mb-1.5 block font-medium text-ink-700">
+              Maelezo *
+            </span>
+            <input
+              required
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              className={field}
+              placeholder="Punguzo la 10%"
+            />
+          </label>
+          <label className="block text-sm">
+            <span className="mb-1.5 block font-medium text-ink-700">
+              Asilimia ya punguzo
+            </span>
+            <input
+              type="number"
+              min={1}
+              max={100}
+              value={percentOff}
+              onChange={(e) => setPercentOff(e.target.value)}
+              className={field}
+              placeholder="10"
+            />
+          </label>
+          <label className="block text-sm">
+            <span className="mb-1.5 block font-medium text-ink-700">
+              Jumla ndogo ya chini (TSh)
+            </span>
+            <input
+              type="number"
+              min={0}
+              value={minSubtotal}
+              onChange={(e) => setMinSubtotal(e.target.value)}
+              className={field}
+              placeholder="40000"
+            />
+          </label>
+        </div>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={freeShipping}
+            onChange={(e) => setFreeShipping(e.target.checked)}
+            className="accent-brand-700"
+          />
+          Usafirishaji bure
+        </label>
+        {error ? (
+          <p className="rounded-lg bg-danger-100 px-3 py-2 text-sm text-danger-600">
+            {error}
+          </p>
+        ) : null}
+        <button
+          type="submit"
+          disabled={saving}
+          className="btn-primary disabled:opacity-60"
+        >
+          {saving ? "Inahifadhi…" : "Ongeza Msimbo"}
+        </button>
+      </form>
+
+      <section className="mt-8">
+        <h2 className="font-display text-xl text-ink-900">Promo zote</h2>
+        {promos.length === 0 ? (
+          <p className="mt-3 text-sm text-ink-500">
+            Hakuna msimbo bado. Ongeza wa kwanza hapo juu.
+          </p>
+        ) : (
+          <ul className="mt-4 space-y-2">
+            {promos.map((promo) => (
+              <li
+                key={promo.code}
+                className="card flex flex-wrap items-center gap-3 p-4"
+              >
+                <span className="font-mono text-base font-semibold text-accent">
+                  {promo.code}
+                </span>
+                <span className="text-sm text-ink-700">{promo.label}</span>
+                {promo.percentOff ? (
+                  <span className="badge bg-brand-100 text-accent">
+                    {promo.percentOff}%
+                  </span>
+                ) : null}
+                {promo.freeShipping ? (
+                  <span className="badge bg-success-100 text-success-600">
+                    usafirishaji bure
+                  </span>
+                ) : null}
+                {promo.minSubtotalTsh ? (
+                  <span className="badge bg-cream-100 text-ink-500">
+                    min {formatTsh(promo.minSubtotalTsh)}
+                  </span>
+                ) : null}
+                <span
+                  className={`badge ${
+                    promo.active
+                      ? "bg-success-100 text-success-600"
+                      : "bg-cream-100 text-ink-400"
+                  }`}
+                >
+                  {promo.active ? "Inatumika" : "Imezimwa"}
+                </span>
+                <button
+                  type="button"
+                  disabled={toggling === promo.code}
+                  onClick={() => void toggle(promo.code, !promo.active)}
+                  className="btn-outline ml-auto px-3 py-1 text-xs disabled:opacity-60"
+                >
+                  {toggling === promo.code
+                    ? "Inasasisha…"
+                    : promo.active
+                      ? "Zima"
+                      : "Washa"}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
+  );
+}
+
+/* ============ Hifadhi (notifications + jarida + kadi) ============ */
+function HifadhiTab({
+  notifications,
+  subscribers,
+  giftCards,
+  onChanged,
+}: {
+  notifications: NotificationRecord[];
+  subscribers: SubscriberRecord[];
+  giftCards: GiftCardRecord[];
+  onChanged: () => void;
+}) {
+  const [saving, setSaving] = useState("");
+
+  async function markRead(id: string) {
+    setSaving(id);
+    try {
+      await apiPatch("/api/notifications", { id });
+      onChanged();
+    } catch {
+      /* tp */
+    } finally {
+      setSaving("");
+    }
+  }
+
+  return (
+    <div className="space-y-10">
+      {/* Arifa */}
+      <section>
+        <h2 className="font-display text-xl text-ink-900">
+          Arifa za hivi karibuni
+        </h2>
+        {notifications.length === 0 ? (
+          <p className="mt-3 text-sm text-ink-500">
+            Hakuna arifa bado. Oda mpya, hakiki na ombi zitaonekana hapa.
+          </p>
+        ) : (
+          <ul className="mt-4 space-y-2">
+            {notifications.slice(0, 30).map((n) => (
+              <li
+                key={n.id}
+                className={`card flex flex-wrap items-center gap-3 p-4 ${
+                  n.status === "new" ? "border-brand-200 bg-brand-50" : ""
+                }`}
+              >
+                <span
+                  className={`badge ${
+                    n.status === "new"
+                      ? "bg-brand-100 text-accent"
+                      : "bg-cream-100 text-ink-400"
+                  }`}
+                >
+                  {n.kind}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium text-ink-900">
+                    {n.title}
+                  </span>
+                  {n.body ? (
+                    <span className="block truncate text-sm text-ink-500">
+                      {n.body}
+                    </span>
+                  ) : null}
+                </span>
+                <span className="text-xs text-ink-400">
+                  {new Date(n.createdAt).toLocaleString("sw-TZ")}
+                </span>
+                {n.status === "new" ? (
+                  <button
+                    type="button"
+                    disabled={saving === n.id}
+                    onClick={() => void markRead(n.id)}
+                    className="btn-outline px-3 py-1 text-xs disabled:opacity-60"
+                  >
+                    {saving === n.id ? "…" : "Soma"}
+                  </button>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* Jarida */}
+      <section>
+        <h2 className="font-display text-xl text-ink-900">
+          Waasisi wa jarida ({subscribers.length})
+        </h2>
+        {subscribers.length === 0 ? (
+          <p className="mt-3 text-sm text-ink-500">
+            Hakuna aliyejiunga na jarida bado.
+          </p>
+        ) : (
+          <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {subscribers.map((s) => (
+              <li
+                key={s.email}
+                className="card flex items-center justify-between p-3 text-sm"
+              >
+                <span className="truncate text-ink-700">{s.email}</span>
+                <span className="ml-2 shrink-0 text-xs text-ink-400">
+                  {new Date(s.createdAt).toLocaleDateString("sw-TZ")}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* Kadi za zawadi */}
+      <section>
+        <h2 className="font-display text-xl text-ink-900">
+          Kadi za zawadi ({giftCards.length})
+        </h2>
+        {giftCards.length === 0 ? (
+          <p className="mt-3 text-sm text-ink-500">
+            Hakuna kadi bado. Zilizotolewa kwenye /zawadi zitaonekana hapa.
+          </p>
+        ) : (
+          <ul className="mt-4 space-y-2">
+            {giftCards.map((gc) => (
+              <li
+                key={gc.code}
+                className="card flex flex-wrap items-center gap-3 p-4 text-sm"
+              >
+                <span className="font-mono font-semibold text-accent">
+                  {gc.code}
+                </span>
+                <span className="font-medium text-ink-900">
+                  {formatTsh(gc.amountTsh)}
+                </span>
+                {gc.recipient ? (
+                  <span className="text-ink-500">→ {gc.recipient}</span>
+                ) : null}
+                <span
+                  className={`badge ${
+                    gc.status === "issued"
+                      ? "bg-success-100 text-success-600"
+                      : gc.status === "redeemed"
+                        ? "bg-cream-100 text-ink-500"
+                        : "bg-warning-100 text-warning-600"
+                  }`}
+                >
+                  {gc.status === "issued"
+                    ? "Imetolewa"
+                    : gc.status === "redeemed"
+                      ? "Imetumika"
+                      : "Imeisha"}
+                </span>
+                <span className="ml-auto text-xs text-ink-400">
+                  {new Date(gc.createdAt).toLocaleDateString("sw-TZ")}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
   );
 }

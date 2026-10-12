@@ -8,7 +8,7 @@ import { getProductBySlug } from "@/lib/data/catalog";
 import { formatTsh, formatPhone } from "@/lib/format";
 import { site } from "@/lib/site";
 import { useStore } from "@/lib/store";
-import { apiGet, apiPost, errorMessage } from "@/lib/api";
+import { apiGet, apiPut, apiPost, errorMessage } from "@/lib/api";
 import { useAsync } from "@/lib/use-async";
 import {
   BagIcon,
@@ -243,6 +243,39 @@ function Dashboard({
   const localOrders = useOrders();
   const { wishlist, ready } = useStore();
   const [loggingOut, setLoggingOut] = useState(false);
+
+  // Sync upendwa: ongeza za kifaa hiki kwenye akaunti (merge) mara moja,
+  // kisha pakia zilizokuwepo kwenye akaunti kurudi kwenye kifaa hiki.
+  useEffect(() => {
+    if (!ready) return;
+    let alive = true;
+    (async () => {
+      try {
+        // 1) PUSH local → server.
+        if (wishlist.length > 0) {
+          await apiPut("/api/customers/wishlist", { slugs: wishlist });
+        }
+        // 2) PULL server → local (union).
+        const res = await apiGet<{ ok: boolean; slugs: string[] }>(
+          "/api/customers/wishlist",
+        );
+        if (alive && Array.isArray(res.slugs)) {
+          const merged = Array.from(new Set([...wishlist, ...res.slugs]));
+          if (merged.length > wishlist.length) {
+            import("@/lib/store").then(({ mergeWishlist }) =>
+              mergeWishlist(merged),
+            );
+          }
+        }
+      } catch {
+        /* mtandao / session — acha za ndani */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, customer.id]);
 
   const { data, loading, error } = useAsync<Order[]>(
     `my-orders:${customer.id}`,

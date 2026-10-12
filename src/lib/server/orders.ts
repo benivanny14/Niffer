@@ -1,6 +1,9 @@
 import { getDb, nowIso } from "@/lib/server/db";
-import { makeOrderCode } from "@/lib/format";
-import { applyPromo } from "@/lib/promo";
+import { makeOrderCode, formatTsh } from "@/lib/format";
+import { applyPromoFromDb } from "@/lib/server/promo";
+import { notifyAdmin } from "@/lib/server/notify";
+import { InputError } from "@/lib/server/errors";
+import { getGiftCard, redeemGiftCard } from "@/lib/server/leads";
 import { products } from "@/lib/data/catalog";
 import { site, paymentMethods, type PaymentId } from "@/lib/site";
 import {
@@ -10,15 +13,6 @@ import {
   type OrderStatus,
   type StatusEvent,
 } from "@/lib/orders";
-
-/** Hitilafu ya kibali (validation) yenye HTTP status. */
-export class InputError extends Error {
-  status: number;
-  constructor(message: string, status = 400) {
-    super(message);
-    this.status = status;
-  }
-}
 
 export type OrderRow = {
   code: string;
@@ -37,6 +31,8 @@ export type OrderRow = {
   customer_id?: string | null;
   payment_status?: string | null;
   payment_ref?: string | null;
+  gift_card_code?: string | null;
+  gift_discount_tsh?: number | null;
 };
 
 function parseJson<T>(raw: string | null, fallback: T): T {
@@ -71,6 +67,8 @@ export function rowToOrder(row: OrderRow): Order {
     paymentStatus: (row.payment_status as Order["paymentStatus"]) ?? "pending",
     paymentRef: row.payment_ref ?? undefined,
     customerId: row.customer_id ?? undefined,
+    giftCardCode: row.gift_card_code ?? undefined,
+    giftDiscountTsh: row.gift_discount_tsh ?? undefined,
   };
 }
 
@@ -79,6 +77,8 @@ export type CreateOrderInput = {
   payment?: string;
   lines?: CartLine[];
   promoCode?: string;
+  /** Msimbo wa kadi ya zawadi (redeem kutoka DB). */
+  giftCardCode?: string;
   /** Mteja aliyeingia (session) — huunganishwa na akaunti yake. */
   customerId?: string;
 };
@@ -216,15 +216,35 @@ export function createOrder(input: CreateOrderInput): {
       ? site.baseShippingTsh
       : 0;
 
-  const promo = input.promoCode ? applyPromo(input.promoCode, subtotalTsh) : null;
+  const promo = input.promoCode
+    ? applyPromoFromDb(input.promoCode, subtotalTsh)
+    : null;
   const applied = promo && promo.ok ? promo : null;
   const discountTsh = applied
     ? applied.discountTsh(subtotalTsh, shippingBase)
     : 0;
   const shippingTsh = applied?.freeShipping ? 0 : shippingBase;
+
+  // Kadi ya zawadi: thibitisha na hesabu (haiwezi kuzidi jumla).
+  let giftCard = null as ReturnType<typeof getGiftCard> | null;
+  let giftDiscountTsh = 0;
+  if (input.giftCardCode?.trim()) {
+    giftCard = getGiftCard(input.giftCardCode.trim());
+    if (!giftCard || giftCard.status !== "issued") {
+      throw new InputError("Kadi ya zawadi si sahihi au tayari imetumika.");
+    }
+    const beforeGift = Math.max(
+      0,
+      subtotalTsh - (applied?.freeShipping ? 0 : discountTsh),
+    );
+    giftDiscountTsh = Math.min(giftCard.amountTsh, beforeGift);
+  }
+
   const totalTsh =
-    Math.max(0, subtotalTsh - (applied?.freeShipping ? 0 : discountTsh)) +
-    shippingTsh;
+    Math.max(
+      0,
+      subtotalTsh - (applied?.freeShipping ? 0 : discountTsh) - giftDiscountTsh,
+    ) + shippingTsh;
 
   const db = getDb();
   const exists = db.prepare("SELECT 1 FROM orders WHERE code = ?");
@@ -243,8 +263,9 @@ export function createOrder(input: CreateOrderInput): {
     db.prepare(
       `INSERT INTO orders (
          code, created_at, status, customer, payment, lines,
-         subtotal_tsh, shipping_tsh, total_tsh, promo_code, discount_tsh, history, demo, customer_id
-       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
+         subtotal_tsh, shipping_tsh, total_tsh, promo_code, discount_tsh, history, demo, customer_id,
+         gift_card_code, gift_discount_tsh
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`,
     ).run(
       code,
       createdAt,
@@ -259,6 +280,8 @@ export function createOrder(input: CreateOrderInput): {
       discountTsh > 0 ? discountTsh : null,
       JSON.stringify(history),
       input.customerId ?? null,
+      giftCard ? giftCard.code : null,
+      giftDiscountTsh > 0 ? giftDiscountTsh : null,
     );
 
     db.prepare(
@@ -270,6 +293,9 @@ export function createOrder(input: CreateOrderInput): {
     );
     for (const line of lines) dec.run(line.qty, createdAt, line.slug);
 
+    // Redeem kadi ya zawadi ndani ya transaction (haiwezi kutumika tena).
+    if (giftCard) redeemGiftCard(giftCard.code, code);
+
     db.exec("COMMIT");
   } catch (error) {
     db.exec("ROLLBACK");
@@ -277,6 +303,14 @@ export function createOrder(input: CreateOrderInput): {
       ? error
       : new InputError("Imeshindikana kuhifadhi oda. Jaribu tena.", 500);
   }
+
+  // Arifa kwa admin (DB + barua pepe nyepesi).
+  notifyAdmin({
+    kind: "oda",
+    title: `Oda mpya ${code}`,
+    body: `${customer.name} (${customer.phone}) — ${formatTsh(totalTsh)}. Bidhaa: ${lines.map((l) => `${l.slug} ×${l.qty}`).join(", ")}`,
+    ref: `/admin`,
+  });
 
   const order = getOrder(code);
   if (!order) throw new InputError("Imeshindikana kuhifadhi oda.", 500);

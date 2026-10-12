@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { getOrder } from "@/lib/server/orders";
 import { site, waLink } from "@/lib/site";
 import { formatTsh } from "@/lib/format";
+import { RetryPaymentButton } from "@/components/payments/RetryPaymentButton";
 
 export const metadata: Metadata = {
   title: "Malipo Hayakamilika",
@@ -56,13 +57,17 @@ export default async function PaymentFailedPage({ searchParams }: PageProps) {
           Msaada kwa WhatsApp
         </a>
         {order ? (
-          <Link href={`/odha/${order.code}`} className="btn-outline">
-            Angalia oda yako
+          <>
+            <RetryPaymentButton reference={order.code} />
+            <Link href={`/odha/${order.code}`} className="btn-outline">
+              Angalia oda yako
+            </Link>
+          </>
+        ) : (
+          <Link href="/ukoko" className="btn-outline">
+            Jaribu malipo tena
           </Link>
-        ) : null}
-        <Link href="/ukoko" className="btn-outline">
-          Jaribu malipo tena
-        </Link>
+        )}
       </div>
     </div>
   );

@@ -13,13 +13,13 @@ import {
 } from "@/lib/site";
 import { createOrder, pushOrder } from "@/lib/orders-client";
 import { getStock, applyServerStock } from "@/lib/stock";
-import { errorMessage } from "@/lib/api";
-import { applyPromo, type PromoApplied } from "@/lib/promo";
+import { apiPost, errorMessage } from "@/lib/api";
 import { ProductImage } from "@/components/media/ProductImage";
 import {
   BagIcon,
   CheckIcon,
   ShieldIcon,
+  SparkleIcon,
   TagIcon,
   TruckIcon,
 } from "@/components/ui/icons";
@@ -36,10 +36,26 @@ export default function CheckoutPage() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Msimbo wa punguzo (promo).
+  // Msimbo wa punguzo (promo) — thibitishwa na server (DB).
   const [promoInput, setPromoInput] = useState("");
-  const [promo, setPromo] = useState<PromoApplied | null>(null);
+  const [promo, setPromo] = useState<{
+    code: string;
+    label: string;
+    freeShipping: boolean;
+    discountTsh: number;
+  } | null>(null);
   const [promoError, setPromoError] = useState("");
+  const [promoChecking, setPromoChecking] = useState(false);
+
+  // Kadi ya zawadi.
+  const [giftInput, setGiftInput] = useState("");
+  const [gift, setGift] = useState<{
+    code: string;
+    amountTsh: number;
+    recipient: string;
+  } | null>(null);
+  const [giftError, setGiftError] = useState("");
+  const [giftChecking, setGiftChecking] = useState(false);
 
   const shippingBase = useMemo(
     () =>
@@ -49,18 +65,62 @@ export default function CheckoutPage() {
     [region, subtotalTsh],
   );
 
-  const discountTsh = promo ? promo.discountTsh(subtotalTsh, shippingBase) : 0;
+  const discountTsh = promo
+    ? promo.freeShipping
+      ? 0
+      : promo.discountTsh
+    : 0;
   const shipping = promo?.freeShipping ? 0 : shippingBase;
-  const total = Math.max(0, subtotalTsh - (promo?.freeShipping ? 0 : discountTsh)) + shipping;
+  const beforeGift =
+    Math.max(0, subtotalTsh - (promo?.freeShipping ? 0 : discountTsh)) +
+    shipping;
+  const giftDiscountTsh = gift ? Math.min(gift.amountTsh, beforeGift) : 0;
+  const total = Math.max(0, beforeGift - giftDiscountTsh);
 
-  function applyPromoCode() {
-    const result = applyPromo(promoInput, subtotalTsh);
-    if (result.ok) {
-      setPromo(result);
+  async function applyPromoCode() {
+    if (promoChecking) return;
+    setPromoChecking(true);
+    setPromoError("");
+    try {
+      const data = await apiPost<{
+        ok: boolean;
+        promo: {
+          code: string;
+          label: string;
+          freeShipping: boolean;
+          discountTsh: number;
+        };
+      }>("/api/promo/validate", {
+        code: promoInput,
+        subtotalTsh,
+        shippingTsh: shippingBase,
+      });
+      setPromo(data.promo);
       setPromoError("");
-    } else {
+    } catch (err) {
       setPromo(null);
-      setPromoError(result.reason);
+      setPromoError(errorMessage(err));
+    } finally {
+      setPromoChecking(false);
+    }
+  }
+
+  async function applyGiftCard() {
+    if (giftChecking) return;
+    setGiftChecking(true);
+    setGiftError("");
+    try {
+      const data = await apiPost<{
+        ok: boolean;
+        giftCard: { code: string; amountTsh: number; recipient: string };
+      }>("/api/giftcards/validate", { code: giftInput });
+      setGift(data.giftCard);
+      setGiftError("");
+    } catch (err) {
+      setGift(null);
+      setGiftError(errorMessage(err));
+    } finally {
+      setGiftChecking(false);
     }
   }
 
@@ -92,6 +152,7 @@ export default function CheckoutPage() {
         payment,
         lines: lines.map((l) => ({ slug: l.product.slug, qty: l.qty })),
         promoCode: promo?.code,
+        giftCardCode: gift?.code,
       });
 
       // Stoo mpya kutoka server + oda imehifadhiwa kwenye DB.
@@ -311,6 +372,43 @@ export default function CheckoutPage() {
               </p>
             ) : null}
 
+            {/* Kadi ya zawadi */}
+            <div className="mt-3 flex gap-2">
+              <div className="flex flex-1 items-center gap-2 rounded-xl border border-cream-300 bg-surface px-3">
+                <SparkleIcon className="h-4 w-4 shrink-0 text-ink-400" />
+                <input
+                  value={giftInput}
+                  onChange={(e) => setGiftInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      void applyGiftCard();
+                    }
+                  }}
+                  placeholder="Msimbo wa kadi ya zawadi"
+                  aria-label="Msimbo wa kadi ya zawadi"
+                  className="w-full bg-transparent py-2.5 text-sm uppercase text-ink-900 outline-none placeholder:text-ink-400"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => void applyGiftCard()}
+                disabled={giftChecking}
+                className="btn-outline px-4 py-2 text-xs disabled:opacity-60"
+              >
+                {giftChecking ? "Inathibitisha…" : "Tumia"}
+              </button>
+            </div>
+            {giftError ? (
+              <p className="mt-2 text-xs text-danger-600">{giftError}</p>
+            ) : null}
+            {gift ? (
+              <p className="mt-2 flex items-center gap-1.5 text-xs text-success-600">
+                <CheckIcon className="h-3.5 w-3.5" />
+                Kadi {gift.code} — {formatTsh(gift.amountTsh)} imeongezwa.
+              </p>
+            ) : null}
+
             <dl className="mt-5 space-y-2 border-t border-cream-200 pt-4 text-sm">
               <div className="flex justify-between">
                 <dt className="text-ink-500">Jumla ndogo</dt>
@@ -320,6 +418,12 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-success-600">
                   <dt>Punguzo ({promo?.code})</dt>
                   <dd className="font-medium">−{formatTsh(discountTsh)}</dd>
+                </div>
+              ) : null}
+              {giftDiscountTsh > 0 ? (
+                <div className="flex justify-between text-success-600">
+                  <dt>Kadi ya zawadi ({gift?.code})</dt>
+                  <dd className="font-medium">−{formatTsh(giftDiscountTsh)}</dd>
                 </div>
               ) : null}
               <div className="flex justify-between">
