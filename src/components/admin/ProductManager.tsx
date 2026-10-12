@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { categories, type Product } from "@/lib/data/catalog";
 import { formatTsh } from "@/lib/format";
-import { tanzaniaRegions, tanzaniaCities, isRegion } from "@/lib/site";
 import {
   apiDelete,
   apiForm,
@@ -31,8 +30,6 @@ type Draft = {
   description: string;
   image: string;
   file: File | null;
-  region: string;
-  city: string;
 };
 
 const emptyDraft: Draft = {
@@ -47,8 +44,6 @@ const emptyDraft: Draft = {
   description: "",
   image: "",
   file: null,
-  region: "Dar es Salaam",
-  city: "Kinondoni",
 };
 
 /**
@@ -93,8 +88,6 @@ export function ProductManager() {
       description: product.description,
       image: product.image,
       file: null,
-      region: product.region ?? "",
-      city: product.city ?? "",
     });
   }
 
@@ -137,8 +130,6 @@ export function ProductManager() {
         shortDescription: draft.shortDescription,
         description: draft.description,
         stock: Math.max(0, Math.floor(Number(draft.stock) || 0)),
-        region: draft.region,
-        city: draft.city,
       };
 
       if (draft.mode === "create") {
@@ -414,57 +405,6 @@ export function ProductManager() {
                   className={field}
                   inputMode="numeric"
                 />
-              </label>
-
-              <label className="block text-sm">
-                <span className="mb-1.5 block font-medium text-ink-700">
-                  Mkoa (eneo)
-                </span>
-                <select
-                  value={draft.region}
-                  onChange={(e) => {
-                    const region = e.target.value;
-                    const cities = isRegion(region)
-                      ? tanzaniaCities[region]
-                      : [];
-                    setDraft({
-                      ...draft,
-                      region,
-                      city: cities.includes(draft.city)
-                        ? draft.city
-                        : (cities[0] ?? ""),
-                    });
-                  }}
-                  className={field}
-                >
-                  <option value="">Mkoa wowote</option>
-                  {tanzaniaRegions.map((r) => (
-                    <option key={r} value={r}>
-                      {r}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="block text-sm">
-                <span className="mb-1.5 block font-medium text-ink-700">
-                  Mji
-                </span>
-                <select
-                  value={draft.city}
-                  onChange={(e) => setDraft({ ...draft, city: e.target.value })}
-                  disabled={!isRegion(draft.region)}
-                  className={field}
-                >
-                  <option value="">Mji wowote</option>
-                  {isRegion(draft.region)
-                    ? tanzaniaCities[draft.region].map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))
-                    : null}
-                </select>
               </label>
 
               <label className="block text-sm sm:col-span-2">

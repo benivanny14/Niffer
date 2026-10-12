@@ -170,6 +170,17 @@ export async function currentCustomer(): Promise<Customer | null> {
   return row ? toCustomer(row) : null;
 }
 
+/* ============ Admin: wateja wote ============ */
+
+export function listAllCustomers(limit = 500): Customer[] {
+  const rows = getDb()
+    .prepare(
+      "SELECT * FROM customers ORDER BY created_at DESC LIMIT ?",
+    )
+    .all(limit) as unknown as CustomerRow[];
+  return rows.map(toCustomer);
+}
+
 /* ============ Oda zangu ============ */
 
 /**

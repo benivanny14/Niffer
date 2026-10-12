@@ -118,6 +118,18 @@ CREATE TABLE IF NOT EXISTS notifications (
   created_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS customer_notifications (
+  id          TEXT PRIMARY KEY,
+  customer_id TEXT,
+  phone       TEXT NOT NULL DEFAULT '',
+  order_code  TEXT NOT NULL DEFAULT '',
+  kind        TEXT NOT NULL DEFAULT 'info',
+  title       TEXT NOT NULL,
+  body        TEXT NOT NULL DEFAULT '',
+  status      TEXT NOT NULL DEFAULT 'new',
+  created_at  TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS wishlists (
   customer_id TEXT NOT NULL,
   slug        TEXT NOT NULL,

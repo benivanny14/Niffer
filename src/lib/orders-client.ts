@@ -47,6 +47,8 @@ export type CreateOrderPayload = {
     name: string;
     phone: string;
     region: string;
+    city?: string;
+    street?: string;
     address: string;
     note?: string;
     email?: string;

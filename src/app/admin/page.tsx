@@ -34,6 +34,7 @@ type Tab =
   | "muhtasari"
   | "bidhaa"
   | "oda"
+  | "wateja"
   | "jumla"
   | "hakiki"
   | "promo"
@@ -47,6 +48,7 @@ type Stats = {
   subscribers: number;
   giftCards: number;
   lowStock: { slug: string; qty: number }[];
+  soldBySlug?: Record<string, number>;
   reviews?: { pending: number };
   notifications?: { unread: number };
 };
@@ -99,6 +101,14 @@ type GiftCardRecord = {
   recipient: string;
   message: string;
   status: string;
+  createdAt: string;
+};
+
+type CustomerRecord = {
+  id: string;
+  name: string;
+  phone: string;
+  email: string | null;
   createdAt: string;
 };
 
@@ -240,10 +250,11 @@ function AdminDashboard() {
     notifications: NotificationRecord[];
     subscribers: SubscriberRecord[];
     giftCards: GiftCardRecord[];
+    customers: CustomerRecord[];
   }>(
     "admin-data",
     async () => {
-      const [s, m, r, rv, pr, nt, nl, gc] = await Promise.all([
+      const [s, m, r, rv, pr, nt, nl, gc, cu] = await Promise.all([
         apiGet<Stats>("/api/stats"),
         apiGet<{ ok: boolean; messages: MessageRecord[] }>("/api/messages"),
         apiGet<{ ok: boolean; rfqs: RfqRecord[] }>("/api/rfq"),
@@ -260,6 +271,9 @@ function AdminDashboard() {
         apiGet<{ ok: boolean; giftCards: GiftCardRecord[] }>(
           "/api/giftcards",
         ),
+        apiGet<{ ok: boolean; customers: CustomerRecord[] }>(
+          "/api/customers/list",
+        ),
       ]);
       return {
         stats: s,
@@ -270,6 +284,7 @@ function AdminDashboard() {
         notifications: nt.notifications,
         subscribers: nl.subscribers,
         giftCards: gc.giftCards,
+        customers: cu.customers,
       };
     },
     { intervalMs: 60_000 },
@@ -283,6 +298,7 @@ function AdminDashboard() {
   const notifications = adminData.data?.notifications ?? [];
   const subscribers = adminData.data?.subscribers ?? [];
   const giftCards = adminData.data?.giftCards ?? [];
+  const customers = adminData.data?.customers ?? [];
   const dataError = adminData.error;
 
   // Oda zote za server (DB) — demo zimeondolewa.
@@ -302,6 +318,7 @@ function AdminDashboard() {
     { id: "muhtasari", label: "Muhtasari" },
     { id: "bidhaa", label: "Bidhaa" },
     { id: "oda", label: `Oda (${allOrders.length})` },
+    { id: "wateja", label: `Wateja (${customers.length})` },
     { id: "jumla", label: `Jumla${newRfqs ? ` (${newRfqs})` : ""}` },
     {
       id: "hakiki",
@@ -374,6 +391,7 @@ function AdminDashboard() {
         ) : null}
         {tab === "bidhaa" ? <ProductManager /> : null}
         {tab === "oda" ? <OdaTab orders={allOrders} loading={loading} onRefresh={refresh} /> : null}
+        {tab === "wateja" ? <WatejaTab customers={customers} /> : null}
         {tab === "jumla" ? (
           <JumlaTab rfqs={rfqs} onChanged={() => adminData.refresh()} />
         ) : null}
@@ -419,6 +437,20 @@ function Muhtasari({
   });
 
   const revenue = stats?.orders.revenueTsh ?? 0;
+
+  // Bidhaa zilizouzwa vs zilizobaki.
+  const soldBySlug = stats?.soldBySlug ?? {};
+  const productSales = products
+    .map((p) => ({
+      slug: p.slug,
+      name: p.name,
+      sold: soldBySlug[p.slug] ?? 0,
+      stock: stats?.lowStock.find((l) => l.slug === p.slug)?.qty ?? p.stock,
+    }))
+    .sort((a, b) => b.sold - a.sold);
+
+  const totalSold = productSales.reduce((sum, p) => sum + p.sold, 0);
+  const totalStock = productSales.reduce((sum, p) => sum + p.stock, 0);
 
   const cards = [
     { icon: BagIcon, label: "Oda zote", value: `${orders.length}` },
@@ -483,6 +515,76 @@ function Muhtasari({
           </p>
         </div>
       </div>
+
+      {/* Bidhaa zilizouzwa vs zilizobaki */}
+      <section className="mt-10">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-display text-xl text-ink-900">
+            Muuzaji wa bidhaa
+          </h2>
+          <p className="text-sm text-ink-500">
+            Zilizouzwa: <span className="font-semibold text-ink-900">{totalSold}</span>
+            {" · "}
+            Zilizobaki: <span className="font-semibold text-ink-900">{totalStock}</span>
+          </p>
+        </div>
+        {productSales.length === 0 ? (
+          <p className="mt-3 text-sm text-ink-500">Hakuna bidhaa bado.</p>
+        ) : (
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-cream-300 text-left text-xs uppercase tracking-wide text-ink-400">
+                  <th className="pb-2 pr-4">Bidhaa</th>
+                  <th className="pb-2 pr-4 text-right">Zilizouzwa</th>
+                  <th className="pb-2 pr-4 text-right">Zilizobaki</th>
+                  <th className="pb-2 text-right">Hali</th>
+                </tr>
+              </thead>
+              <tbody>
+                {productSales.map((p) => (
+                  <tr key={p.slug} className="border-b border-cream-200">
+                    <td className="py-2 pr-4 font-medium text-ink-900">
+                      {p.name}
+                    </td>
+                    <td className="py-2 pr-4 text-right font-semibold text-accent">
+                      {p.sold}
+                    </td>
+                    <td className="py-2 pr-4 text-right">
+                      <span
+                        className={
+                          p.stock === 0
+                            ? "font-semibold text-danger-600"
+                            : p.stock <= 10
+                              ? "font-semibold text-warning-600"
+                              : "text-ink-700"
+                        }
+                      >
+                        {p.stock}
+                      </span>
+                    </td>
+                    <td className="py-2 text-right">
+                      {p.stock === 0 ? (
+                        <span className="badge bg-danger-100 text-danger-600">
+                          Imeisha
+                        </span>
+                      ) : p.stock <= 10 ? (
+                        <span className="badge bg-warning-100 text-warning-600">
+                          Kidogo
+                        </span>
+                      ) : (
+                        <span className="badge bg-success-100 text-success-600">
+                          Sawa
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       {/* Oda za hivi karibuni */}
       <section className="mt-10">
@@ -586,6 +688,48 @@ function Muhtasari({
   );
 }
 
+/* ============ Wateja ============ */
+function WatejaTab({ customers }: { customers: CustomerRecord[] }) {
+  if (customers.length === 0) {
+    return (
+      <div className="card p-6 text-sm text-ink-500">
+        Bado hakuna akaunti za wateja zilizosajiliwa.
+      </div>
+    );
+  }
+
+  return (
+    <div className="card overflow-x-auto">
+      <table className="w-full min-w-[560px] text-left text-sm">
+        <thead>
+          <tr className="border-b border-cream-300 text-xs uppercase tracking-wide text-ink-400">
+            <th className="px-5 py-3 font-semibold">Jina</th>
+            <th className="px-5 py-3 font-semibold">Simu</th>
+            <th className="px-5 py-3 font-semibold">Barua pepe</th>
+            <th className="px-5 py-3 font-semibold">Alijiunga</th>
+          </tr>
+        </thead>
+        <tbody>
+          {customers.map((c) => (
+            <tr key={c.id} className="border-b border-cream-200 last:border-0">
+              <td className="px-5 py-3 font-medium text-ink-900">{c.name}</td>
+              <td className="px-5 py-3 text-ink-700">
+                {formatPhone(c.phone)}
+              </td>
+              <td className="px-5 py-3 text-ink-500">
+                {c.email || "—"}
+              </td>
+              <td className="px-5 py-3 text-ink-400">
+                {new Date(c.createdAt).toLocaleDateString("sw-TZ")}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 /* ============ Oda ============ */
 function OdaTab({
   orders,
@@ -599,6 +743,12 @@ function OdaTab({
   const [filter, setFilter] = useState<"zote" | OrderStatus>("zote");
   const [savingCode, setSavingCode] = useState("");
   const [actionError, setActionError] = useState("");
+  const [notifyCode, setNotifyCode] = useState("");
+  const [notifyTitle, setNotifyTitle] = useState("");
+  const [notifyBody, setNotifyBody] = useState("");
+  const [notifySending, setNotifySending] = useState(false);
+  const [notifyError, setNotifyError] = useState("");
+  const [notifyOk, setNotifyOk] = useState("");
 
   const filtered = orders.filter((o) => {
     if (filter === "zote") return true;
@@ -618,6 +768,27 @@ function OdaTab({
     }
   }
 
+  async function sendNotification(code: string) {
+    if (notifySending) return;
+    setNotifySending(true);
+    setNotifyError("");
+    setNotifyOk("");
+    try {
+      await apiPost(`/api/orders/${encodeURIComponent(code)}/notify`, {
+        title: notifyTitle,
+        body: notifyBody,
+      });
+      setNotifyOk(`Ujumbe umetumwa kwa mteja wa ${code}.`);
+      setNotifyCode("");
+      setNotifyTitle("");
+      setNotifyBody("");
+    } catch (err) {
+      setNotifyError(errorMessage(err));
+    } finally {
+      setNotifySending(false);
+    }
+  }
+
   /** Pakua oda zilizochujwa kama CSV (Excel / Google Sheets). */
   function exportCsv() {
     const header = [
@@ -627,6 +798,8 @@ function OdaTab({
       "Jina",
       "Simu",
       "Mkoa",
+      "Mji",
+      "Mtaa",
       "Bidhaa",
       "Jumla ndogo",
       "Usafirishaji",
@@ -641,6 +814,8 @@ function OdaTab({
       o.customer.name,
       o.customer.phone,
       o.customer.region,
+      o.customer.city ?? "",
+      o.customer.street ?? "",
       o.lines.map((l) => `${l.slug} x${l.qty}`).join(" + "),
       o.subtotalTsh,
       o.shippingTsh,
@@ -696,6 +871,72 @@ function OdaTab({
         <p className="mt-4 rounded-lg bg-danger-100 px-3 py-2 text-sm text-danger-600">
           {actionError}
         </p>
+      ) : null}
+      {notifyOk ? (
+        <p className="mt-4 rounded-lg bg-success-100 px-3 py-2 text-sm text-success-600">
+          {notifyOk}
+        </p>
+      ) : null}
+
+      {/* Fomu ya kutuma ujumbe kwa mteja */}
+      {notifyCode ? (
+        <div className="card mt-4 border-brand-200 bg-brand-50 p-5">
+          <h3 className="font-display text-lg text-ink-900">
+            Tuma ujumbe kwa {notifyCode}
+          </h3>
+          <div className="mt-3 space-y-3">
+            <label className="block text-sm">
+              <span className="mb-1 block font-medium text-ink-700">
+                Kichwa *
+              </span>
+              <input
+                required
+                value={notifyTitle}
+                onChange={(e) => setNotifyTitle(e.target.value)}
+                className={field}
+                placeholder="Mfano: Mzigo wako umetumwa"
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="mb-1 block font-medium text-ink-700">
+                Ujumbe
+              </span>
+              <textarea
+                value={notifyBody}
+                onChange={(e) => setNotifyBody(e.target.value)}
+                rows={3}
+                className={field}
+                placeholder="Maelezo ya ziada kwa mteja…"
+              />
+            </label>
+            {notifyError ? (
+              <p className="rounded-lg bg-danger-100 px-3 py-2 text-sm text-danger-600">
+                {notifyError}
+              </p>
+            ) : null}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={notifySending || !notifyTitle.trim()}
+                onClick={() => void sendNotification(notifyCode)}
+                className="btn-primary px-4 py-2 text-sm disabled:opacity-60"
+              >
+                {notifySending ? "Inatuma…" : "Tuma Ujumbe"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setNotifyCode("");
+                  setNotifyTitle("");
+                  setNotifyBody("");
+                }}
+                className="btn-outline px-4 py-2 text-sm"
+              >
+                Ghairi
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
 
       {loading && orders.length === 0 ? (
@@ -756,11 +997,16 @@ function OdaTab({
                     </p>
                   </div>
                   <div>
-                    <p className="text-ink-400">Anwani</p>
+                    <p className="text-ink-400">Eneo la kuwasilisha</p>
                     <p className="font-medium text-ink-900">
-                      {order.customer.region}
+                      {[order.customer.city, order.customer.region]
+                        .filter(Boolean)
+                        .join(", ")}
                     </p>
-                    <p className="truncate text-ink-500">
+                    <p className="text-ink-500">
+                      {order.customer.street || "—"}
+                    </p>
+                    <p className="truncate text-xs text-ink-400">
                       {order.customer.address}
                     </p>
                   </div>
@@ -786,8 +1032,22 @@ function OdaTab({
                 {/* Sasisha hatua (oda halisi pekee) */}
                 {!order.demo ? (
                   <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-cream-200 pt-3">
+                    {/* Thibitisha haraka (mpokelewa → inaendelea) */}
+                    {status === "imapokelewa" ? (
+                      <button
+                        type="button"
+                        onClick={() => void changeStatus(order.code, "inaendelea")}
+                        disabled={savingCode === order.code}
+                        className="rounded-full bg-success-100 px-3 py-1 text-xs font-semibold text-success-600 transition-colors hover:bg-success-200 disabled:opacity-60"
+                      >
+                        {savingCode === order.code
+                          ? "Inathibitisha…"
+                          : "✓ Thibitisha Oda"}
+                      </button>
+                    ) : null}
+
                     <span className="text-xs font-medium text-ink-500">
-                      Sasisha hatua:
+                      Hatua:
                     </span>
                     {statusSteps.map((step) => (
                       <button
@@ -806,6 +1066,22 @@ function OdaTab({
                           : step.label}
                       </button>
                     ))}
+
+                    {/* Tuma ujumbe kwa mteja */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNotifyCode(order.code);
+                        setNotifyTitle("");
+                        setNotifyBody("");
+                        setNotifyError("");
+                        setNotifyOk("");
+                      }}
+                      className="ml-auto rounded-full bg-brand-100 px-3 py-1 text-xs font-medium text-accent transition-colors hover:bg-brand-200"
+                    >
+                      <ChatIcon className="mr-1 inline h-3 w-3" />
+                      Tuma ujumbe
+                    </button>
                   </div>
                 ) : (
                   <p className="mt-3 border-t border-cream-200 pt-3 text-xs text-ink-400">

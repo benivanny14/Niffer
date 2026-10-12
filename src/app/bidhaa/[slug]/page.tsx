@@ -17,7 +17,6 @@ import { BuyBox } from "@/components/catalog/BuyBox";
 import { ReviewForm } from "@/components/ui/ReviewForm";
 import {
   ArrowRightIcon,
-  MapPinIcon,
   ShieldIcon,
   SparkleIcon,
   TruckIcon,
@@ -207,13 +206,6 @@ async function ProductDetail({ params }: PageProps) {
               <ShieldIcon className="h-4 w-4 shrink-0 text-brand-600" />
               Bidhaa halisi 100% · malipo poa baada ya kupokea
             </li>
-            {product.region || product.city ? (
-              <li className="flex items-center gap-2.5">
-                <MapPinIcon className="h-4 w-4 shrink-0 text-brand-600" />
-                Inapatikana:{" "}
-                {[product.city, product.region].filter(Boolean).join(", ")}
-              </li>
-            ) : null}
           </ul>
 
           <BuyBox product={product} />

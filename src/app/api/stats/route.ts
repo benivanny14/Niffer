@@ -11,6 +11,7 @@ import {
 } from "@/lib/server/leads";
 import { countUnreadNotifications } from "@/lib/server/notify";
 import { catalogStats } from "@/lib/server/catalog";
+import { getDb } from "@/lib/server/db";
 
 /** Takwimu za dashibodi ya admin. */
 export async function GET() {
@@ -26,6 +27,28 @@ export async function GET() {
       .map(([slug, qty]) => ({ slug, qty }))
       .sort((a, b) => a.qty - b.qty);
 
+    // Bidhaa zilizouzwa (jumla ya qty kwenye oda zote).
+    const soldBySlug: Record<string, number> = {};
+    try {
+      const rows = getDb()
+        .prepare(
+          `SELECT lines FROM orders WHERE demo = 0`,
+        )
+        .all() as { lines: string }[];
+      for (const row of rows) {
+        try {
+          const lines = JSON.parse(row.lines) as { slug: string; qty: number }[];
+          for (const line of lines) {
+            soldBySlug[line.slug] = (soldBySlug[line.slug] ?? 0) + line.qty;
+          }
+        } catch {
+          /* lines si JSON sahihi */
+        }
+      }
+    } catch {
+      /* DB haijasoma */
+    }
+
     return json({
       ok: true,
       orders: orderStats(),
@@ -37,6 +60,7 @@ export async function GET() {
       subscribers: countSubscribers(),
       giftCards: listGiftCards(200).length,
       lowStock,
+      soldBySlug,
       reviews: { pending: countPendingReviews() },
       notifications: { unread: countUnreadNotifications() },
     });

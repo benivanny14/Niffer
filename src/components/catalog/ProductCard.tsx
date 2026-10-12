@@ -8,7 +8,6 @@ import { ProductImage } from "@/components/media/ProductImage";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { useStock } from "@/lib/stock";
-import { MapPinIcon } from "@/components/ui/icons";
 
 const badgeStyles: Record<Product["badges"][number], string> = {
   new: "bg-success-100 text-success-600",
@@ -80,13 +79,6 @@ export function ProductCard({ product }: { product: Product }) {
           {product.shortDescription}
         </p>
         <RatingStars rating={product.rating} reviewCount={product.reviewCount} />
-
-        {product.region || product.city ? (
-          <span className="flex items-center gap-1 text-xs text-ink-400">
-            <MapPinIcon className="h-3.5 w-3.5 shrink-0 text-brand-600" />
-            {[product.city, product.region].filter(Boolean).join(", ")}
-          </span>
-        ) : null}
 
         <div className="mt-1 flex items-baseline gap-2">
           <span className="text-lg font-semibold text-ink-900">

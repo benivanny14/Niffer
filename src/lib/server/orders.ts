@@ -2,6 +2,7 @@ import { getDb, nowIso } from "@/lib/server/db";
 import { makeOrderCode, formatTsh } from "@/lib/format";
 import { applyPromoFromDb } from "@/lib/server/promo";
 import { notifyAdmin } from "@/lib/server/notify";
+import { notifyCustomer } from "@/lib/server/customer-notify";
 import { InputError } from "@/lib/server/errors";
 import { getGiftCard, redeemGiftCard } from "@/lib/server/leads";
 import { products } from "@/lib/data/catalog";
@@ -155,6 +156,8 @@ export function createOrder(input: CreateOrderInput): {
     name: (input.customer?.name ?? "").trim(),
     phone: (input.customer?.phone ?? "").trim(),
     region: (input.customer?.region ?? "").trim(),
+    city: input.customer?.city?.trim() || undefined,
+    street: input.customer?.street?.trim() || undefined,
     address: (input.customer?.address ?? "").trim(),
     note: input.customer?.note?.trim() || undefined,
     email: input.customer?.email?.trim() || undefined,
@@ -165,6 +168,10 @@ export function createOrder(input: CreateOrderInput): {
     throw new InputError("Weka namba sahihi ya simu (mfano 0754 000 000).");
   }
   if (!customer.region) throw new InputError("Chagua mkoa wako.");
+  if (!customer.city) throw new InputError("Chagua mji / wilaya yako.");
+  if (!customer.street || customer.street.length < 2) {
+    throw new InputError("Weka mtaa / kata yako.");
+  }
   if (customer.address.length < 5) {
     throw new InputError("Weka anwani kamili ya kuwasilishwa.");
   }
@@ -305,11 +312,22 @@ export function createOrder(input: CreateOrderInput): {
   }
 
   // Arifa kwa admin (DB + barua pepe nyepesi).
+  const location = [customer.city, customer.region].filter(Boolean).join(", ");
   notifyAdmin({
     kind: "oda",
     title: `Oda mpya ${code}`,
-    body: `${customer.name} (${customer.phone}) — ${formatTsh(totalTsh)}. Bidhaa: ${lines.map((l) => `${l.slug} ×${l.qty}`).join(", ")}`,
+    body: `${customer.name} (${customer.phone}) — ${formatTsh(totalTsh)}. Bidhaa: ${lines.map((l) => `${l.slug} ×${l.qty}`).join(", ")}. Eneo: ${location}, ${customer.street}`,
     ref: `/admin`,
+  });
+
+  // Arifa kwa mteja: oda yako imepokelewa.
+  notifyCustomer({
+    customerId: input.customerId,
+    phone: customer.phone,
+    orderCode: code,
+    kind: "oda",
+    title: `Oda yako ${code} imepokelewa`,
+    body: `Tumepokea oda yako ya ${formatTsh(totalTsh)}. Tutakuarifu unapoanza kuandaliwa. Fuatilia hali yake kwenye ukurasa wa oda.`,
   });
 
   const order = getOrder(code);

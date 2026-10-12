@@ -28,6 +28,10 @@ export type Order = {
     name: string;
     phone: string;
     region: string;
+    /** Mji / wilaya (kutoka tanzaniaCities). */
+    city?: string;
+    /** Mtaa / kata / eneo la karibu. */
+    street?: string;
     address: string;
     note?: string;
     email?: string;

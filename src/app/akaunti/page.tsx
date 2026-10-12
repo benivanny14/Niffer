@@ -8,10 +8,11 @@ import { getProductBySlug } from "@/lib/data/catalog";
 import { formatTsh, formatPhone } from "@/lib/format";
 import { site } from "@/lib/site";
 import { useStore } from "@/lib/store";
-import { apiGet, apiPut, apiPost, errorMessage } from "@/lib/api";
+import { apiGet, apiPut, apiPatch, apiPost, errorMessage } from "@/lib/api";
 import { useAsync } from "@/lib/use-async";
 import {
   BagIcon,
+  ChatIcon,
   HeartIcon,
   MapPinIcon,
   ShieldIcon,
@@ -24,6 +25,16 @@ type Customer = {
   name: string;
   phone: string;
   email: string | null;
+};
+
+type CustomerNotification = {
+  id: string;
+  orderCode: string;
+  kind: string;
+  title: string;
+  body: string;
+  status: "new" | "read";
+  createdAt: string;
 };
 
 const field =
@@ -290,6 +301,21 @@ function Dashboard({
     },
   );
 
+  // Arifa za mteja (ujumbe wa admin).
+  const notifData = useAsync<{
+    notifications: CustomerNotification[];
+    unread: number;
+  }>(`my-notifs:${customer.id}`, async () => {
+    return apiGet<{
+      ok: boolean;
+      notifications: CustomerNotification[];
+      unread: number;
+    }>("/api/customers/notifications");
+  });
+
+  const notifications = notifData.data?.notifications ?? [];
+  const unreadNotifs = notifData.data?.unread ?? 0;
+
   const myOrders = data ?? [];
   const spentTsh = myOrders.reduce((sum, o) => sum + o.totalTsh, 0);
 
@@ -365,6 +391,76 @@ function Dashboard({
         </Link>
       </div>
 
+      {/* Arifa kutoka kwa admin */}
+      {notifications.length > 0 ? (
+        <section className="mt-10">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-2xl text-ink-900">
+              Arifa
+              {unreadNotifs > 0 ? (
+                <span className="ml-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-700 text-xs font-bold text-white">
+                  {unreadNotifs}
+                </span>
+              ) : null}
+            </h2>
+            {unreadNotifs > 0 ? (
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await apiPatch("/api/customers/notifications", {
+                      all: true,
+                    });
+                    notifData.refresh();
+                  } catch {
+                    /* tp */
+                  }
+                }}
+                className="text-sm text-accent hover:underline"
+              >
+                Zisome zote
+              </button>
+            ) : null}
+          </div>
+          <ul className="mt-4 space-y-2">
+            {notifications.slice(0, 10).map((n) => (
+              <li
+                key={n.id}
+                className={`card flex flex-wrap items-start gap-3 p-4 ${
+                  n.status === "new" ? "border-brand-200 bg-brand-50" : ""
+                }`}
+              >
+                <ChatIcon className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-ink-900">{n.title}</p>
+                  {n.body ? (
+                    <p className="mt-0.5 text-sm text-ink-500">{n.body}</p>
+                  ) : null}
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-ink-400">
+                    {n.orderCode ? (
+                      <Link
+                        href={`/odha/${n.orderCode}`}
+                        className="font-mono font-semibold text-accent hover:underline"
+                      >
+                        {n.orderCode}
+                      </Link>
+                    ) : null}
+                    <span>
+                      {new Date(n.createdAt).toLocaleString("sw-TZ")}
+                    </span>
+                    {n.status === "new" ? (
+                      <span className="badge bg-brand-100 text-accent">
+                        Mpya
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       {/* Oda zangu */}
       <section className="mt-12">
         <h2 className="font-display text-2xl text-ink-900">Oda zangu</h2>
@@ -413,7 +509,10 @@ function Dashboard({
                       </div>
                       <p className="mt-1 text-sm text-ink-500">
                         {new Date(order.createdAt).toLocaleDateString("sw-TZ")} ·{" "}
-                        {order.lines.length} bidhaa · {order.customer.region}
+                        {order.lines.length} bidhaa ·{" "}
+                        {[order.customer.city, order.customer.region]
+                          .filter(Boolean)
+                          .join(", ")}
                       </p>
                       <p className="mt-0.5 truncate text-xs text-ink-400">
                         {order.lines

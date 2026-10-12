@@ -187,7 +187,14 @@ export default function OrderPage() {
           </div>
           <div>
             <p className="text-ink-500">Kuwasilishwa</p>
-            <p className="font-medium text-ink-900">{order.customer.region}</p>
+            <p className="font-medium text-ink-900">
+              {[order.customer.city, order.customer.region]
+                .filter(Boolean)
+                .join(", ")}
+            </p>
+            {order.customer.street ? (
+              <p className="text-ink-500">{order.customer.street}</p>
+            ) : null}
             <p className="text-ink-500">{order.customer.address}</p>
           </div>
           <div>

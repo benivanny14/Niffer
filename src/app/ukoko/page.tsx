@@ -9,6 +9,7 @@ import {
   paymentMethods,
   site,
   tanzaniaRegions,
+  tanzaniaCities,
   type PaymentId,
 } from "@/lib/site";
 import { createOrder, pushOrder } from "@/lib/orders-client";
@@ -30,6 +31,8 @@ export default function CheckoutPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [region, setRegion] = useState<string>(tanzaniaRegions[0]);
+  const [city, setCity] = useState<string>("");
+  const [street, setStreet] = useState("");
   const [address, setAddress] = useState("");
   const [note, setNote] = useState("");
   const [payment, setPayment] = useState<PaymentId>("mpesa");
@@ -56,6 +59,8 @@ export default function CheckoutPage() {
   } | null>(null);
   const [giftError, setGiftError] = useState("");
   const [giftChecking, setGiftChecking] = useState(false);
+
+  const cities = tanzaniaCities[region as keyof typeof tanzaniaCities] ?? [];
 
   const shippingBase = useMemo(
     () =>
@@ -131,6 +136,14 @@ export default function CheckoutPage() {
       setError("Weka namba sahihi ya simu (mfano 0754 000 000).");
       return;
     }
+    if (!city) {
+      setError("Chagua mji / wilaya yako.");
+      return;
+    }
+    if (!street.trim()) {
+      setError("Weka mtaa / kata yako.");
+      return;
+    }
     // Kizuizi cha haraka kwenye client (server ndio huthibitisha tena).
     for (const line of lines) {
       const available = getStock(line.product.slug);
@@ -148,7 +161,7 @@ export default function CheckoutPage() {
 
     try {
       const { order, stock } = await createOrder({
-        customer: { name, phone, region, address, note },
+        customer: { name, phone, region, city, street, address, note },
         payment,
         lines: lines.map((l) => ({ slug: l.product.slug, qty: l.qty })),
         promoCode: promo?.code,
@@ -228,21 +241,58 @@ export default function CheckoutPage() {
             </label>
           </div>
 
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block text-sm">
+              <span className="mb-1.5 block font-medium text-ink-700">
+                Mkoa *
+              </span>
+              <select
+                value={region}
+                onChange={(e) => {
+                  setRegion(e.target.value);
+                  setCity("");
+                }}
+                className={field}
+              >
+                {tanzaniaRegions.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block text-sm">
+              <span className="mb-1.5 block font-medium text-ink-700">
+                Mji / Wilaya *
+              </span>
+              <select
+                required
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className={field}
+              >
+                <option value="">Chagua mji…</option>
+                {cities.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
           <label className="block text-sm">
             <span className="mb-1.5 block font-medium text-ink-700">
-              Mkoa *
+              Mtaa / Kata *
             </span>
-            <select
-              value={region}
-              onChange={(e) => setRegion(e.target.value)}
+            <input
+              required
+              value={street}
+              onChange={(e) => setStreet(e.target.value)}
               className={field}
-            >
-              {tanzaniaRegions.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
+              placeholder="Mfano: Mikocheni B, Mtaa wa Uhuru"
+              minLength={2}
+            />
           </label>
 
           <label className="block text-sm">
@@ -255,7 +305,7 @@ export default function CheckoutPage() {
               onChange={(e) => setAddress(e.target.value)}
               rows={3}
               className={field}
-              placeholder="Mtaa, kata, jina la nyumba au ofisi…"
+              placeholder="Jina la nyumba, ofisi, alama ya njia…"
             />
           </label>
 
