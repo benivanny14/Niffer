@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { site, waLink, tanzaniaRegions } from "@/lib/site";
+import { apiPost, errorMessage } from "@/lib/api";
 import { ChatIcon, CheckIcon } from "@/components/ui/icons";
 
 const field =
-  "w-full rounded-xl border border-cream-300 bg-white px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
+  "w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
 
-/** Fomu ya ombi la jumla — hutuma kwa WhatsApp (hakuna backend bado). */
+/** Fomu ya ombi la jumla — huhifadhi ombi kwenye backend (+ WhatsApp). */
 export function WholesaleForm() {
   const [business, setBusiness] = useState("");
   const [name, setName] = useState("");
@@ -16,23 +17,44 @@ export function WholesaleForm() {
   const [qty, setQty] = useState("");
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
+  const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (sending) return;
     if (!/^[0-9+\s]{9,15}$/.test(phone.trim())) {
       setError("Weka namba sahihi ya simu (mfano 0754 000 000).");
       return;
     }
     setError("");
-    const text =
-      `Habari ${site.name}, naomba bei ya jumla.\n` +
-      `Biashara: ${business}\nMtu: ${name}\nSimu: ${phone}\n` +
-      `Mkoa: ${region}\nWingi unaohitaji: ${qty || "—"}` +
-      (note ? `\nMaelezo: ${note}` : "");
-    window.open(waLink(text), "_blank", "noopener");
-    setDone(true);
+    setSending(true);
+    try {
+      await apiPost("/api/messages", {
+        kind: "wholesale",
+        name: `${name} (${business})`,
+        phone,
+        body: {
+          business,
+          person: name,
+          region,
+          quantity: qty,
+          note,
+        },
+      });
+      setDone(true);
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSending(false);
+    }
   }
+
+  const waText =
+    `Habari ${site.name}, naomba bei ya jumla.\n` +
+    `Biashara: ${business}\nMtu: ${name}\nSimu: ${phone}\n` +
+    `Mkoa: ${region}\nWingi unaohitaji: ${qty || "—"}` +
+    (note ? `\nMaelezo: ${note}` : "");
 
   if (done) {
     return (
@@ -41,9 +63,16 @@ export function WholesaleForm() {
           <CheckIcon className="h-5 w-5" />
         </span>
         <p className="text-sm text-ink-700">
-          Asante! Ombi lako limetumwa kwa WhatsApp. Tutakupigia simu ndani ya
-          saa 24.
+          Asante! Ombi lako limepokelewa. Tutakupigia simu ndani ya saa 24.
         </p>
+        <a
+          href={waLink(waText)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ml-auto shrink-0 text-sm font-semibold text-accent hover:underline"
+        >
+          Tuma kwa WhatsApp →
+        </a>
       </div>
     );
   }
@@ -133,9 +162,13 @@ export function WholesaleForm() {
           {error}
         </p>
       ) : null}
-      <button type="submit" className="btn-primary w-full">
+      <button
+        type="submit"
+        disabled={sending}
+        className="btn-primary w-full disabled:opacity-60"
+      >
         <ChatIcon className="h-4 w-4" />
-        Tuma Ombi kwa WhatsApp
+        {sending ? "Inatuma ombi…" : "Tuma Ombi la Jumla"}
       </button>
     </form>
   );

@@ -48,6 +48,19 @@ export function setStock(slug: string, qty: number) {
   stockStore.set({ ...stockStore.get(), [slug]: Math.max(0, qty) });
 }
 
+/**
+ * Pakia stoo kutoka kwenye API (server ndio mwanzo wa ukweli).
+ * Hutumika baada ya checkout, kufungua duka na marekebisho ya admin.
+ */
+export function applyServerStock(next: Record<string, number>) {
+  const current = stockStore.get();
+  const merged: Record<string, number> = { ...current };
+  for (const [slug, qty] of Object.entries(next)) {
+    merged[slug] = Math.max(0, Math.floor(qty));
+  }
+  stockStore.set(merged);
+}
+
 /** Punguza stoo (unaponunua). Hauwezi kupungua chini ya sifuri. */
 export function decrementStock(lines: { slug: string; qty: number }[]) {
   const next = { ...stockStore.get() };

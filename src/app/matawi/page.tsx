@@ -84,7 +84,7 @@ export default function BranchesPage() {
                 <PhoneIcon className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
                 <a
                   href={`tel:${branch.phoneTel}`}
-                  className="transition-colors hover:text-brand-700"
+                  className="transition-colors hover:text-accent"
                 >
                   {branch.phone}
                 </a>
@@ -133,7 +133,7 @@ export default function BranchesPage() {
           <p className="text-sm text-ink-500">
             Tawi kuu: {site.address} · {site.hours}
           </p>
-          <Link href="/wasiliana" className="text-sm font-semibold text-brand-700 hover:underline">
+          <Link href="/wasiliana" className="text-sm font-semibold text-accent hover:underline">
             Wasiliana nasi →
           </Link>
         </div>

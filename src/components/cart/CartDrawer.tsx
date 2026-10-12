@@ -38,7 +38,7 @@ export function CartDrawer({ open, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Kikapu chako">
       <div
-        className="absolute inset-0 bg-ink-900/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden
       />
@@ -74,7 +74,7 @@ export function CartDrawer({ open, onClose }: Props) {
           <>
             <div className="flex-1 overflow-y-auto px-5 py-4">
               {freeShippingLeft > 0 ? (
-                <p className="mb-4 rounded-xl bg-brand-100 px-4 py-2.5 text-sm text-brand-800">
+                <p className="mb-4 rounded-xl bg-brand-100 px-4 py-2.5 text-sm text-accent">
                   Ongeza bidhaa {formatTsh(freeShippingLeft)} upate
                   usafirishaji bure Dar es Salaam.
                 </p>
@@ -106,7 +106,7 @@ export function CartDrawer({ open, onClose }: Props) {
                         <Link
                           href={`/bidhaa/${product.slug}`}
                           onClick={onClose}
-                          className="text-sm font-semibold leading-snug text-ink-900 hover:text-brand-700"
+                          className="text-sm font-semibold leading-snug text-ink-900 hover:text-accent"
                         >
                           {product.name}
                         </Link>
@@ -119,16 +119,16 @@ export function CartDrawer({ open, onClose }: Props) {
                           Ondoa
                         </button>
                       </div>
-                      <p className="mt-1 text-sm font-semibold text-brand-700">
+                      <p className="mt-1 text-sm font-semibold text-accent">
                         {formatTsh(product.priceTsh)}
                       </p>
                       <div className="mt-auto flex items-center gap-2">
-                        <div className="flex items-center rounded-full border border-cream-300 bg-white">
+                        <div className="flex items-center rounded-full border border-cream-300 bg-surface">
                           <button
                             type="button"
                             onClick={() => setQty(product.slug, qty - 1)}
                             aria-label="Punguza"
-                            className="px-3 py-1.5 text-ink-500 hover:text-brand-700"
+                            className="px-3 py-1.5 text-ink-500 hover:text-accent"
                           >
                             −
                           </button>
@@ -139,7 +139,7 @@ export function CartDrawer({ open, onClose }: Props) {
                             type="button"
                             onClick={() => setQty(product.slug, qty + 1)}
                             aria-label="Ongeza"
-                            className="px-3 py-1.5 text-ink-500 hover:text-brand-700"
+                            className="px-3 py-1.5 text-ink-500 hover:text-accent"
                           >
                             +
                           </button>
@@ -174,7 +174,7 @@ export function CartDrawer({ open, onClose }: Props) {
               <button
                 type="button"
                 onClick={onClose}
-                className="mt-2 w-full text-center text-sm font-medium text-ink-500 hover:text-brand-700"
+                className="mt-2 w-full text-center text-sm font-medium text-ink-500 hover:text-accent"
               >
                 Endelea Kununua
               </button>

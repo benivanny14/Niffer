@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import {
   getProductBySlug,
   products,
-  reviews,
   type Product,
 } from "@/lib/data/catalog";
+import { listReviews } from "@/lib/server/leads";
 import { formatTsh, discountPercent } from "@/lib/format";
 import { productJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { RatingStars } from "@/components/ui/RatingStars";
@@ -74,7 +75,11 @@ async function ProductDetail({ params }: PageProps) {
   if (!product) notFound();
 
   const discount = discountPercent(product.priceTsh, product.compareAtTsh);
-  const productReviews = reviews.filter((r) => r.productSlug === product.slug);
+  // Hakiki zote (pamoja na mpya kutoka DB) kwa bidhaa hii.
+  await connection();
+  const productReviews = listReviews(300).filter(
+    (r) => r.productSlug === product.slug,
+  );
   const related = products
     .filter((p) => p.slug !== product.slug && p.category === product.category)
     .slice(0, 4);
@@ -103,13 +108,13 @@ async function ProductDetail({ params }: PageProps) {
       <nav aria-label="Njia" className="text-sm text-ink-400">
         <ol className="flex flex-wrap items-center gap-1.5">
           <li>
-            <Link href="/" className="hover:text-brand-700">
+            <Link href="/" className="hover:text-accent">
               Nyumbani
             </Link>
           </li>
           <li aria-hidden>›</li>
           <li>
-            <Link href="/bidhaa" className="hover:text-brand-700">
+            <Link href="/bidhaa" className="hover:text-accent">
               Bidhaa
             </Link>
           </li>
@@ -129,7 +134,7 @@ async function ProductDetail({ params }: PageProps) {
               {product.badges.map((badge) => (
                 <span
                   key={badge}
-                  className="badge bg-white/90 text-brand-700 shadow-sm"
+                  className="badge bg-surface/90 text-accent shadow-sm"
                 >
                   {badgeLabels[badge]}
                 </span>
@@ -226,7 +231,7 @@ async function ProductDetail({ params }: PageProps) {
             </div>
             <Link
               href="/bidhaa"
-              className="group inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:text-brand-800"
+              className="group inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent"
             >
               Zote
               <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />

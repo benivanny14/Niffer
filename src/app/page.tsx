@@ -61,7 +61,7 @@ export default function Home() {
             <p className="eyebrow">Urembo halisi · Tanzania</p>
             <h1 className="heading-display mt-4">
               Urembo wako, ubora wetu —{" "}
-              <span className="text-brand-700">Niffer Cosmetics</span>
+              <span className="text-accent">Niffer Cosmetics</span>
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-500">
               Bidhaa za skincare, makeup na nywele zilizochaguliwa kwa makini.
@@ -112,7 +112,7 @@ export default function Home() {
                 <p className="font-display text-lg text-ink-900">
                   Radiance Vitamin C Serum
                 </p>
-                <p className="text-sm font-semibold text-brand-700">
+                <p className="text-sm font-semibold text-accent">
                   {formatTsh(32000)}
                 </p>
               </div>
@@ -126,7 +126,7 @@ export default function Home() {
         <div className="container-x grid gap-8 py-12 sm:grid-cols-2 lg:grid-cols-4">
           {trustPoints.map(({ icon: Icon, title, description }) => (
             <div key={title} className="flex items-start gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-accent">
                 <Icon className="h-5 w-5" />
               </span>
               <div>
@@ -147,7 +147,7 @@ export default function Home() {
           </div>
           <Link
             href="/bidhaa"
-            className="group inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:text-brand-800"
+            className="group inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent"
           >
             Ona bidhaa zote
             <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -177,7 +177,7 @@ export default function Home() {
                   <span className="text-xs font-semibold uppercase tracking-wide text-ink-400">
                     Bidhaa {category.productCount}
                   </span>
-                  <ArrowRightIcon className="h-4 w-4 text-brand-700 transition-transform group-hover:translate-x-1" />
+                  <ArrowRightIcon className="h-4 w-4 text-accent transition-transform group-hover:translate-x-1" />
                 </div>
               </Link>
             </li>
@@ -195,7 +195,7 @@ export default function Home() {
             </div>
             <Link
               href="/bidhaa"
-              className="group inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:text-brand-800"
+              className="group inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent"
             >
               Vinjari kategoria
               <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -217,7 +217,7 @@ export default function Home() {
         <section className="border-y border-cream-300 bg-gradient-to-r from-brand-800 via-brand-700 to-brand-800 text-white">
           <div className="container-x flex flex-wrap items-center justify-between gap-6 py-12">
             <div className="max-w-xl">
-              <p className="inline-flex items-center gap-1.5 rounded-full bg-gold-500 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-ink-900">
+              <p className="inline-flex items-center gap-1.5 rounded-full bg-gold-500 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-on-gold">
                 <TagIcon className="h-3.5 w-3.5" />
                 Punguzo la muda
               </p>
@@ -238,7 +238,7 @@ export default function Home() {
                   >
                     <span className="text-xs text-ink-500">{product.name}</span>
                     <span className="flex items-baseline gap-2">
-                      <span className="font-semibold text-brand-700">
+                      <span className="font-semibold text-accent">
                         {formatTsh(product.priceTsh)}
                       </span>
                       {product.compareAtTsh ? (
@@ -265,7 +265,7 @@ export default function Home() {
             </div>
             <Link
               href="/bidhaa?kipengele=mpya"
-              className="group inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:text-brand-800"
+              className="group inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent"
             >
               Zote mpya
               <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -338,7 +338,7 @@ export default function Home() {
               </div>
               <Link
                 href="/makala"
-                className="group inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:text-brand-800"
+                className="group inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent"
               >
                 Soma zote
                 <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -362,7 +362,7 @@ export default function Home() {
                       <p className="text-xs font-semibold uppercase tracking-wide text-gold-600">
                         {article.readMinutes} dakika za kusoma
                       </p>
-                      <h3 className="font-display text-lg leading-snug text-ink-900 group-hover:text-brand-700">
+                      <h3 className="font-display text-lg leading-snug text-ink-900 group-hover:text-accent">
                         {article.title}
                       </h3>
                       <p className="text-sm text-ink-500">{article.excerpt}</p>

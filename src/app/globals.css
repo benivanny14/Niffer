@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Rangi za giza hutegemea class `.dark` kwenye <html> (si media query). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ============================================================
    NIFFER COSMETICS — Design System Tokens
    Premium beauty brand · Tanzania
@@ -49,11 +52,70 @@
   /* Semantic */
   --background: var(--cream-50);
   --foreground: var(--ink-900);
+
+  /* Vipengele vya juu vya design system */
+  --surface: #ffffff; /* uso wa kadi / fomu (badala ya rangi ngumu) */
+  --accent: #7a1f3f; /* maandishi ya lafudhi (brand-700) */
+  --on-gold: #1f1712; /* maandishi juu ya gold (hubaki meusi katika giza) */
+  --on-success: #ffffff; /* maandishi juu ya success imara */
+
+  color-scheme: light;
+}
+
+/* ============================================================
+   Dark theme — tubadilisha token kwenye `.dark`, na utility zote
+   (text-ink-900, bg-cream-200, border-cream-300 n.k.) zinafuata.
+   ============================================================ */
+
+.dark {
+  color-scheme: dark;
+
+  /* Ukurasa + uso */
+  --background: #131010;
+  --foreground: #f4efe8;
+  --cream-50: #131010;
+  --cream-100: #191512;
+  --cream-200: #221d18;
+  --cream-300: #342d25;
+  --surface: #1b1713;
+
+  /* Ink: text nyepesi juu ya mandhari meusi */
+  --ink-900: #f4efe8;
+  --ink-800: #eae3d9;
+  --ink-700: #d6cdc1;
+  --ink-500: #a99c8d;
+  --ink-400: #8b7f71;
+  --ink-300: #6e655a;
+
+  /* Brand: tints na lafudhi (bg kuu ya brand-700/800 hubaki sawa) */
+  --brand-50: #2b1620;
+  --brand-100: #371a27;
+  --brand-200: #55303f;
+  --brand-600: #d97f9f;
+  --accent: #e8a9bd;
+
+  /* Gold */
+  --gold-100: #2f2717;
+  --gold-600: #dcb978;
+  --gold-700: #c9a86a;
+
+  /* Status */
+  --success-100: #15301f;
+  --success-600: #55c087;
+  --warning-100: #322611;
+  --warning-600: #e0a437;
+  --danger-100: #3a1d19;
+  --danger-600: #f1776c;
+  --on-success: #10231a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-accent: var(--accent);
+  --color-on-gold: var(--on-gold);
+  --color-on-success: var(--on-success);
 
   --color-brand-50: var(--brand-50);
   --color-brand-100: var(--brand-100);
@@ -147,6 +209,11 @@ body {
   color: #fff;
 }
 
+.dark ::selection {
+  background: var(--brand-600);
+  color: #17110c;
+}
+
 /* Respect reduced motion globally */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -177,7 +244,7 @@ body {
 }
 
 @utility btn-gold {
-  @apply btn bg-gold-500 text-ink-900 hover:bg-gold-600 hover:text-white active:scale-[0.98];
+  @apply btn bg-gold-500 text-on-gold hover:bg-gold-600 hover:text-white active:scale-[0.98];
 }
 
 @utility btn-outline {
@@ -185,7 +252,7 @@ body {
 }
 
 @utility btn-light {
-  @apply btn bg-white text-ink-900 hover:bg-cream-200 active:scale-[0.98];
+  @apply btn bg-surface text-ink-900 hover:bg-cream-200 active:scale-[0.98];
 }
 
 @utility eyebrow {
@@ -197,7 +264,7 @@ body {
 }
 
 @utility card {
-  @apply rounded-2xl border border-cream-300 bg-white shadow-[0_1px_3px_rgba(31,23,18,0.04)] transition-shadow duration-300 hover:shadow-[0_12px_32px_-12px_rgba(95,23,49,0.18)];
+  @apply rounded-2xl border border-cream-300 bg-surface shadow-[0_1px_3px_rgba(31,23,18,0.04)] transition-shadow duration-300 hover:shadow-[0_12px_32px_-12px_rgba(95,23,49,0.18)];
 }
 
 @utility badge {

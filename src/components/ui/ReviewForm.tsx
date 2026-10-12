@@ -1,113 +1,62 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
-import { createLocalStore } from "@/lib/local-store";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { products } from "@/lib/data/catalog";
+import { apiPost, errorMessage } from "@/lib/api";
 import { CheckIcon, StarIcon } from "@/components/ui/icons";
-import { RatingStars } from "@/components/ui/RatingStars";
-import Link from "next/link";
-
-export type LocalReview = {
-  id: string;
-  customerName: string;
-  location: string;
-  rating: number;
-  comment: string;
-  productSlug: string;
-  createdAt: string;
-};
-
-const REVIEWS_KEY = "niffer.reviews.v1";
-const localReviewsStore = createLocalStore<LocalReview[]>(REVIEWS_KEY, []);
-
-/** Hook: hakiki za ndani (local). */
-export function useLocalReviews(): LocalReview[] {
-  return useSyncExternalStore(
-    localReviewsStore.subscribe,
-    localReviewsStore.get,
-    localReviewsStore.getServer,
-  );
-}
-
-/** Orodha ya hakiki za local (kutoka ReviewForm) — client-only. */
-export function LocalReviews() {
-  const local = useLocalReviews();
-  if (local.length === 0) return null;
-  return (
-    <ul className="mt-6 space-y-4">
-      {local.map((review) => {
-        const product = products.find((p) => p.slug === review.productSlug);
-        return (
-          <li key={review.id} className="card border-brand-200 p-6">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <RatingStars rating={review.rating} size="md" />
-              <span className="badge bg-success-100 text-success-600">
-                Hakiki yako
-              </span>
-            </div>
-            <blockquote className="mt-3 text-sm leading-relaxed text-ink-700">
-              &ldquo;{review.comment}&rdquo;
-            </blockquote>
-            <figcaption className="mt-3 text-sm">
-              <span className="font-semibold text-ink-900">
-                {review.customerName}
-              </span>
-              <span className="text-ink-400"> · {review.location}</span>
-              {product ? (
-                <Link
-                  href={`/bidhaa/${product.slug}`}
-                  className="ml-2 text-xs font-semibold text-brand-700 hover:underline"
-                >
-                  {product.name} →
-                </Link>
-              ) : null}
-            </figcaption>
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
 
 const field =
-  "w-full rounded-xl border border-cream-300 bg-white px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
+  "w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
 
-/** Fomu ya kuacha hakiki — huhifadhi kwenye kifaa hiki (demo). */
+/** Fomu ya kuacha hakiki — huhifadhi kwenye database ya seva. */
 export function ReviewForm() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [rating, setRating] = useState(5);
   const [productSlug, setProductSlug] = useState(products[0].slug);
   const [comment, setComment] = useState("");
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
   const [done, setDone] = useState(false);
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (comment.trim().length < 10) return;
-    localReviewsStore.set([
-      {
-        id: `local-${Date.now()}`,
-        customerName: name.trim(),
-        location: location.trim() || "Tanzania",
+    if (sending) return;
+    if (comment.trim().length < 10) {
+      setError("Andika hakiki ya angalau herufi 10.");
+      return;
+    }
+    setSending(true);
+    setError("");
+    try {
+      await apiPost("/api/reviews", {
+        customerName: name,
+        location,
         rating,
-        comment: comment.trim(),
+        comment,
         productSlug,
-        createdAt: new Date().toISOString(),
-      },
-      ...localReviewsStore.get(),
-    ]);
-    setDone(true);
-    setComment("");
+      });
+      setDone(true);
+      setComment("");
+      // Onyesha hakiki mpya mara moja (server ndio hupaka ukurasa).
+      router.refresh();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSending(false);
+    }
   }
 
   if (done) {
     return (
       <div className="card flex items-center gap-3 p-6">
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-success-100 text-success-600">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-success-100 text-success-600">
           <CheckIcon className="h-5 w-5" />
         </span>
         <p className="text-sm text-ink-700">
-          Asante kwa hakiki yako! Inaonekana mara moja kwenye ukurasa huu.
+          Asante kwa hakiki yako! Imehifadhiwa na inaonekana kwenye ukurasa huu.
         </p>
       </div>
     );
@@ -190,12 +139,21 @@ export function ReviewForm() {
         />
       </label>
 
-      <button type="submit" className="btn-primary w-full">
-        Tuma Hakiki
+      {error ? (
+        <p className="rounded-lg bg-danger-100 px-3 py-2 text-sm text-danger-600">
+          {error}
+        </p>
+      ) : null}
+
+      <button
+        type="submit"
+        disabled={sending}
+        className="btn-primary w-full disabled:opacity-60"
+      >
+        {sending ? "Inahifadhi…" : "Tuma Hakiki"}
       </button>
       <p className="text-center text-xs text-ink-400">
-        Hakiki zako huhifadhiwa kwenye kifaa hiki (demo). Kwenye tovuti halisi,
-        hutumwa kwa modareta kabla ya kuonyeshwa.
+        Hakiki yako huhifadhiwa kwenye seva na kuonekana na wateja wengine.
       </p>
     </form>
   );

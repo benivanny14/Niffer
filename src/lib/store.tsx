@@ -4,13 +4,15 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { getProductBySlug, type Product } from "@/lib/data/catalog";
 import { createLocalStore } from "@/lib/local-store";
-import { getStock } from "@/lib/stock";
+import { applyServerStock, getStock } from "@/lib/stock";
+import { apiGet } from "@/lib/api";
 
 const CART_KEY = "niffer.cart.v1";
 const WISHLIST_KEY = "niffer.wishlist.v1";
@@ -58,6 +60,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     getClientReady,
     getServerReady,
   );
+
+  // Pakia stoo halisi kutoka backend mara tu duka likifunguliwa.
+  useEffect(() => {
+    let alive = true;
+    apiGet<{ ok: boolean; stock: Record<string, number> }>("/api/stock")
+      .then((data) => {
+        if (alive && data?.stock) applyServerStock(data.stock);
+      })
+      .catch(() => {
+        /* server hai / mtandao — tumia stoo ya ndani */
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const add = useCallback((slug: string, qty = 1) => {
     // Zuzuia kuongeza zaidi ya stoo halisi iliyopo.

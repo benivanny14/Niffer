@@ -40,13 +40,13 @@ export function BuyBox({ product }: { product: Product }) {
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <div
-          className="flex items-center rounded-full border border-cream-300 bg-white"
+          className="flex items-center rounded-full border border-cream-300 bg-surface"
           role="group"
           aria-label="Idadi"
         >
           <button
             type="button"
-            className="px-4 py-3 text-ink-500 transition-colors hover:text-brand-700 disabled:opacity-40"
+            className="px-4 py-3 text-ink-500 transition-colors hover:text-accent disabled:opacity-40"
             onClick={() => setQty((q) => Math.max(1, q - 1))}
             disabled={outOfStock || qty <= 1}
             aria-label="Punguza idadi"
@@ -61,7 +61,7 @@ export function BuyBox({ product }: { product: Product }) {
           </span>
           <button
             type="button"
-            className="px-4 py-3 text-ink-500 transition-colors hover:text-brand-700 disabled:opacity-40"
+            className="px-4 py-3 text-ink-500 transition-colors hover:text-accent disabled:opacity-40"
             onClick={() => setQty((q) => Math.min(max, q + 1))}
             disabled={outOfStock || qty >= max}
             aria-label="Ongeza idadi"
@@ -74,7 +74,7 @@ export function BuyBox({ product }: { product: Product }) {
           type="button"
           onClick={handleAdd}
           disabled={outOfStock}
-          className={`btn flex-1 ${added ? "bg-success-600 text-white" : "btn-primary"}`}
+          className={`btn flex-1 ${added ? "bg-success-600 text-on-success" : "btn-primary"}`}
           aria-live="polite"
         >
           {added ? (

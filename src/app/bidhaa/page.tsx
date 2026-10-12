@@ -28,7 +28,7 @@ export default function AllProductsPage({ searchParams }: PageProps) {
       <nav aria-label="Njia" className="text-sm text-ink-400">
         <ol className="flex flex-wrap items-center gap-1.5">
           <li>
-            <Link href="/" className="hover:text-brand-700">
+            <Link href="/" className="hover:text-accent">
               Nyumbani
             </Link>
           </li>
@@ -96,7 +96,7 @@ async function ProductGrid({ searchParams }: PageProps) {
             className={`badge border transition-colors ${
               !active
                 ? "border-brand-700 bg-brand-700 text-white"
-                : "border-cream-300 bg-white text-ink-500 hover:border-brand-300 hover:text-brand-700"
+                : "border-cream-300 bg-surface text-ink-500 hover:border-brand-300 hover:text-accent"
             }`}
           >
             Zote
@@ -109,7 +109,7 @@ async function ProductGrid({ searchParams }: PageProps) {
               className={`badge border transition-colors ${
                 active === category.slug
                   ? "border-brand-700 bg-brand-700 text-white"
-                  : "border-cream-300 bg-white text-ink-500 hover:border-brand-300 hover:text-brand-700"
+                  : "border-cream-300 bg-surface text-ink-500 hover:border-brand-300 hover:text-accent"
               }`}
             >
               {category.name}

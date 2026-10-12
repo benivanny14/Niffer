@@ -43,7 +43,7 @@ export function AddToCartButton({
       disabled={disabled}
       aria-live="polite"
       className={`btn ${
-        added ? "bg-success-600 text-white" : "btn-primary"
+        added ? "bg-success-600 text-on-success" : "btn-primary"
       } ${compact ? "px-4 py-2 text-xs" : "w-full"} ${className}`}
     >
       {added ? (

@@ -51,7 +51,7 @@ export default function FaqPage() {
           <details key={item.q} className="card group p-5">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-ink-900">
               {item.q}
-              <span className="text-brand-700 transition-transform group-open:rotate-45">
+              <span className="text-accent transition-transform group-open:rotate-45">
                 +
               </span>
             </summary>

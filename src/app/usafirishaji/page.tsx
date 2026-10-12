@@ -49,7 +49,7 @@ export default function ShippingPage() {
                 <th className="px-4 py-3">Gharama</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-cream-200 bg-white">
+            <tbody className="divide-y divide-cream-200 bg-surface">
               {zones.map((z) => (
                 <tr key={z.zone}>
                   <td className="px-4 py-3 font-medium text-ink-900">
@@ -81,7 +81,7 @@ export default function ShippingPage() {
           ].map((p) => (
             <li
               key={p.name}
-              className="flex items-center justify-between rounded-xl border border-cream-300 bg-white px-4 py-3"
+              className="flex items-center justify-between rounded-xl border border-cream-300 bg-surface px-4 py-3"
             >
               <span className="font-medium text-ink-900">{p.name}</span>
               <span className="text-sm text-ink-500">{p.note}</span>

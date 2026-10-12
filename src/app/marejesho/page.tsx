@@ -68,7 +68,7 @@ export default function ReturnsPage() {
         </h2>
         <ol className="mt-4 space-y-3 text-sm text-ink-500">
           <li className="flex gap-3">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-accent">
               1
             </span>
             <p>
@@ -77,7 +77,7 @@ export default function ReturnsPage() {
             </p>
           </li>
           <li className="flex gap-3">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-accent">
               2
             </span>
             <p>
@@ -86,7 +86,7 @@ export default function ReturnsPage() {
             </p>
           </li>
           <li className="flex gap-3">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-accent">
               3
             </span>
             <p>

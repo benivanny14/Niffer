@@ -5,6 +5,8 @@ import { useState } from "react";
 import { useStore } from "@/lib/store";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { SearchOverlay } from "@/components/search/SearchOverlay";
+import { Portal } from "@/components/ui/Portal";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { BagIcon, HeartIcon, SearchIcon, UserIcon } from "@/components/ui/icons";
 
 export function HeaderControls() {
@@ -15,10 +17,11 @@ export function HeaderControls() {
   return (
     <>
       <div className="flex items-center gap-1">
+        <ThemeToggle />
         <button
           type="button"
           onClick={() => setSearchOpen(true)}
-          className="rounded-full p-2 text-ink-700 transition-colors hover:bg-cream-200 hover:text-brand-700"
+          className="rounded-full p-2 text-ink-700 transition-colors hover:bg-cream-200 hover:text-accent"
           aria-label="Tafuta bidhaa"
         >
           <SearchIcon className="h-5 w-5" />
@@ -26,7 +29,7 @@ export function HeaderControls() {
 
         <Link
           href="/akaunti"
-          className="hidden rounded-full p-2 text-ink-700 transition-colors hover:bg-cream-200 hover:text-brand-700 sm:block"
+          className="hidden rounded-full p-2 text-ink-700 transition-colors hover:bg-cream-200 hover:text-accent sm:block"
           aria-label="Akaunti yako"
         >
           <UserIcon className="h-5 w-5" />
@@ -34,7 +37,7 @@ export function HeaderControls() {
 
         <Link
           href="/upendwa"
-          className="relative hidden rounded-full p-2 text-ink-700 transition-colors hover:bg-cream-200 hover:text-brand-700 sm:block"
+          className="relative hidden rounded-full p-2 text-ink-700 transition-colors hover:bg-cream-200 hover:text-accent sm:block"
           aria-label={`Bidhaa unazopenda (${wishlist.length})`}
         >
           <HeartIcon className="h-5 w-5" />
@@ -48,7 +51,7 @@ export function HeaderControls() {
         <button
           type="button"
           onClick={() => setCartOpen(true)}
-          className="relative rounded-full p-2 text-ink-700 transition-colors hover:bg-cream-200 hover:text-brand-700"
+          className="relative rounded-full p-2 text-ink-700 transition-colors hover:bg-cream-200 hover:text-accent"
           aria-label={`Kikapu changu (${count})`}
         >
           <BagIcon className="h-5 w-5" />
@@ -60,8 +63,12 @@ export function HeaderControls() {
         </button>
       </div>
 
-      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
-      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
+      {/* Portal kwenye <body> — kichwa kina backdrop-blur ambacho kingezuia
+          drawer hizi kufunika ukurasa (fixed ndani ya containing block). */}
+      <Portal>
+        <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
+        <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
+      </Portal>
     </>
   );
 }

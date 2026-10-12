@@ -43,7 +43,7 @@ export function VideoModal({ video, onClose }: Props) {
       aria-label={video.title}
     >
       <div
-        className="absolute inset-0 bg-ink-900/70 backdrop-blur-sm animate-fade-in"
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in"
         onClick={onClose}
         aria-hidden
       />
@@ -58,7 +58,7 @@ export function VideoModal({ video, onClose }: Props) {
             type="button"
             onClick={onClose}
             aria-label="Funga video"
-            className="shrink-0 rounded-full p-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+            className="shrink-0 rounded-full p-2 text-white/80 transition-colors hover:bg-surface/10 hover:text-white"
           >
             <CloseIcon className="h-6 w-6" />
           </button>
@@ -89,7 +89,7 @@ export function VideoModal({ video, onClose }: Props) {
                 className="absolute inset-0 h-full w-full opacity-60"
               />
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
-                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/90 text-brand-700">
+                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-surface/90 text-accent">
                   <PlayIcon className="ml-1 h-7 w-7" />
                 </span>
                 <p className="max-w-sm px-4 text-sm font-medium text-white">

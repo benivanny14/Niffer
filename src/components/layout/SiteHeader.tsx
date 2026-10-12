@@ -31,10 +31,10 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-cream-300 bg-cream-50/90 backdrop-blur">
-      <div className="bg-brand-800 text-cream-100">
-        <div className="container-x flex h-9 items-center justify-center gap-2 text-xs">
-          <SparkleIcon className="h-3.5 w-3.5 text-gold-500" />
-          <p>
+      <div className="bg-brand-800 text-white">
+        <div className="container-x flex min-h-9 items-center justify-center gap-2 py-1.5 text-xs leading-snug">
+          <SparkleIcon className="hidden h-3.5 w-3.5 shrink-0 text-gold-500 sm:block" />
+          <p className="text-center">
             Usafirishaje bure Dar es Salaam kwa oda zaidi ya TSh 50,000 ·
             Malipo salama: M-Pesa, Mixx by Yas, Airtel Money
           </p>
@@ -47,7 +47,7 @@ export function SiteHeader() {
           className="flex items-center gap-2"
           onClick={() => setOpen(false)}
         >
-          <SparkleIcon className="h-7 w-7 text-brand-700" />
+          <SparkleIcon className="h-7 w-7 text-accent" />
           <span className="flex flex-col leading-none">
             <span className="font-display text-xl font-semibold tracking-tight text-ink-900">
               Niffer
@@ -64,7 +64,7 @@ export function SiteHeader() {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="text-sm font-medium text-ink-700 transition-colors hover:text-brand-700"
+                  className="text-sm font-medium text-ink-700 transition-colors hover:text-accent"
                 >
                   {link.label}
                 </Link>
@@ -77,7 +77,7 @@ export function SiteHeader() {
           <HeaderControls />
           <button
             type="button"
-            className="rounded-full p-2 text-ink-700 transition-colors hover:bg-cream-200 hover:text-brand-700 lg:hidden"
+            className="rounded-full p-2 text-ink-700 transition-colors hover:bg-cream-200 hover:text-accent lg:hidden"
             aria-expanded={open}
             aria-controls="mobile-menu"
             aria-label={open ? "Funga menyu" : "Fungua menyu"}
@@ -104,7 +104,7 @@ export function SiteHeader() {
                   <Link
                     href={link.href}
                     onClick={() => setOpen(false)}
-                    className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink-700 transition-colors hover:bg-cream-200 hover:text-brand-700"
+                    className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink-700 transition-colors hover:bg-cream-200 hover:text-accent"
                   >
                     {link.label}
                   </Link>
@@ -118,7 +118,7 @@ export function SiteHeader() {
                   <Link
                     href={`/bidhaa?kategoria=${category.slug}`}
                     onClick={() => setOpen(false)}
-                    className="block rounded-lg px-3 py-2.5 text-sm text-ink-700 transition-colors hover:bg-cream-200 hover:text-brand-700"
+                    className="block rounded-lg px-3 py-2.5 text-sm text-ink-700 transition-colors hover:bg-cream-200 hover:text-accent"
                   >
                     {category.name}
                   </Link>

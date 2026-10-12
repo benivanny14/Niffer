@@ -2,11 +2,33 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { searchProducts } from "@/lib/data/catalog";
+import { useEffect, useRef, useState } from "react";
+import { getProductBySlug, searchProducts } from "@/lib/data/catalog";
 import { formatTsh } from "@/lib/format";
+import { apiGet } from "@/lib/api";
+import { useAsync } from "@/lib/use-async";
 import { ProductImage } from "@/components/media/ProductImage";
-import { CloseIcon, SearchIcon } from "@/components/ui/icons";
+import { CloseIcon, SearchIcon, SparkleIcon } from "@/components/ui/icons";
+
+type SearchResult = {
+  type: "product" | "article";
+  slug: string;
+  name: string;
+  hint: string;
+  href: string;
+};
+
+function localResults(query: string): SearchResult[] {
+  return searchProducts(query)
+    .slice(0, 6)
+    .map((p) => ({
+      type: "product" as const,
+      slug: p.slug,
+      name: p.name,
+      hint: p.shortDescription,
+      href: `/bidhaa/${p.slug}`,
+    }));
+}
 
 type Props = { open: boolean; onClose: () => void };
 
@@ -30,7 +52,22 @@ export function SearchOverlay({ open, onClose }: Props) {
     };
   }, [open, onClose]);
 
-  const results = useMemo(() => searchProducts(query).slice(0, 6), [query]);
+  // Utafitaji wa backend (bidhaa + makala) kwa deboi ya milisekunde 200.
+  const resource = useAsync<SearchResult[]>(`overlay:${query}`, async () => {
+    const q = query.trim();
+    if (!q) return [];
+    try {
+      const data = await apiGet<{ ok: boolean; results: SearchResult[] }>(
+        `/api/search?q=${encodeURIComponent(q)}&limit=6`,
+      );
+      return data.results;
+    } catch {
+      return localResults(q);
+    }
+  }, { delayMs: 200 });
+
+  const results = query.trim() ? resource.data ?? [] : [];
+  const searching = query.trim() !== "" && resource.loading;
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -63,7 +100,7 @@ export function SearchOverlay({ open, onClose }: Props) {
         </div>
 
         <form onSubmit={submit} className="mt-4">
-          <div className="flex items-center gap-3 rounded-2xl border border-cream-300 bg-white px-4 py-3">
+          <div className="flex items-center gap-3 rounded-2xl border border-cream-300 bg-surface px-4 py-3">
             <SearchIcon className="h-5 w-5 shrink-0 text-ink-400" />
             <input
               ref={inputRef}
@@ -82,8 +119,17 @@ export function SearchOverlay({ open, onClose }: Props) {
             <p className="text-sm text-ink-500">
               Andika jina la bidhaa au kategoria unayotafuta.
             </p>
+          ) : results.length === 0 && searching ? (
+            <ul className="space-y-2">
+              {[0, 1, 2].map((i) => (
+                <li
+                  key={i}
+                  className="h-20 animate-pulse rounded-2xl bg-surface"
+                />
+              ))}
+            </ul>
           ) : results.length === 0 ? (
-            <div className="rounded-2xl border border-cream-300 bg-white p-8 text-center">
+            <div className="rounded-2xl border border-cream-300 bg-surface p-8 text-center">
               <p className="font-display text-lg text-ink-900">
                 Hakuna matokeo ya “{query}”
               </p>
@@ -101,36 +147,52 @@ export function SearchOverlay({ open, onClose }: Props) {
           ) : (
             <>
               <ul className="space-y-2">
-                {results.map((product) => (
-                  <li key={product.id}>
-                    <Link
-                      href={`/bidhaa/${product.slug}`}
-                      onClick={onClose}
-                      className="flex items-center gap-4 rounded-2xl border border-transparent bg-white p-3 transition-colors hover:border-cream-300"
-                    >
-                      <span className="h-16 w-14 shrink-0 overflow-hidden rounded-xl border border-cream-300">
-                        <ProductImage
-                          src={product.image}
-                          alt={product.imageAlt}
-                          className="h-full w-full"
-                        />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate font-display text-ink-900">
-                          {product.name}
+                {results.map((result) => {
+                  const product =
+                    result.type === "product"
+                      ? getProductBySlug(result.slug)
+                      : undefined;
+                  return (
+                    <li key={`${result.type}-${result.slug}`}>
+                      <Link
+                        href={result.href}
+                        onClick={onClose}
+                        className="flex items-center gap-4 rounded-2xl border border-transparent bg-surface p-3 transition-colors hover:border-cream-300"
+                      >
+                        <span className="h-16 w-14 shrink-0 overflow-hidden rounded-xl border border-cream-300">
+                          {product ? (
+                            <ProductImage
+                              src={product.image}
+                              alt={product.imageAlt}
+                              className="h-full w-full"
+                            />
+                          ) : (
+                            <span className="flex h-full w-full items-center justify-center bg-cream-100 text-brand-600">
+                              <SparkleIcon className="h-6 w-6" />
+                            </span>
+                          )}
                         </span>
-                        <span className="text-sm text-brand-700">
-                          {formatTsh(product.priceTsh)}
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-display text-ink-900">
+                            {result.name}
+                          </span>
+                          <span className="text-sm text-accent">
+                            {product
+                              ? formatTsh(product.priceTsh)
+                              : result.type === "article"
+                                ? "Makala →"
+                                : result.hint}
+                          </span>
                         </span>
-                      </span>
-                    </Link>
-                  </li>
-                ))}
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
               <Link
                 href={`/tafuta?q=${encodeURIComponent(query.trim())}`}
                 onClick={onClose}
-                className="mt-4 inline-flex text-sm font-semibold text-brand-700 hover:text-brand-800"
+                className="mt-4 inline-flex text-sm font-semibold text-accent hover:text-accent"
               >
                 Ona matokeo yote →
               </Link>

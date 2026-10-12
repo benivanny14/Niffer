@@ -1,0 +1,319 @@
+import { getDb, nowIso } from "@/lib/server/db";
+import { makeOrderCode } from "@/lib/format";
+import { applyPromo } from "@/lib/promo";
+import { products } from "@/lib/data/catalog";
+import { site, paymentMethods, type PaymentId } from "@/lib/site";
+import {
+  statusSteps,
+  type CartLine,
+  type Order,
+  type OrderStatus,
+  type StatusEvent,
+} from "@/lib/orders";
+
+/** Hitilafu ya kibali (validation) yenye HTTP status. */
+export class InputError extends Error {
+  status: number;
+  constructor(message: string, status = 400) {
+    super(message);
+    this.status = status;
+  }
+}
+
+type OrderRow = {
+  code: string;
+  created_at: string;
+  status: string;
+  customer: string;
+  payment: string;
+  lines: string;
+  subtotal_tsh: number;
+  shipping_tsh: number;
+  total_tsh: number;
+  promo_code: string | null;
+  discount_tsh: number | null;
+  history: string;
+  demo: number;
+};
+
+function parseJson<T>(raw: string | null, fallback: T): T {
+  if (!raw) return fallback;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function rowToOrder(row: OrderRow): Order {
+  return {
+    code: row.code,
+    createdAt: row.created_at,
+    status: row.status as OrderStatus,
+    customer: parseJson<Order["customer"]>(row.customer, {
+      name: "",
+      phone: "",
+      region: "",
+      address: "",
+    }),
+    payment: row.payment as PaymentId,
+    lines: parseJson<CartLine[]>(row.lines, []),
+    subtotalTsh: row.subtotal_tsh,
+    shippingTsh: row.shipping_tsh,
+    totalTsh: row.total_tsh,
+    promoCode: row.promo_code ?? undefined,
+    discountTsh: row.discount_tsh ?? undefined,
+    history: parseJson<StatusEvent[]>(row.history, []),
+    demo: row.demo === 1,
+  };
+}
+
+export type CreateOrderInput = {
+  customer?: Partial<Order["customer"]>;
+  payment?: string;
+  lines?: CartLine[];
+  promoCode?: string;
+};
+
+const VALID_STATUSES: OrderStatus[] = statusSteps.map((s) => s.id);
+
+function validPayment(id: string): PaymentId {
+  const found = paymentMethods.find((m) => m.id === id);
+  if (!found) throw new InputError("Njia ya malipo si sahihi.");
+  return found.id;
+}
+
+/** Stoo halisi ya bidhaa zote (DB). */
+export function getStockMap(): Record<string, number> {
+  const rows = getDb()
+    .prepare("SELECT slug, qty FROM stock")
+    .all() as { slug: string; qty: number }[];
+  const map: Record<string, number> = {};
+  for (const row of rows) map[row.slug] = row.qty;
+  // Hakikisha kila bidhaa ya katalogi ipo.
+  for (const p of products) if (!(p.slug in map)) map[p.slug] = p.stock;
+  return map;
+}
+
+/** Weka stoo ya bidhaa moja (admin). */
+export function setStockValue(slug: string, qty: number): number {
+  const safe = Math.max(0, Math.floor(qty));
+  getDb()
+    .prepare(
+      `INSERT INTO stock (slug, qty, updated_at) VALUES (?, ?, ?)
+       ON CONFLICT(slug) DO UPDATE SET qty = excluded.qty, updated_at = excluded.updated_at`,
+    )
+    .run(slug, safe, nowIso());
+  return safe;
+}
+
+/**
+ * Tengeneza oda — hesabu upya bei kutoka katalogi (kuzuia udanganyifu),
+ * thibitisha stoo, punguza stoo na hifadhi oda kwenye DB.
+ */
+export function createOrder(input: CreateOrderInput): {
+  order: Order;
+  stock: Record<string, number>;
+} {
+  const customer = {
+    name: (input.customer?.name ?? "").trim(),
+    phone: (input.customer?.phone ?? "").trim(),
+    region: (input.customer?.region ?? "").trim(),
+    address: (input.customer?.address ?? "").trim(),
+    note: input.customer?.note?.trim() || undefined,
+  };
+
+  if (customer.name.length < 2) throw new InputError("Jina halisi linahitajika.");
+  if (!/^[0-9+\s]{9,15}$/.test(customer.phone)) {
+    throw new InputError("Weka namba sahihi ya simu (mfano 0754 000 000).");
+  }
+  if (!customer.region) throw new InputError("Chagua mkoa wako.");
+  if (customer.address.length < 5) {
+    throw new InputError("Weka anwani kamili ya kuwasilishwa.");
+  }
+
+  const payment = validPayment(input.payment ?? "cod");
+
+  const rawLines = input.lines ?? [];
+  if (rawLines.length === 0) throw new InputError("Kikapu chako ni tupu.");
+  if (rawLines.length > 30) throw new InputError("Oda imezidi kiwango.");
+
+  // Pooza kiasi na bidhaa.
+  const lines: CartLine[] = [];
+  for (const line of rawLines) {
+    const qty = Math.floor(Number(line.qty));
+    if (!line.slug || !Number.isFinite(qty) || qty < 1 || qty > 99) {
+      throw new InputError("Kiasi cha bidhaa si sahihi.");
+    }
+    const product = products.find((p) => p.slug === line.slug);
+    if (!product) throw new InputError(`Bidhaa "${line.slug}" haipo.`);
+    if (!lines.some((l) => l.slug === line.slug)) {
+      lines.push({ slug: line.slug, qty });
+    }
+  }
+
+  const stock = getStockMap();
+  for (const line of lines) {
+    const available = stock[line.slug] ?? 0;
+    if (line.qty > available) {
+      const name = products.find((p) => p.slug === line.slug)?.name ?? line.slug;
+      throw new InputError(
+        available === 0
+          ? `${name} imeisha stoo. Ondoa kutoka kikapu.`
+          : `Stoo ya ${name} imebaki ${available} tu.`,
+        409,
+      );
+    }
+  }
+
+  // Hesabu upya bei (server ndio mwanzo wa ukweli).
+  const subtotalTsh = lines.reduce((sum, line) => {
+    const p = products.find((x) => x.slug === line.slug)!;
+    return sum + p.priceTsh * line.qty;
+  }, 0);
+
+  const shippingBase =
+    customer.region === "Dar es Salaam" &&
+    subtotalTsh < site.freeShippingThresholdTsh
+      ? site.baseShippingTsh
+      : 0;
+
+  const promo = input.promoCode ? applyPromo(input.promoCode, subtotalTsh) : null;
+  const applied = promo && promo.ok ? promo : null;
+  const discountTsh = applied
+    ? applied.discountTsh(subtotalTsh, shippingBase)
+    : 0;
+  const shippingTsh = applied?.freeShipping ? 0 : shippingBase;
+  const totalTsh =
+    Math.max(0, subtotalTsh - (applied?.freeShipping ? 0 : discountTsh)) +
+    shippingTsh;
+
+  const db = getDb();
+  const exists = db.prepare("SELECT 1 FROM orders WHERE code = ?");
+
+  let code = makeOrderCode();
+  for (let i = 0; i < 8 && exists.get(code); i += 1) code = makeOrderCode();
+  if (exists.get(code)) throw new InputError("Jaribu tena (msisitizo wa nambari).", 500);
+
+  const createdAt = nowIso();
+  const history: StatusEvent[] = [
+    { status: "imapokelewa", at: createdAt },
+  ];
+
+  db.exec("BEGIN");
+  try {
+    db.prepare(
+      `INSERT INTO orders (
+         code, created_at, status, customer, payment, lines,
+         subtotal_tsh, shipping_tsh, total_tsh, promo_code, discount_tsh, history, demo
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+    ).run(
+      code,
+      createdAt,
+      "imapokelewa",
+      JSON.stringify(customer),
+      payment,
+      JSON.stringify(lines),
+      subtotalTsh,
+      shippingTsh,
+      totalTsh,
+      applied ? applied.code : null,
+      discountTsh > 0 ? discountTsh : null,
+      JSON.stringify(history),
+    );
+
+    db.prepare(
+      "INSERT INTO order_events (code, status, at) VALUES (?, ?, ?)",
+    ).run(code, "imapokelewa", createdAt);
+
+    const dec = db.prepare(
+      "UPDATE stock SET qty = MAX(0, qty - ?), updated_at = ? WHERE slug = ?",
+    );
+    for (const line of lines) dec.run(line.qty, createdAt, line.slug);
+
+    db.exec("COMMIT");
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error instanceof InputError
+      ? error
+      : new InputError("Imeshindikana kuhifadhi oda. Jaribu tena.", 500);
+  }
+
+  const order = getOrder(code);
+  if (!order) throw new InputError("Imeshindikana kuhifadhi oda.", 500);
+
+  return { order, stock: getStockMap() };
+}
+
+/** Oda zote (mpya kwanza). */
+export function listOrders(limit = 200): Order[] {
+  const rows = getDb()
+    .prepare("SELECT * FROM orders ORDER BY created_at DESC LIMIT ?")
+    .all(limit) as unknown as OrderRow[];
+  return rows.map(rowToOrder);
+}
+
+/** Oda moja kwa nambari. */
+export function getOrder(code: string): Order | undefined {
+  const key = code.trim().toUpperCase();
+  if (!key) return undefined;
+  const row = getDb()
+    .prepare("SELECT * FROM orders WHERE code = ?")
+    .get(key) as OrderRow | undefined;
+  return row ? rowToOrder(row) : undefined;
+}
+
+/** Badilisha hatua ya oda (admin). */
+export function updateOrderStatus(
+  code: string,
+  status: OrderStatus,
+): Order | undefined {
+  if (!VALID_STATUSES.includes(status)) {
+    throw new InputError("Hatua ya oda si sahihi.");
+  }
+  const key = code.trim().toUpperCase();
+  const existing = getOrder(key);
+  if (!existing) throw new InputError("Oda haipatikani.", 404);
+
+  const at = nowIso();
+  const history = [...(existing.history ?? [])];
+  if (!history.some((h) => h.status === status)) {
+    history.push({ status, at });
+  }
+
+  const db = getDb();
+  db.prepare("UPDATE orders SET status = ?, history = ? WHERE code = ?").run(
+    status,
+    JSON.stringify(history),
+    key,
+  );
+  db.prepare(
+    "INSERT INTO order_events (code, status, at) VALUES (?, ?, ?)",
+  ).run(key, status, at);
+
+  return getOrder(key);
+}
+
+/** Takwimu za dashibodi. */
+export function orderStats(): {
+  orderCount: number;
+  revenueTsh: number;
+  pendingCount: number;
+} {
+  const row = getDb()
+    .prepare(
+      `SELECT COUNT(*) AS orderCount,
+              COALESCE(SUM(total_tsh), 0) AS revenueTsh,
+              COALESCE(SUM(CASE WHEN status != 'imefika' THEN 1 ELSE 0 END), 0) AS pendingCount
+       FROM orders`,
+    )
+    .get() as
+    | { orderCount: number; revenueTsh: number; pendingCount: number }
+    | undefined;
+
+  return {
+    orderCount: Number(row?.orderCount ?? 0),
+    revenueTsh: Number(row?.revenueTsh ?? 0),
+    pendingCount: Number(row?.pendingCount ?? 0),
+  };
+}

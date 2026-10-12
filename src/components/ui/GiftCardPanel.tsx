@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { site, waLink } from "@/lib/site";
 import { formatTsh } from "@/lib/format";
+import { apiPost, errorMessage } from "@/lib/api";
 import { ChatIcon, CheckIcon, SparkleIcon } from "@/components/ui/icons";
 
 const amounts = [10000, 25000, 50000, 100000];
@@ -13,8 +14,8 @@ const steps = [
     description: "Kadi ya zawadi kutoka TSh 10,000 hadi TSh 100,000.",
   },
   {
-    title: "Tuma kwa WhatsApp",
-    description: "Tutakutumia msimbo wa kadi na maelekezo ya malipo.",
+    title: "Pokea msimbo wa pekee",
+    description: "Msimbo hutengenezwa mara moja na unaweza kutumwa kwa WhatsApp.",
   },
   {
     title: "Apokee na anufaike",
@@ -26,12 +27,35 @@ export function GiftCardPanel() {
   const [amount, setAmount] = useState(amounts[1]);
   const [recipient, setRecipient] = useState("");
   const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
+  const [issued, setIssued] = useState<{
+    code: string;
+    amountTsh: number;
+  } | null>(null);
+
+  async function issue() {
+    if (sending) return;
+    setSending(true);
+    setError("");
+    try {
+      const data = await apiPost<{
+        ok: boolean;
+        giftCard: { code: string; amountTsh: number };
+      }>("/api/giftcards", { amountTsh: amount, recipient, message });
+      setIssued({ code: data.giftCard.code, amountTsh: data.giftCard.amountTsh });
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSending(false);
+    }
+  }
 
   const waText = `Habari ${site.name}, nataka kadi ya zawadi ya ${formatTsh(
     amount,
-  )}.${recipient ? ` Mpokeaji: ${recipient}.` : ""}${
-    message ? ` Ujumbe: ${message}` : ""
-  }`;
+  )}.${issued ? ` Msimbo: ${issued.code}.` : ""}${
+    recipient ? ` Mpokeaji: ${recipient}.` : ""
+  }${message ? ` Ujumbe: ${message}` : ""}`;
 
   return (
     <div className="grid gap-10 lg:grid-cols-2">
@@ -49,7 +73,7 @@ export function GiftCardPanel() {
                 className={`rounded-xl border p-4 text-center transition-colors ${
                   amount === value
                     ? "border-brand-600 bg-brand-50"
-                    : "border-cream-300 bg-white hover:border-brand-300"
+                    : "border-cream-300 bg-surface hover:border-brand-300"
                 }`}
               >
                 <span className="block font-display text-xl text-ink-900">
@@ -73,7 +97,7 @@ export function GiftCardPanel() {
               value={recipient}
               onChange={(e) => setRecipient(e.target.value)}
               placeholder="Mfano: Neema"
-              className="w-full rounded-xl border border-cream-300 bg-white px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500"
+              className="w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500"
             />
           </label>
           <label className="mt-4 block text-sm">
@@ -85,19 +109,57 @@ export function GiftCardPanel() {
               onChange={(e) => setMessage(e.target.value)}
               rows={3}
               placeholder="Mfano: Hongera siku yako ya kuzaliwa!"
-              className="w-full rounded-xl border border-cream-300 bg-white px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500"
+              className="w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500"
             />
           </label>
 
-          <a
-            href={waLink(waText)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-primary mt-6 w-full"
+          {issued ? (
+            <div className="mt-6 rounded-2xl border border-success-200 bg-success-50 p-5 text-center">
+              <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-success-100 text-success-600">
+                <CheckIcon className="h-5 w-5" />
+              </span>
+              <p className="mt-3 text-sm text-ink-500">
+                Msimbo wako wa kadi ({formatTsh(issued.amountTsh)}):
+              </p>
+              <p className="font-display mt-1 text-2xl tracking-wide text-ink-900">
+                {issued.code}
+              </p>
+              <p className="mt-2 text-xs text-ink-500">
+                Hifadhi msimbo huu — utautumia kwenye oda yoyote ya Niffer.
+              </p>
+            </div>
+          ) : null}
+
+          {error ? (
+            <p className="mt-4 rounded-lg bg-danger-100 px-3 py-2 text-sm text-danger-600">
+              {error}
+            </p>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={issue}
+            disabled={sending}
+            className="btn-primary mt-6 w-full disabled:opacity-60"
           >
             <ChatIcon className="h-4 w-4" />
-            Agiza kadi kwa WhatsApp — {formatTsh(amount)}
-          </a>
+            {sending
+              ? "Inatengeneza kadi…"
+              : issued
+                ? "Agiza kadi nyingine"
+                : `Agiza kadi — ${formatTsh(amount)}`}
+          </button>
+
+          {issued ? (
+            <a
+              href={waLink(waText)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-outline mt-3 w-full"
+            >
+              Tuma msimbo kwa WhatsApp
+            </a>
+          ) : null}
           <p className="mt-3 text-center text-xs text-ink-400">
             Kadi ya kipekee hutumika kwa oda yoyote na haikuwi na muda.
           </p>
@@ -121,7 +183,7 @@ export function GiftCardPanel() {
           <ol className="mt-8 space-y-6">
             {steps.map((step, i) => (
               <li key={step.title} className="flex gap-4">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-700">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-accent">
                   {i + 1}
                 </span>
                 <div>

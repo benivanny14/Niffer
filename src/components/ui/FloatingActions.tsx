@@ -24,7 +24,7 @@ export function FloatingActions() {
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           aria-label="Rudi juu"
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-cream-300 bg-white text-ink-700 shadow-lg transition-colors hover:text-brand-700"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-cream-300 bg-surface text-ink-700 shadow-lg transition-colors hover:text-accent"
         >
           <ArrowUpIcon className="h-5 w-5" />
         </button>
@@ -37,7 +37,7 @@ export function FloatingActions() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Oda au ombi kwa WhatsApp"
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-success-600 text-white shadow-xl transition-transform hover:scale-105"
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-success-600 text-on-success shadow-xl transition-transform hover:scale-105"
       >
         <ChatIcon className="h-7 w-7" />
       </a>

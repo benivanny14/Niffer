@@ -4,16 +4,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useStore } from "@/lib/store";
-import { formatTsh, makeOrderCode } from "@/lib/format";
+import { formatTsh } from "@/lib/format";
 import {
   paymentMethods,
   site,
   tanzaniaRegions,
   type PaymentId,
 } from "@/lib/site";
-import { type Order } from "@/lib/orders";
-import { pushOrder } from "@/lib/orders-client";
-import { getStock, decrementStock } from "@/lib/stock";
+import { createOrder, pushOrder } from "@/lib/orders-client";
+import { getStock, applyServerStock } from "@/lib/stock";
+import { errorMessage } from "@/lib/api";
 import { applyPromo, type PromoApplied } from "@/lib/promo";
 import { ProductImage } from "@/components/media/ProductImage";
 import {
@@ -34,6 +34,7 @@ export default function CheckoutPage() {
   const [note, setNote] = useState("");
   const [payment, setPayment] = useState<PaymentId>("mpesa");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   // Msimbo wa punguzo (promo).
   const [promoInput, setPromoInput] = useState("");
@@ -52,8 +53,7 @@ export default function CheckoutPage() {
   const shipping = promo?.freeShipping ? 0 : shippingBase;
   const total = Math.max(0, subtotalTsh - (promo?.freeShipping ? 0 : discountTsh)) + shipping;
 
-  function handlePromo(e: React.FormEvent) {
-    e.preventDefault();
+  function applyPromoCode() {
     const result = applyPromo(promoInput, subtotalTsh);
     if (result.ok) {
       setPromo(result);
@@ -64,14 +64,14 @@ export default function CheckoutPage() {
     }
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (lines.length === 0) return;
+    if (lines.length === 0 || submitting) return;
     if (!/^[0-9+\s]{9,15}$/.test(phone.trim())) {
       setError("Weka namba sahihi ya simu (mfano 0754 000 000).");
       return;
     }
-    // Hakiki stoo kabla ya kuweka oda (zuzuia over-sell).
+    // Kizuizi cha haraka kwenye client (server ndio huthibitisha tena).
     for (const line of lines) {
       const available = getStock(line.product.slug);
       if (line.qty > available) {
@@ -84,25 +84,25 @@ export default function CheckoutPage() {
       }
     }
     setError("");
+    setSubmitting(true);
 
-    const order: Order = {
-      code: makeOrderCode(),
-      createdAt: new Date().toISOString(),
-      status: "imapokelewa",
-      customer: { name, phone, region, address, note },
-      payment,
-      lines: lines.map((l) => ({ slug: l.product.slug, qty: l.qty })),
-      subtotalTsh,
-      shippingTsh: shipping,
-      totalTsh: total,
-      promoCode: promo?.code,
-      discountTsh: discountTsh > 0 ? discountTsh : undefined,
-    };
+    try {
+      const { order, stock } = await createOrder({
+        customer: { name, phone, region, address, note },
+        payment,
+        lines: lines.map((l) => ({ slug: l.product.slug, qty: l.qty })),
+        promoCode: promo?.code,
+      });
 
-    pushOrder(order);
-    decrementStock(order.lines);
-    clear();
-    router.push(`/odha/${order.code}`);
+      // Stoo mpya kutoka server + oda imehifadhiwa kwenye DB.
+      applyServerStock(stock);
+      pushOrder(order);
+      clear();
+      router.push(`/odha/${order.code}`);
+    } catch (err) {
+      setError(errorMessage(err));
+      setSubmitting(false);
+    }
   }
 
   if (!ready) return null;
@@ -123,7 +123,7 @@ export default function CheckoutPage() {
   }
 
   const field =
-    "w-full rounded-xl border border-cream-300 bg-white px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
+    "w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
 
   return (
     <div className="container-x py-10 lg:py-14">
@@ -222,7 +222,7 @@ export default function CheckoutPage() {
                   className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-colors ${
                     payment === m.id
                       ? "border-brand-600 bg-brand-50"
-                      : "border-cream-300 bg-white hover:border-brand-300"
+                      : "border-cream-300 bg-surface hover:border-brand-300"
                   }`}
                 >
                   <input
@@ -275,21 +275,32 @@ export default function CheckoutPage() {
             </ul>
 
             {/* Msimbo wa punguzo */}
-            <form onSubmit={handlePromo} className="mt-5 flex gap-2">
-              <div className="flex flex-1 items-center gap-2 rounded-xl border border-cream-300 bg-white px-3">
+            {/* Si <form>: HTML hairuhusu form ndani ya fomu kuu ya oda. */}
+            <div className="mt-5 flex gap-2">
+              <div className="flex flex-1 items-center gap-2 rounded-xl border border-cream-300 bg-surface px-3">
                 <TagIcon className="h-4 w-4 shrink-0 text-ink-400" />
                 <input
                   value={promoInput}
                   onChange={(e) => setPromoInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      applyPromoCode();
+                    }
+                  }}
                   placeholder="Msimbo wa punguzo"
                   aria-label="Msimbo wa punguzo"
                   className="w-full bg-transparent py-2.5 text-sm uppercase text-ink-900 outline-none placeholder:text-ink-400"
                 />
               </div>
-              <button type="submit" className="btn-outline px-4 py-2 text-xs">
+              <button
+                type="button"
+                onClick={applyPromoCode}
+                className="btn-outline px-4 py-2 text-xs"
+              >
                 Tumia
               </button>
-            </form>
+            </div>
             {promoError ? (
               <p className="mt-2 text-xs text-danger-600">{promoError}</p>
             ) : null}
@@ -331,8 +342,12 @@ export default function CheckoutPage() {
               </p>
             ) : null}
 
-            <button type="submit" className="btn-primary mt-5 w-full">
-              Weka Oda
+            <button
+              type="submit"
+              disabled={submitting}
+              className="btn-primary mt-5 w-full disabled:opacity-60"
+            >
+              {submitting ? "Inaweka oda…" : "Weka Oda"}
             </button>
 
             <ul className="mt-4 space-y-2 text-xs text-ink-500">

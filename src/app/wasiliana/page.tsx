@@ -62,7 +62,7 @@ export default function ContactPage() {
           {channels.map(({ icon: Icon, label, value, href }) => {
             const inner = (
               <>
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-accent">
                   <Icon className="h-5 w-5" />
                 </span>
                 <span>
@@ -95,7 +95,7 @@ export default function ContactPage() {
           })}
 
           <div className="card flex items-center gap-3 p-4">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-accent">
               <ClockIcon className="h-5 w-5" />
             </span>
             <span>

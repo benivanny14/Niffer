@@ -24,7 +24,7 @@ const ACCOUNT_KEY = "niffer.account.v1";
 const accountStore = createLocalStore<Account | null>(ACCOUNT_KEY, null);
 
 const field =
-  "w-full rounded-xl border border-cream-300 bg-white px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
+  "w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
 
 export default function AccountPage() {
   const account = useSyncExternalStore(
@@ -97,11 +97,11 @@ export default function AccountPage() {
           </button>
           <p className="text-center text-xs text-ink-400">
             Kwa kuingia, unakubali{" "}
-            <Link href="/masharti" className="text-brand-700 hover:underline">
+            <Link href="/masharti" className="text-accent hover:underline">
               Masharti
             </Link>{" "}
             na{" "}
-            <Link href="/faragha" className="text-brand-700 hover:underline">
+            <Link href="/faragha" className="text-accent hover:underline">
               Sera ya Faragha
             </Link>
             .
@@ -119,7 +119,7 @@ export default function AccountPage() {
     <div className="container-x py-12 lg:py-16">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-100 text-accent">
             <UserIcon className="h-7 w-7" />
           </span>
           <div>
@@ -210,7 +210,7 @@ export default function AccountPage() {
                         <span className="font-display text-lg text-ink-900">
                           {order.code}
                         </span>
-                        <span className="badge bg-brand-100 text-brand-700">
+                        <span className="badge bg-brand-100 text-accent">
                           {statusSteps[stepIndex]?.label}
                         </span>
                       </div>
@@ -227,7 +227,7 @@ export default function AccountPage() {
                           .join(", ")}
                       </p>
                     </div>
-                    <span className="font-display text-lg text-brand-700">
+                    <span className="font-display text-lg text-accent">
                       {formatTsh(order.totalTsh)}
                     </span>
                   </Link>
@@ -252,7 +252,7 @@ export default function AccountPage() {
         </div>
         <Link
           href="/faragha"
-          className="text-sm font-semibold text-brand-700 hover:underline"
+          className="text-sm font-semibold text-accent hover:underline"
         >
           Sera ya Faragha →
         </Link>
@@ -263,7 +263,7 @@ export default function AccountPage() {
         Unapendelea kuagiza kwa simu? Piga{" "}
         <a
           href={`tel:${site.phoneTel}`}
-          className="font-medium text-brand-700 hover:underline"
+          className="font-medium text-accent hover:underline"
         >
           +255 754 000 000
         </a>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useOrder } from "@/lib/orders-client";
+import { useOrderLookup } from "@/lib/orders-client";
 import { useNow } from "@/lib/clock";
 import { liveStatus, statusEvents, statusSteps } from "@/lib/orders";
 import { getProductBySlug } from "@/lib/data/catalog";
@@ -28,9 +28,22 @@ const paymentLabels: Record<string, string> = {
 export default function OrderPage() {
   const params = useParams<{ code: string }>();
   const code = params?.code ?? "";
-  const order = useOrder(code);
+  const { order, loading, error } = useOrderLookup(code);
   // Saa ya client (husasishwa kila sekunde) — demo inasonga yenyewe.
   const now = useNow();
+
+  if (loading) {
+    return (
+      <div className="container-x max-w-3xl py-12 lg:py-16">
+        <div className="mx-auto h-16 w-16 animate-pulse rounded-full bg-cream-200" />
+        <div className="mx-auto mt-6 h-8 w-72 animate-pulse rounded-lg bg-cream-200" />
+        <div className="card mt-10 animate-pulse p-6">
+          <div className="h-4 w-40 rounded bg-cream-200" />
+          <div className="mt-4 h-24 rounded-xl bg-cream-200" />
+        </div>
+      </div>
+    );
+  }
 
   if (!order) {
     return (
@@ -38,15 +51,18 @@ export default function OrderPage() {
         <BagIcon className="mx-auto h-14 w-14 text-ink-300" />
         <h1 className="heading-display mt-6">Hatukupata oda hii</h1>
         <p className="mt-3 text-ink-500">
-          Nambari <span className="font-medium text-ink-700">{code}</span>{" "}
-          haipo kwenye kifaa hiki. Angalia tena, au tupigie simu{" "}
-          <a
-            href={`tel:${site.phoneTel}`}
-            className="font-medium text-brand-700 hover:underline"
-          >
-            {site.phoneDisplay}
-          </a>
-          .
+          {error && !error.startsWith("Oda hiyo")
+            ? error
+            : <>Nambari <span className="font-medium text-ink-700">{code}</span>{" "}
+              haipatikani. Angalia tena, au tupigie simu{" "}
+              <a
+                href={`tel:${site.phoneTel}`}
+                className="font-medium text-accent hover:underline"
+              >
+                {site.phoneDisplay}
+              </a>
+              .
+            </>}
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link href="/fuatilia" className="btn-primary">
@@ -86,7 +102,7 @@ export default function OrderPage() {
             <p className="text-sm text-ink-500">Nambari ya oda</p>
             <p className="font-display text-xl text-ink-900">{order.code}</p>
           </div>
-          <span className="badge bg-brand-100 text-brand-700">
+          <span className="badge bg-brand-100 text-accent">
             {statusSteps[stepIndex]?.label}
           </span>
         </div>
@@ -104,7 +120,7 @@ export default function OrderPage() {
                 />
                 <span
                   className={`mt-2 block text-[11px] ${
-                    done ? "font-semibold text-brand-700" : "text-ink-400"
+                    done ? "font-semibold text-accent" : "text-ink-400"
                   }`}
                 >
                   {step.label}
@@ -215,7 +231,7 @@ export default function OrderPage() {
           </li>
           <li className="flex justify-between border-t border-cream-200 pt-2 text-base font-semibold">
             <span>Jumla</span>
-            <span className="text-brand-700">{formatTsh(order.totalTsh)}</span>
+            <span className="text-accent">{formatTsh(order.totalTsh)}</span>
           </li>
         </ul>
       </div>

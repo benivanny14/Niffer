@@ -44,13 +44,13 @@ export default async function ArticlePage({ params }: PageProps) {
       <nav aria-label="Njia" className="text-sm text-ink-400">
         <ol className="flex flex-wrap items-center gap-1.5">
           <li>
-            <Link href="/" className="hover:text-brand-700">
+            <Link href="/" className="hover:text-accent">
               Nyumbani
             </Link>
           </li>
           <li aria-hidden>›</li>
           <li>
-            <Link href="/makala" className="hover:text-brand-700">
+            <Link href="/makala" className="hover:text-accent">
               Makala
             </Link>
           </li>
@@ -116,11 +116,11 @@ export default async function ArticlePage({ params }: PageProps) {
                 <div className="min-w-0 flex-1">
                   <Link
                     href={`/bidhaa/${product.slug}`}
-                    className="block truncate text-sm font-semibold text-ink-900 hover:text-brand-700"
+                    className="block truncate text-sm font-semibold text-ink-900 hover:text-accent"
                   >
                     {product.name}
                   </Link>
-                  <p className="mt-0.5 text-sm font-semibold text-brand-700">
+                  <p className="mt-0.5 text-sm font-semibold text-accent">
                     {formatTsh(product.priceTsh)}
                   </p>
                 </div>
@@ -144,7 +144,7 @@ export default async function ArticlePage({ params }: PageProps) {
           </h2>
           <Link
             href="/makala"
-            className="group inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:text-brand-800"
+            className="group inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent"
           >
             Zote
             <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -165,7 +165,7 @@ export default async function ArticlePage({ params }: PageProps) {
                   />
                 </div>
                 <div className="flex flex-1 flex-col gap-1.5 p-4">
-                  <h3 className="font-display text-base leading-snug text-ink-900 group-hover:text-brand-700">
+                  <h3 className="font-display text-base leading-snug text-ink-900 group-hover:text-accent">
                     {other.title}
                   </h3>
                   <p className="mt-auto pt-2 text-xs text-ink-400">

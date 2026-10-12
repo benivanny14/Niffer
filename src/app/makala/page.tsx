@@ -50,13 +50,13 @@ export default function MakalaPage() {
             <p className="eyebrow">
               {categoryNames[featured.category]} · {formatDate(featured.date)}
             </p>
-            <h2 className="mt-2 font-display text-2xl leading-snug text-ink-900 group-hover:text-brand-700">
+            <h2 className="mt-2 font-display text-2xl leading-snug text-ink-900 group-hover:text-accent">
               {featured.title}
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-ink-500">
               {featured.excerpt}
             </p>
-            <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700">
+            <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-accent">
               Soma zaidi
               <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </span>
@@ -83,7 +83,7 @@ export default function MakalaPage() {
                 <p className="text-xs font-semibold uppercase tracking-wide text-gold-600">
                   {categoryNames[article.category]} · {article.readMinutes} dakika
                 </p>
-                <h2 className="font-display text-lg leading-snug text-ink-900 group-hover:text-brand-700">
+                <h2 className="font-display text-lg leading-snug text-ink-900 group-hover:text-accent">
                   {article.title}
                 </h2>
                 <p className="text-sm text-ink-500">{article.excerpt}</p>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { BeautyVideo } from "@/lib/data/catalog";
 import { ProductImage } from "@/components/media/ProductImage";
 import { VideoModal } from "@/components/media/VideoModal";
+import { Portal } from "@/components/ui/Portal";
 import { PlayIcon } from "@/components/ui/icons";
 
 /**
@@ -36,11 +37,11 @@ export function VideoGallery({ videos }: { videos: BeautyVideo[] }) {
                   className="absolute inset-0 flex items-center justify-center"
                   aria-label={`Cheza video: ${video.title}`}
                 >
-                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/90 text-brand-700 shadow-lg transition-transform group-hover:scale-110">
+                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-surface/90 text-accent shadow-lg transition-transform group-hover:scale-110">
                     <PlayIcon className="ml-0.5 h-6 w-6" />
                   </span>
                 </button>
-                <span className="badge absolute bottom-3 right-3 bg-ink-900/80 text-white">
+                <span className="badge absolute bottom-3 right-3 bg-black/80 text-white">
                   {video.duration}
                 </span>
               </div>
@@ -52,7 +53,7 @@ export function VideoGallery({ videos }: { videos: BeautyVideo[] }) {
                 {video.relatedProductSlug ? (
                   <Link
                     href={`/bidhaa/${video.relatedProductSlug}`}
-                    className="mt-auto pt-3 text-sm font-semibold text-brand-700 hover:text-brand-800"
+                    className="mt-auto pt-3 text-sm font-semibold text-accent hover:text-accent"
                   >
                     Bidhaa zinazohusiana →
                   </Link>
@@ -63,7 +64,9 @@ export function VideoGallery({ videos }: { videos: BeautyVideo[] }) {
         ))}
       </ul>
 
-      <VideoModal video={active} onClose={() => setActive(null)} />
+      <Portal>
+        <VideoModal video={active} onClose={() => setActive(null)} />
+      </Portal>
     </>
   );
 }

@@ -49,7 +49,7 @@ export default function AboutPage() {
       <section className="mt-12 grid gap-6 sm:grid-cols-3">
         {values.map(({ icon: Icon, title, body }) => (
           <div key={title} className="card p-6">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-100 text-accent">
               <Icon className="h-5 w-5" />
             </span>
             <h2 className="mt-4 font-display text-lg text-ink-900">{title}</h2>
@@ -96,7 +96,7 @@ export default function AboutPage() {
             <p className="text-ink-500">Simu / WhatsApp</p>
             <a
               href={`tel:${site.phoneTel}`}
-              className="font-medium text-brand-700 hover:underline"
+              className="font-medium text-accent hover:underline"
             >
               {site.phoneDisplay}
             </a>
@@ -105,7 +105,7 @@ export default function AboutPage() {
             <p className="text-ink-500">Barua pepe</p>
             <a
               href={`mailto:${site.email}`}
-              className="font-medium text-brand-700 hover:underline"
+              className="font-medium text-accent hover:underline"
             >
               {site.email}
             </a>

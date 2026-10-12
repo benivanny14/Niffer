@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { products, reviews } from "@/lib/data/catalog";
+import { connection } from "next/server";
+import { products } from "@/lib/data/catalog";
 import { getProductBySlug } from "@/lib/data/catalog";
+import { listReviews, type StoredReview } from "@/lib/server/leads";
 import { RatingStars } from "@/components/ui/RatingStars";
-import { ReviewForm, LocalReviews } from "@/components/ui/ReviewForm";
+import { ReviewForm } from "@/components/ui/ReviewForm";
 import { StarIcon } from "@/components/ui/icons";
 
 export const metadata: Metadata = {
@@ -12,26 +14,23 @@ export const metadata: Metadata = {
     "Soma na uandike hakiki za bidhaa za Niffer Cosmetics kutoka kwa wateja halisi Tanzania.",
 };
 
-function RatingSummary() {
-  const all = reviews;
+function RatingSummary({ reviews }: { reviews: StoredReview[] }) {
   const avg =
-    all.length > 0
-      ? all.reduce((sum, r) => sum + r.rating, 0) / all.length
+    reviews.length > 0
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
       : 0;
   const dist = [5, 4, 3, 2, 1].map((star) => ({
     star,
-    count: all.filter((r) => r.rating === star).length,
+    count: reviews.filter((r) => r.rating === star).length,
   }));
 
   return (
     <div className="card grid gap-8 p-6 sm:grid-cols-2">
       <div className="flex flex-col items-center justify-center text-center">
-        <p className="font-display text-5xl text-ink-900">
-          {avg.toFixed(1)}
-        </p>
+        <p className="font-display text-5xl text-ink-900">{avg.toFixed(1)}</p>
         <RatingStars rating={avg} size="lg" />
         <p className="mt-2 text-sm text-ink-500">
-          Kutoka maoni {all.length} ya wateja
+          Kutoka maoni {reviews.length} ya wateja
         </p>
       </div>
       <ul className="space-y-2">
@@ -63,9 +62,11 @@ function RatingSummary() {
   );
 }
 
-export default function ReviewsPage() {
-  // Hakiki za local (kutoka ReviewForm) ni client-side — hapa tunatumia
-  // za katalogi pekee; local zinaonyeshwa ndani ya component ya chini.
+export default async function ReviewsPage() {
+  // Hakiki zote hutoka kwenye database (pamoja na mpya uliyoweka wewe).
+  await connection();
+  const all = listReviews(200);
+
   return (
     <div className="container-x py-12 lg:py-16">
       <p className="eyebrow">Ukaguzi</p>
@@ -76,7 +77,7 @@ export default function ReviewsPage() {
       </p>
 
       <div className="mt-10">
-        <RatingSummary />
+        <RatingSummary reviews={all} />
       </div>
 
       {/* Fomu + orodha */}
@@ -85,36 +86,50 @@ export default function ReviewsPage() {
           <h2 className="font-display text-2xl text-ink-900">
             Maoni ya hivi karibuni
           </h2>
-          <LocalReviews />
-          <ul className="mt-6 space-y-4">
-            {reviews.map((review) => {
-              const product = getProductBySlug(review.productSlug);
-              return (
-                <li key={review.id} className="card p-6">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <RatingStars rating={review.rating} size="md" />
-                    {product ? (
-                      <Link
-                        href={`/bidhaa/${product.slug}`}
-                        className="text-xs font-semibold text-brand-700 hover:underline"
-                      >
-                        {product.name} →
-                      </Link>
-                    ) : null}
-                  </div>
-                  <blockquote className="mt-3 text-sm leading-relaxed text-ink-700">
-                    &ldquo;{review.comment}&rdquo;
-                  </blockquote>
-                  <figcaption className="mt-3 text-sm">
-                    <span className="font-semibold text-ink-900">
-                      {review.customerName}
-                    </span>
-                    <span className="text-ink-400"> · {review.location}</span>
-                  </figcaption>
-                </li>
-              );
-            })}
-          </ul>
+
+          {all.length === 0 ? (
+            <p className="card mt-6 p-6 text-sm text-ink-500">
+              Hakuna hakiki bado. Kuwa wa kwanza kuacha hakiki hapa chini.
+            </p>
+          ) : (
+            <ul className="mt-6 space-y-4">
+              {all.map((review) => {
+                const product = getProductBySlug(review.productSlug);
+                const isNew = review.id.startsWith("rev-");
+                return (
+                  <li
+                    key={review.id}
+                    className={`card p-6 ${isNew ? "border-brand-200" : ""}`}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <RatingStars rating={review.rating} size="md" />
+                      {isNew ? (
+                        <span className="badge bg-success-100 text-success-600">
+                          Hakiki mpya
+                        </span>
+                      ) : product ? (
+                        <Link
+                          href={`/bidhaa/${product.slug}`}
+                          className="text-xs font-semibold text-accent hover:underline"
+                        >
+                          {product.name} →
+                        </Link>
+                      ) : null}
+                    </div>
+                    <blockquote className="mt-3 text-sm leading-relaxed text-ink-700">
+                      &ldquo;{review.comment}&rdquo;
+                    </blockquote>
+                    <p className="mt-3 text-sm">
+                      <span className="font-semibold text-ink-900">
+                        {review.customerName}
+                      </span>
+                      <span className="text-ink-400"> · {review.location}</span>
+                    </p>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
 
           {/* Orodha ya bidhaa zenye hakiki */}
           <section className="mt-12">

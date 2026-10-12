@@ -48,7 +48,7 @@ export default function WholesalePage() {
       <div className="mt-10 grid gap-4 sm:grid-cols-3">
         {benefits.map(({ icon: Icon, title, description }) => (
           <div key={title} className="card flex items-start gap-3 p-5">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-accent">
               <Icon className="h-5 w-5" />
             </span>
             <div>
@@ -87,7 +87,7 @@ export default function WholesalePage() {
                     {tier.min}+ {tier.max ? `– ${tier.max}` : " bidhaa"}
                   </td>
                   <td className="px-5 py-4">
-                    <span className="badge bg-brand-100 text-brand-700">
+                    <span className="badge bg-brand-100 text-accent">
                       -{tier.discount}%
                     </span>
                   </td>
@@ -126,7 +126,7 @@ export default function WholesalePage() {
             Je, unahitaji ushauri?{" "}
             <Link
               href="/wasiliana"
-              className="font-medium text-brand-700 hover:underline"
+              className="font-medium text-accent hover:underline"
             >
               Wasiliana nasi
             </Link>{" "}

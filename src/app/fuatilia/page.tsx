@@ -5,7 +5,8 @@ import { useState } from "react";
 import { formatTsh } from "@/lib/format";
 import { getProductBySlug } from "@/lib/data/catalog";
 import { liveStatus, statusSteps, type Order } from "@/lib/orders";
-import { findOrder } from "@/lib/orders-client";
+import { fetchOrder } from "@/lib/orders-client";
+import { errorMessage } from "@/lib/api";
 import { formatPhone } from "@/lib/format";
 import { SearchIcon, TruckIcon } from "@/components/ui/icons";
 
@@ -13,12 +14,26 @@ export default function TrackOrderPage() {
   const [code, setCode] = useState("");
   const [order, setOrder] = useState<Order | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [error, setError] = useState("");
 
-  function lookup(e: React.FormEvent) {
+  async function lookup(e: React.FormEvent) {
     e.preventDefault();
-    const found = findOrder(code);
-    setOrder(found ?? null);
-    setNotFound(!found);
+    if (searching) return;
+    setSearching(true);
+    setError("");
+    setNotFound(false);
+    setOrder(null);
+    try {
+      const found = await fetchOrder(code);
+      setOrder(found ?? null);
+      setNotFound(!found);
+    } catch (err) {
+      setOrder(null);
+      setError(errorMessage(err));
+    } finally {
+      setSearching(false);
+    }
   }
 
   const stepIndex = order
@@ -36,7 +51,7 @@ export default function TrackOrderPage() {
       </p>
 
       <form onSubmit={lookup} className="mt-6 flex gap-2">
-        <div className="flex flex-1 items-center gap-2 rounded-xl border border-cream-300 bg-white px-4">
+        <div className="flex flex-1 items-center gap-2 rounded-xl border border-cream-300 bg-surface px-4">
           <SearchIcon className="h-5 w-5 shrink-0 text-ink-400" />
           <input
             value={code}
@@ -46,12 +61,34 @@ export default function TrackOrderPage() {
             className="w-full bg-transparent py-3 text-sm uppercase text-ink-900 outline-none placeholder:text-ink-400"
           />
         </div>
-        <button type="submit" className="btn-primary">
-          Tafuta
+        <button
+          type="submit"
+          disabled={searching}
+          className="btn-primary disabled:opacity-60"
+        >
+          {searching ? "Inatafuta…" : "Tafuta"}
         </button>
       </form>
 
-      {notFound ? (
+      {error ? (
+        <div className="card mt-8 border-danger-200 bg-danger-50 p-6">
+          <p className="text-sm text-danger-600">{error}</p>
+        </div>
+      ) : null}
+
+      {searching ? (
+        <div className="card mt-8 animate-pulse p-6">
+          <div className="h-4 w-32 rounded bg-cream-200" />
+          <div className="mt-3 h-6 w-48 rounded bg-cream-200" />
+          <div className="mt-6 grid grid-cols-4 gap-2">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="h-2 rounded-full bg-cream-200" />
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {notFound && !searching ? (
         <div className="card mt-8 p-6">
           <p className="font-display text-lg text-ink-900">
             Hatukupata oda hiyo
@@ -60,7 +97,7 @@ export default function TrackOrderPage() {
             Hakikisha nambari ni sahihi, au tupigie simu{" "}
             <a
               href="tel:+255754000000"
-              className="font-medium text-brand-700 hover:underline"
+              className="font-medium text-accent hover:underline"
             >
               +255 754 000 000
             </a>
@@ -78,14 +115,14 @@ export default function TrackOrderPage() {
                 {order.code}
               </p>
             </div>
-            <span className="badge bg-brand-100 text-brand-700">
+            <span className="badge bg-brand-100 text-accent">
               {statusSteps[stepIndex]?.label}
             </span>
           </div>
           <p className="mt-3 text-sm">
             <Link
               href={`/odha/${order.code}`}
-              className="font-medium text-brand-700 hover:underline"
+              className="font-medium text-accent hover:underline"
             >
               Ona maelezo kamili ya oda hii →
             </Link>
@@ -104,7 +141,7 @@ export default function TrackOrderPage() {
                   />
                   <span
                     className={`mt-2 block text-[11px] ${
-                      done ? "font-semibold text-brand-700" : "text-ink-400"
+                      done ? "font-semibold text-accent" : "text-ink-400"
                     }`}
                   >
                     {step.label}
@@ -149,7 +186,7 @@ export default function TrackOrderPage() {
             })}
             <li className="flex justify-between border-t border-cream-200 pt-2 font-semibold">
               <span>Jumla</span>
-              <span className="text-brand-700">
+              <span className="text-accent">
                 {formatTsh(order.totalTsh)}
               </span>
             </li>
@@ -163,7 +200,7 @@ export default function TrackOrderPage() {
           Maswali kuhusu oda yako?{" "}
           <Link
             href="/wasiliana"
-            className="font-medium text-brand-700 hover:underline"
+            className="font-medium text-accent hover:underline"
           >
             Wasiliana nasi
           </Link>

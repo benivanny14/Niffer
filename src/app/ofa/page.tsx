@@ -78,7 +78,7 @@ export default function OffersPage() {
           },
         ].map(({ icon: Icon, title, description }) => (
           <div key={title} className="card flex items-start gap-3 p-5">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-accent">
               <Icon className="h-5 w-5" />
             </span>
             <div>
@@ -112,7 +112,7 @@ export default function OffersPage() {
         <ul className="mt-6 grid gap-4 sm:grid-cols-3">
           {promoCodes.map((promo) => (
             <li key={promo.code} className="card flex flex-col p-5">
-              <span className="badge self-start bg-brand-100 text-brand-700">
+              <span className="badge self-start bg-brand-100 text-accent">
                 <TagIcon className="h-3.5 w-3.5" />
                 {promo.code}
               </span>
@@ -160,7 +160,7 @@ export default function OffersPage() {
                     >
                       <Link
                         href={`/bidhaa/${item.slug}`}
-                        className="text-ink-700 hover:text-brand-700"
+                        className="text-ink-700 hover:text-accent"
                       >
                         {item.name}
                       </Link>
@@ -174,7 +174,7 @@ export default function OffersPage() {
                   <span className="text-sm text-ink-400 line-through">
                     {formatTsh(total)}
                   </span>
-                  <span className="font-display text-xl text-brand-700">
+                  <span className="font-display text-xl text-accent">
                     {formatTsh(bundlePrice)}
                   </span>
                 </div>
@@ -205,7 +205,7 @@ export default function OffersPage() {
             </div>
             <Link
               href="/bidhaa?kipengele=mpya"
-              className="text-sm font-semibold text-brand-700 hover:text-brand-800"
+              className="text-sm font-semibold text-accent hover:text-accent"
             >
               Zote mpya →
             </Link>

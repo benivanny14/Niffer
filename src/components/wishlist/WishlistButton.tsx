@@ -18,8 +18,8 @@ export function WishlistButton({ slug, className = "" }: Props) {
       aria-label={active ? "Ondoa kwenye upendwa" : "Hifadhi kwenye upendwa"}
       className={`rounded-full p-2 transition-colors ${
         active
-          ? "bg-white/90 text-danger-600"
-          : "bg-white/70 text-ink-500 hover:text-danger-600"
+          ? "bg-surface/90 text-danger-600"
+          : "bg-surface/70 text-ink-500 hover:text-danger-600"
       } ${className}`}
     >
       <HeartIcon className={`h-5 w-5 ${active ? "fill-current" : ""}`} />

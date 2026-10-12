@@ -60,8 +60,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="sw"
       className={`${inter.variable} ${playfair.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col bg-cream-50 text-ink-900">
+        <script
+          // Weka dark mode KABLA ya render pertama — hakuna flash ya mwanga.
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('niffer.theme');var d=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.classList.add('dark');}catch(e){}})();`,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

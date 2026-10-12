@@ -70,7 +70,7 @@ export function ProductCard({ product }: { product: Product }) {
         <h3 className="font-display text-lg leading-snug text-ink-900">
           <Link
             href={`/bidhaa/${product.slug}`}
-            className="transition-colors hover:text-brand-700"
+            className="transition-colors hover:text-accent"
           >
             {product.name}
           </Link>

@@ -34,7 +34,7 @@ export function SiteFooter() {
       <div className="container-x grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <div className="max-w-xs">
           <Link href="/" className="flex items-center gap-2">
-            <SparkleIcon className="h-7 w-7 text-brand-700" />
+            <SparkleIcon className="h-7 w-7 text-accent" />
             <span className="flex flex-col leading-none">
               <span className="font-display text-xl font-semibold text-ink-900">
                 Niffer
@@ -58,7 +58,7 @@ export function SiteFooter() {
               <li key={category.slug}>
                 <Link
                   href={`/bidhaa?kategoria=${category.slug}`}
-                  className="text-sm text-ink-500 transition-colors hover:text-brand-700"
+                  className="text-sm text-ink-500 transition-colors hover:text-accent"
                 >
                   {category.name}
                 </Link>
@@ -74,7 +74,7 @@ export function SiteFooter() {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="text-sm text-ink-500 transition-colors hover:text-brand-700"
+                  className="text-sm text-ink-500 transition-colors hover:text-accent"
                 >
                   {link.label}
                 </Link>
@@ -90,7 +90,7 @@ export function SiteFooter() {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="text-sm text-ink-500 transition-colors hover:text-brand-700"
+                  className="text-sm text-ink-500 transition-colors hover:text-accent"
                 >
                   {link.label}
                 </Link>
@@ -106,7 +106,7 @@ export function SiteFooter() {
               <PhoneIcon className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
               <a
                 href={`tel:${site.phoneTel}`}
-                className="transition-colors hover:text-brand-700"
+                className="transition-colors hover:text-accent"
               >
                 {site.phoneDisplay}
               </a>
@@ -117,7 +117,7 @@ export function SiteFooter() {
                 href={`https://wa.me/${site.whatsapp}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="transition-colors hover:text-brand-700"
+                className="transition-colors hover:text-accent"
               >
                 WhatsApp: oda za haraka
               </a>
@@ -133,7 +133,7 @@ export function SiteFooter() {
               (method) => (
                 <span
                   key={method}
-                  className="rounded-full border border-cream-300 bg-white px-3 py-1 text-xs font-medium text-ink-500"
+                  className="rounded-full border border-cream-300 bg-surface px-3 py-1 text-xs font-medium text-ink-500"
                 >
                   {method}
                 </span>
@@ -146,7 +146,7 @@ export function SiteFooter() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
-              className="rounded-full border border-cream-300 bg-white p-2 text-ink-500 transition-colors hover:text-brand-700"
+              className="rounded-full border border-cream-300 bg-surface p-2 text-ink-500 transition-colors hover:text-accent"
             >
               <InstagramIcon className="h-4.5 w-4.5" />
             </a>
@@ -155,7 +155,7 @@ export function SiteFooter() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="TikTok"
-              className="rounded-full border border-cream-300 bg-white p-2 text-ink-500 transition-colors hover:text-brand-700"
+              className="rounded-full border border-cream-300 bg-surface p-2 text-ink-500 transition-colors hover:text-accent"
             >
               <TiktokIcon className="h-4.5 w-4.5" />
             </a>
@@ -164,7 +164,7 @@ export function SiteFooter() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Facebook"
-              className="rounded-full border border-cream-300 bg-white p-2 text-ink-500 transition-colors hover:text-brand-700"
+              className="rounded-full border border-cream-300 bg-surface p-2 text-ink-500 transition-colors hover:text-accent"
             >
               <FacebookIcon className="h-4.5 w-4.5" />
             </a>
@@ -176,10 +176,10 @@ export function SiteFooter() {
         <div className="container-x flex flex-col items-center justify-between gap-2 py-5 text-xs text-ink-400 sm:flex-row">
           <p>© 2026 Niffer Cosmetics. Haki zote zimehifadhiwa.</p>
           <div className="flex items-center gap-4">
-            <Link href="/akaunti" className="hover:text-brand-700">
+            <Link href="/akaunti" className="hover:text-accent">
               Akaunti
             </Link>
-            <Link href="/admin" className="hover:text-brand-700">
+            <Link href="/admin" className="hover:text-accent">
               Admin
             </Link>
             <span>Bei zote ni kwa Shilingi ya Tanzania (TSh)</span>
