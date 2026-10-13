@@ -457,7 +457,7 @@ export function ProductManager() {
                   />
                 </div>
                 <p className="mt-1 text-xs text-ink-400">
-                  PNG, JPG, Webp au SVG — zaidi ya 3MB. (Tupu = ongeza baadaye)
+                  PNG, JPG, Webp au AVIF — zaidi ya 3MB. (Tupu = ongeza baadaye)
                 </p>
               </div>
             </div>

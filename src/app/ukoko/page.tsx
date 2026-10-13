@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useStore } from "@/lib/store";
 import { formatTsh } from "@/lib/format";
 import {
@@ -14,7 +14,7 @@ import {
 } from "@/lib/site";
 import { createOrder, pushOrder } from "@/lib/orders-client";
 import { getStock, applyServerStock } from "@/lib/stock";
-import { apiPost, errorMessage } from "@/lib/api";
+import { apiGet, apiPost, errorMessage } from "@/lib/api";
 import { ProductImage } from "@/components/media/ProductImage";
 import {
   BagIcon,
@@ -59,6 +59,33 @@ export default function CheckoutPage() {
   } | null>(null);
   const [giftError, setGiftError] = useState("");
   const [giftChecking, setGiftChecking] = useState(false);
+
+  const [email, setEmail] = useState("");
+
+  // Jaribu kujaza taarifa kutoka akaunti (mteja aliyeingia).
+  useEffect(() => {
+    let alive = true;
+    apiGet<{
+      ok: boolean;
+      customer: {
+        name: string;
+        phone: string;
+        email: string | null;
+      } | null;
+    }>("/api/customers/me")
+      .then((data) => {
+        if (!alive || !data.customer) return;
+        setName((prev) => prev || data.customer!.name);
+        setPhone((prev) => prev || data.customer!.phone);
+        setEmail((prev) => prev || (data.customer!.email ?? ""));
+      })
+      .catch(() => {
+        /* mteja hajaringia — fomu ya kawaida */
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const cities = tanzaniaCities[region as keyof typeof tanzaniaCities] ?? [];
 
@@ -160,7 +187,7 @@ export default function CheckoutPage() {
 
     try {
       const { order, stock, paymentUrl } = await createOrder({
-        customer: { name, phone, region, city, street, address, note },
+        customer: { name, phone, region, city, street, address, note, email },
         payment,
         lines: lines.map((l) => ({ slug: l.product.slug, qty: l.qty })),
         promoCode: promo?.code,
@@ -247,6 +274,20 @@ export default function CheckoutPage() {
               />
             </label>
           </div>
+
+          <label className="block text-sm">
+            <span className="mb-1.5 block font-medium text-ink-700">
+              Barua pepe (hiari)
+            </span>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={field}
+              placeholder="wewe@mfano.com"
+              autoComplete="email"
+            />
+          </label>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block text-sm">

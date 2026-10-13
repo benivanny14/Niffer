@@ -122,6 +122,14 @@ export function markMessageRead(messageId: string): boolean {
   return Number(result.changes) > 0;
 }
 
+/** Weka ujumbe WOTE kuwa wamesomwa (admin bulk). Rudisha idadi. */
+export function markAllMessagesRead(): number {
+  const result = getDb()
+    .prepare("UPDATE messages SET status = 'read' WHERE status = 'new'")
+    .run();
+  return Number(result.changes);
+}
+
 /* ============ Jarida (newsletter) ============ */
 
 export function subscribeNewsletter(
@@ -164,6 +172,16 @@ export function countSubscribers(): number {
   return Number(row?.n ?? 0);
 }
 
+/** Ondoa barua pepe kutoka jarida (jiondoe). Rudisha true kama ilifutwa. */
+export function unsubscribeNewsletter(rawEmail: string): boolean {
+  const email = rawEmail.trim().toLowerCase();
+  if (!email) return false;
+  const result = getDb()
+    .prepare("DELETE FROM newsletter WHERE email = ?")
+    .run(email);
+  return Number(result.changes) > 0;
+}
+
 /* ============ Kadi za zawadi ============ */
 
 export type GiftCard = {
@@ -173,9 +191,30 @@ export type GiftCard = {
   message: string;
   status: "issued" | "redeemed" | "expired";
   createdAt: string;
+  expiresAt: string;
 };
 
 const GIFT_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+/** Kadi ya zawadi inaisha baada ya miaka 1. */
+const GIFT_TTL_MS = 365 * 24 * 60 * 60 * 1000;
+
+function giftExpiresAt(createdAt: string): string {
+  const base = Date.parse(createdAt);
+  const t = Number.isFinite(base) ? base : Date.now();
+  return new Date(t + GIFT_TTL_MS).toISOString();
+}
+
+/** Rudisha true kama kadi imeisha muda (bila kuandika DB). */
+function isGiftExpired(
+  status: string,
+  createdAt: string,
+  expiresAt: string | null | undefined,
+): boolean {
+  if (status !== "issued") return false;
+  const exp = expiresAt || giftExpiresAt(createdAt);
+  return Date.parse(exp) < Date.now();
+}
 
 function giftCode(): string {
   let out = "GC-";
@@ -201,15 +240,17 @@ export function issueGiftCard(input: {
   for (let i = 0; i < 10 && exists.get(code); i += 1) code = giftCode();
 
   const createdAt = nowIso();
+  const expiresAt = giftExpiresAt(createdAt);
   db.prepare(
-    `INSERT INTO gift_cards (code, amount_tsh, recipient, message, status, created_at)
-     VALUES (?, ?, ?, ?, 'issued', ?)`,
+    `INSERT INTO gift_cards (code, amount_tsh, recipient, message, status, created_at, expires_at)
+     VALUES (?, ?, ?, ?, 'issued', ?, ?)`,
   ).run(
     code,
     amount,
     (input.recipient ?? "").trim().slice(0, 80),
     (input.message ?? "").trim().slice(0, 300),
     createdAt,
+    expiresAt,
   );
 
   return {
@@ -219,6 +260,7 @@ export function issueGiftCard(input: {
     message: (input.message ?? "").trim(),
     status: "issued",
     createdAt,
+    expiresAt,
   };
 }
 
@@ -232,19 +274,27 @@ export function listGiftCards(limit = 100): GiftCard[] {
     message: string;
     status: string;
     created_at: string;
+    expires_at: string | null;
   }[];
 
-  return rows.map((r) => ({
-    code: r.code,
-    amountTsh: r.amount_tsh,
-    recipient: r.recipient,
-    message: r.message,
-    status: r.status as GiftCard["status"],
-    createdAt: r.created_at,
-  }));
+  return rows.map((r) => {
+    const expiresAt = r.expires_at || giftExpiresAt(r.created_at);
+    const status = isGiftExpired(r.status, r.created_at, r.expires_at)
+      ? "expired"
+      : (r.status as GiftCard["status"]);
+    return {
+      code: r.code,
+      amountTsh: r.amount_tsh,
+      recipient: r.recipient,
+      message: r.message,
+      status,
+      createdAt: r.created_at,
+      expiresAt,
+    };
+  });
 }
 
-/** Kadi moja kwa msimbo (redeem). */
+/** Kadi moja kwa msimbo (redeem). Hurudisha "expired" kama muda imeisha. */
 export function getGiftCard(code: string): GiftCard | undefined {
   const key = code.trim().toUpperCase();
   if (!key) return undefined;
@@ -258,16 +308,30 @@ export function getGiftCard(code: string): GiftCard | undefined {
         message: string;
         status: string;
         created_at: string;
+        expires_at: string | null;
       }
     | undefined;
   if (!row) return undefined;
+
+  let status = row.status;
+  if (isGiftExpired(status, row.created_at, row.expires_at)) {
+    // Weka "expired" kwenye DB kwa kudumu (lazy persist).
+    status = "expired";
+    getDb()
+      .prepare(
+        "UPDATE gift_cards SET status = 'expired' WHERE code = ? AND status = 'issued'",
+      )
+      .run(row.code);
+  }
+
   return {
     code: row.code,
     amountTsh: row.amount_tsh,
     recipient: row.recipient,
     message: row.message,
-    status: row.status as GiftCard["status"],
+    status: status as GiftCard["status"],
     createdAt: row.created_at,
+    expiresAt: row.expires_at || giftExpiresAt(row.created_at),
   };
 }
 
@@ -277,9 +341,10 @@ export function redeemGiftCard(code: string, orderCode: string): boolean {
     .prepare(
       `UPDATE gift_cards
          SET status = 'redeemed', redeemed_at = ?, order_code = ?
-       WHERE code = ? AND status = 'issued'`,
+       WHERE code = ? AND status = 'issued'
+         AND (expires_at IS NULL OR expires_at > ?)`,
     )
-    .run(nowIso(), orderCode, code.trim().toUpperCase());
+    .run(nowIso(), orderCode, code.trim().toUpperCase(), nowIso());
   return Number(result.changes) > 0;
 }
 

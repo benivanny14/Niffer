@@ -104,6 +104,7 @@ CREATE TABLE IF NOT EXISTS gift_cards (
   message    TEXT NOT NULL DEFAULT '',
   status     TEXT NOT NULL DEFAULT 'issued',
   created_at TEXT NOT NULL,
+  expires_at TEXT,
   redeemed_at TEXT,
   order_code  TEXT
 );
@@ -281,6 +282,15 @@ function migrate(db: DatabaseSync): void {
   if (!giftCols.includes("order_code")) {
     db.exec("ALTER TABLE gift_cards ADD COLUMN order_code TEXT");
   }
+  if (!giftCols.includes("expires_at")) {
+    db.exec("ALTER TABLE gift_cards ADD COLUMN expires_at TEXT");
+  }
+
+  // Kadi zilizotolewa kabla ya kipengele cha kuisha muda — wapa miaka 1.
+  db.exec(
+    `UPDATE gift_cards SET expires_at = datetime(created_at, '+1 year')
+     WHERE expires_at IS NULL`,
+  );
 
   // Promo codes: ingiza katalogi ya ndani mara moja (seed) — DB ndio mwanzo
   // wa ukweli baada ya admin kubadilisha au kuzima msimbo.

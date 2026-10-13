@@ -32,6 +32,7 @@ export function GiftCardPanel() {
   const [issued, setIssued] = useState<{
     code: string;
     amountTsh: number;
+    expiresAt?: string;
   } | null>(null);
 
   async function issue() {
@@ -41,9 +42,13 @@ export function GiftCardPanel() {
     try {
       const data = await apiPost<{
         ok: boolean;
-        giftCard: { code: string; amountTsh: number };
+        giftCard: { code: string; amountTsh: number; expiresAt?: string };
       }>("/api/giftcards", { amountTsh: amount, recipient, message });
-      setIssued({ code: data.giftCard.code, amountTsh: data.giftCard.amountTsh });
+      setIssued({
+        code: data.giftCard.code,
+        amountTsh: data.giftCard.amountTsh,
+        expiresAt: data.giftCard.expiresAt,
+      });
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -125,7 +130,11 @@ export function GiftCardPanel() {
                 {issued.code}
               </p>
               <p className="mt-2 text-xs text-ink-500">
-                Hifadhi msimbo huu — utautumia kwenye oda yoyote ya Niffer.
+                Hifadhi msimbo huu — utautumia kwenye oda yoyote ya Niffer
+                {issued.expiresAt
+                  ? ` kabla ya ${new Date(issued.expiresAt).toLocaleDateString("sw-TZ")}`
+                  : ""}
+                .
               </p>
             </div>
           ) : null}
@@ -161,7 +170,7 @@ export function GiftCardPanel() {
             </a>
           ) : null}
           <p className="mt-3 text-center text-xs text-ink-400">
-            Kadi ya kipekee hutumika kwa oda yoyote na haikuwi na muda.
+            Kadi ya kipekee hutumika kwa oda yoyote na inaisha baada ya miaka 1.
           </p>
         </div>
 
@@ -201,6 +210,7 @@ export function GiftCardPanel() {
               "Kadi inatumika kwa bidhaa zote za Niffer Cosmetics",
               "Haiwezi kubadilishwa kuwa pesa taslimu",
               "Msimbo wa kadi hutumika mara moja hadi thamani ipungue",
+              "Kadi inaisha miaka 1 baada ya kutolewa",
             ].map((note) => (
               <li key={note} className="flex gap-2">
                 <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-success-600" />

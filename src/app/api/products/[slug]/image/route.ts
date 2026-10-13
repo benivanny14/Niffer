@@ -14,8 +14,10 @@ const EXT_BY_MIME: Record<string, string> = {
   "image/webp": "webp",
   "image/avif": "avif",
   "image/gif": "gif",
-  "image/svg+xml": "svg",
 };
+
+// SVG haziruhusiwi kupakiwa — zinaweza kubeba JS/XSS.
+// (Picha za SVG za katalogi bado zinaonyeshwa; kizuizi hiki ni kwa upakuaji.)
 
 /**
  * Pakia picha ya bidhaa (admin) — faili huhifadhiwa `public/uploads/`
@@ -42,11 +44,17 @@ export async function POST(
     const file = form.get("file");
     if (!(file instanceof File)) return fail("Hakuna faili limetumwa.");
     if (!file.type.startsWith("image/")) {
-      return fail("Faili si picha (tumia PNG, JPG, Webp au SVG).");
+      return fail("Faili si picha (tumia PNG, JPG, Webp au AVIF).");
+    }
+    if (file.type === "image/svg+xml") {
+      return fail("SVG hairuhusiwi (hatari ya usalama). Tumia PNG, JPG, Webp au AVIF.");
     }
     if (file.size > MAX_SIZE) return fail("Picha ni kubwa zaidi ya 3MB.");
 
-    const ext = EXT_BY_MIME[file.type] ?? "png";
+    const ext = EXT_BY_MIME[file.type];
+    if (!ext) {
+      return fail("Aina ya picha haitumiki. Tumia PNG, JPG, Webp au AVIF.");
+    }
     const dir = path.join(process.cwd(), "public", "uploads");
     fs.mkdirSync(dir, { recursive: true });
 

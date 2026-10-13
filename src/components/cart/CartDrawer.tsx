@@ -171,10 +171,17 @@ export function CartDrawer({ open, onClose }: Props) {
               >
                 Endelea na Malipo
               </Link>
+              <Link
+                href="/kikapu"
+                onClick={onClose}
+                className="mt-2 block w-full text-center text-sm font-medium text-ink-500 hover:text-accent"
+              >
+                Ona kikapu kamili
+              </Link>
               <button
                 type="button"
                 onClick={onClose}
-                className="mt-2 w-full text-center text-sm font-medium text-ink-500 hover:text-accent"
+                className="mt-1 w-full text-center text-sm font-medium text-ink-500 hover:text-accent"
               >
                 Endelea Kununua
               </button>

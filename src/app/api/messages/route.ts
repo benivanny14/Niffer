@@ -1,6 +1,12 @@
 import { connection, type NextRequest } from "next/server";
 import { json, fail, readBody, intParam, toErrorResponse } from "@/lib/server/http";
-import { addMessage, listMessages, countUnreadMessages, markMessageRead } from "@/lib/server/leads";
+import {
+  addMessage,
+  listMessages,
+  countUnreadMessages,
+  markMessageRead,
+  markAllMessagesRead,
+} from "@/lib/server/leads";
 import { isAdminRequest } from "@/lib/server/auth";
 import { rateLimit, rateLimitMessage } from "@/lib/server/rate-limit";
 
@@ -44,13 +50,17 @@ export async function POST(req: NextRequest) {
   }
 }
 
-/** Weka ujumbe kuwa umesomwa (admin). */
+/** Weka ujumbe kuwa umesomwa (admin) — mmoja ({ id }) au wote ({ all: true }). */
 export async function PATCH(req: NextRequest) {
   try {
     if (!(await isAdminRequest())) {
       return fail("Ingia kama admin.", 401);
     }
-    const body = await readBody<{ id?: string }>(req);
+    const body = await readBody<{ id?: string; all?: boolean }>(req);
+    if (body?.all) {
+      const updated = markAllMessagesRead();
+      return json({ ok: true, updated });
+    }
     if (!body?.id) return fail("Ujumbe haupatikani.");
     const updated = markMessageRead(body.id);
     return json({ ok: true, updated });

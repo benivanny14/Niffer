@@ -104,6 +104,7 @@ type GiftCardRecord = {
   message: string;
   status: string;
   createdAt: string;
+  expiresAt?: string;
 };
 
 type CustomerRecord = {
@@ -769,6 +770,7 @@ function OdaTab({
   onRefresh: () => void;
 }) {
   const [filter, setFilter] = useState<"zote" | OrderStatus>("zote");
+  const [search, setSearch] = useState("");
   const [savingCode, setSavingCode] = useState("");
   const [actionError, setActionError] = useState("");
   const [notifyCode, setNotifyCode] = useState("");
@@ -778,9 +780,22 @@ function OdaTab({
   const [notifyError, setNotifyError] = useState("");
   const [notifyOk, setNotifyOk] = useState("");
 
+  const digits = (value: string) => value.replace(/[^0-9]/g, "");
+  const query = search.trim().toLowerCase();
+  const queryDigits = digits(query);
+
   const filtered = orders.filter((o) => {
-    if (filter === "zote") return true;
-    return liveStatus(o) === filter;
+    if (filter !== "zote" && liveStatus(o) !== filter) return false;
+    if (!query) return true;
+    if (o.code.toLowerCase().includes(query)) return true;
+    if (o.customer.name.toLowerCase().includes(query)) return true;
+    if (
+      queryDigits.length >= 3 &&
+      digits(o.customer.phone).includes(queryDigits)
+    ) {
+      return true;
+    }
+    return false;
   });
 
   async function changeStatus(code: string, status: OrderStatus) {
@@ -889,14 +904,24 @@ function OdaTab({
                 : statusSteps.find((s) => s.id === id)?.label}
           </button>
         ))}
-        <button
-          type="button"
-          onClick={exportCsv}
-          disabled={filtered.length === 0}
-          className="btn-outline ml-auto px-4 py-2 text-xs disabled:opacity-50"
-        >
-          Pakua CSV ({filtered.length})
-        </button>
+        <div className="ml-auto flex items-center gap-2">
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Tafuta nambari, jina au simu…"
+            aria-label="Tafuta oda"
+            className="w-56 rounded-full border border-cream-300 bg-surface px-4 py-1.5 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500"
+          />
+          <button
+            type="button"
+            onClick={exportCsv}
+            disabled={filtered.length === 0}
+            className="btn-outline px-4 py-2 text-xs disabled:opacity-50"
+          >
+            Pakua CSV ({filtered.length})
+          </button>
+        </div>
       </div>
 
       {actionError ? (
@@ -1358,6 +1383,19 @@ function UjumbeTab({
     }
   }
 
+  async function markAll() {
+    setSaving("all");
+    setError("");
+    try {
+      await apiPatch("/api/messages", { all: true });
+      onChanged();
+    } catch (e) {
+      setError(errorMessage(e));
+    } finally {
+      setSaving("");
+    }
+  }
+
   if (messages.length === 0) {
     return (
       <div className="card p-10 text-center">
@@ -1374,11 +1412,25 @@ function UjumbeTab({
 
   return (
     <>
-      {error ? (
-        <p className="mb-4 rounded-lg bg-danger-100 px-3 py-2 text-sm text-danger-600">
-          {error}
-        </p>
-      ) : null}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        {error ? (
+          <p className="rounded-lg bg-danger-100 px-3 py-2 text-sm text-danger-600">
+            {error}
+          </p>
+        ) : (
+          <span />
+        )}
+        {messages.some((m) => m.status === "new") ? (
+          <button
+            type="button"
+            disabled={saving === "all"}
+            onClick={() => markAll()}
+            className="btn-outline px-4 py-2 text-xs"
+          >
+            {saving === "all" ? "Inasasisha…" : "Soma zote"}
+          </button>
+        ) : null}
+      </div>
       <ul className="space-y-3">
         {messages.map((message) => (
           <li key={message.id} className="card p-5">
@@ -1950,7 +2002,9 @@ function HifadhiTab({
                       : "Imeisha"}
                 </span>
                 <span className="ml-auto text-xs text-ink-400">
-                  {new Date(gc.createdAt).toLocaleDateString("sw-TZ")}
+                  {gc.expiresAt
+                    ? `Inaisha: ${new Date(gc.expiresAt).toLocaleDateString("sw-TZ")}`
+                    : `Imetolewa: ${new Date(gc.createdAt).toLocaleDateString("sw-TZ")}`}
                 </span>
               </li>
             ))}

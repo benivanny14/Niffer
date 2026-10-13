@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { apiPost, errorMessage } from "@/lib/api";
 import { MailIcon, CheckIcon } from "@/components/ui/icons";
 
@@ -72,7 +73,13 @@ export function NewsletterForm() {
         <p className="mt-2 px-2 text-xs text-danger-600">{error}</p>
       ) : (
         <p className="mt-2 px-2 text-xs text-ink-400">
-          Tutatuma ofa muhimu tu. Unaweza kuacha wakati wowote.
+          Tutatuma ofa muhimu tu.{" "}
+          <Link
+            href="/jarida/acha"
+            className="underline transition-colors hover:text-accent"
+          >
+            Unaweza kuacha wakati wowote.
+          </Link>
         </p>
       )}
     </form>

@@ -1,6 +1,10 @@
 import { connection, type NextRequest } from "next/server";
 import { json, fail, readBody, toErrorResponse } from "@/lib/server/http";
-import { subscribeNewsletter, countSubscribers, listSubscribers } from "@/lib/server/leads";
+import {
+  subscribeNewsletter,
+  countSubscribers,
+  listSubscribers,
+} from "@/lib/server/leads";
 import { isAdminRequest } from "@/lib/server/auth";
 import { rateLimit, rateLimitMessage } from "@/lib/server/rate-limit";
 
