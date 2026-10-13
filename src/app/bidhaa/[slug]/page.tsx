@@ -13,12 +13,12 @@ import { formatTsh, discountPercent } from "@/lib/format";
 import { productJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { RatingStars } from "@/components/ui/RatingStars";
 import { ProductCard } from "@/components/catalog/ProductCard";
+import { ProductImage } from "@/components/media/ProductImage";
 import { BuyBox } from "@/components/catalog/BuyBox";
 import { ReviewForm } from "@/components/ui/ReviewForm";
 import {
   ArrowRightIcon,
   ShieldIcon,
-  SparkleIcon,
   TruckIcon,
 } from "@/components/ui/icons";
 
@@ -140,11 +140,15 @@ async function ProductDetail({ params }: PageProps) {
       </nav>
 
       <div className="mt-6 grid gap-10 lg:grid-cols-2">
-        {/* Gallery — placeholder hadi media module */}
+        {/* Gallery — picha halisi ya bidhaa */}
         <div className="relative aspect-[4/5] animate-fade-in overflow-hidden rounded-3xl border border-cream-300 bg-gradient-to-br from-brand-100 via-cream-200 to-gold-100">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <SparkleIcon className="h-24 w-24 text-brand-300" />
-          </div>
+          <ProductImage
+            src={product.image}
+            alt={product.imageAlt}
+            fit="contain"
+            priority
+            className="h-full w-full"
+          />
           {product.badges.length > 0 ? (
             <div className="absolute left-4 top-4 flex flex-col items-start gap-1.5">
               {product.badges.map((badge) => (

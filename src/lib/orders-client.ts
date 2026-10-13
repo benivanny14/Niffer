@@ -62,13 +62,18 @@ export type CreateOrderPayload = {
 /** Weka oda mpya kwenye server. Hurusha `ApiError` kama kuna hitilafu. */
 export async function createOrder(
   payload: CreateOrderPayload,
-): Promise<{ order: Order; stock: Record<string, number> }> {
+): Promise<{
+  order: Order;
+  stock: Record<string, number>;
+  paymentUrl?: string;
+}> {
   const data = await apiPost<{
     ok: boolean;
     order: Order;
     stock: Record<string, number>;
+    paymentUrl?: string;
   }>("/api/orders", payload);
-  return { order: data.order, stock: data.stock };
+  return { order: data.order, stock: data.stock, paymentUrl: data.paymentUrl };
 }
 
 /** Oda moja kutoka server. */

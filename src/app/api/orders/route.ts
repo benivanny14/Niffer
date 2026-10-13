@@ -10,6 +10,7 @@ import { createOrder, listOrders, type CreateOrderInput } from "@/lib/server/ord
 import { isAdminRequest } from "@/lib/server/auth";
 import { currentCustomer } from "@/lib/server/customers";
 import { rateLimit, rateLimitMessage } from "@/lib/server/rate-limit";
+import { startPayment, isOnlinePayment } from "@/lib/server/payments";
 
 /** Oda zote (admin pekee). */
 export async function GET(req: NextRequest) {
@@ -40,7 +41,15 @@ export async function POST(req: NextRequest) {
       ...body,
       customerId: customer?.id,
     });
-    return json({ ok: true, order, stock }, 201);
+
+    // Malipo ya mtandaoni (M-Pesa/Mixx/Airtel) — anzisha gateway session.
+    let paymentUrl: string | undefined;
+    if (body.payment && isOnlinePayment(body.payment)) {
+      const payment = await startPayment(order);
+      if (payment.redirectUrl) paymentUrl = payment.redirectUrl;
+    }
+
+    return json({ ok: true, order, stock, paymentUrl }, 201);
   } catch (error) {
     return toErrorResponse(error);
   }

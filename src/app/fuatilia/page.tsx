@@ -152,27 +152,35 @@ export default function TrackOrderPage() {
           </ol>
 
           <div className="mt-6 grid gap-4 border-t border-cream-200 pt-4 text-sm sm:grid-cols-2">
-            <div>
-              <p className="text-ink-500">Mpokeaji</p>
-              <p className="font-medium text-ink-900">
-                {order.customer.name}
-              </p>
-              <p className="text-ink-500">
-                {formatPhone(order.customer.phone)}
-              </p>
-            </div>
-            <div>
-              <p className="text-ink-500">Kuwasilishwa</p>
-              <p className="font-medium text-ink-900">
-                {[order.customer.city, order.customer.region]
-                  .filter(Boolean)
-                  .join(", ")}
-              </p>
-              {order.customer.street ? (
-                <p className="text-ink-500">{order.customer.street}</p>
-              ) : null}
-              <p className="text-ink-500">{order.customer.address}</p>
-            </div>
+            {order.customer?.name ? (
+              <div>
+                <p className="text-ink-500">Mpokeaji</p>
+                <p className="font-medium text-ink-900">
+                  {order.customer.name}
+                </p>
+                {order.customer.phone ? (
+                  <p className="text-ink-500">
+                    {formatPhone(order.customer.phone)}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+            {order.customer?.region ? (
+              <div>
+                <p className="text-ink-500">Kuwasilishwa</p>
+                <p className="font-medium text-ink-900">
+                  {[order.customer.city, order.customer.region]
+                    .filter(Boolean)
+                    .join(", ")}
+                </p>
+                {order.customer.street ? (
+                  <p className="text-ink-500">{order.customer.street}</p>
+                ) : null}
+                {order.customer.address ? (
+                  <p className="text-ink-500">{order.customer.address}</p>
+                ) : null}
+              </div>
+            ) : null}
           </div>
 
           <ul className="mt-4 space-y-2 border-t border-cream-200 pt-4 text-sm">

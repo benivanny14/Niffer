@@ -15,6 +15,8 @@ const navLinks = [
   { href: "/matawi", label: "Matawi" },
   { href: "/kuhusu", label: "Kuhusu" },
   { href: "/wasiliana", label: "Wasiliana" },
+  { href: "/akaunti", label: "Akaunti", mobileOnly: true },
+  { href: "/upendwa", label: "Upendwa", mobileOnly: true },
 ];
 
 export function SiteHeader() {
@@ -61,16 +63,18 @@ export function SiteHeader() {
 
         <nav aria-label="Menyu kuu" className="hidden lg:block">
           <ul className="flex items-center gap-6">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="text-sm font-medium text-ink-700 transition-colors hover:text-accent"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
+            {navLinks
+              .filter((link) => !link.mobileOnly)
+              .map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm font-medium text-ink-700 transition-colors hover:text-accent"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
           </ul>
         </nav>
 

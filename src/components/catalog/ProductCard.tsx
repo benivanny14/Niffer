@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import type { Product } from "@/lib/data/catalog";
 import { formatTsh, discountPercent } from "@/lib/format";
 import { RatingStars } from "@/components/ui/RatingStars";
@@ -24,13 +24,18 @@ const badgeLabels: Record<Product["badges"][number], string> = {
   "low-stock": "Zimebaki kidogo",
 };
 
+const subscribeNoop = () => () => {};
+
 export function ProductCard({ product }: { product: Product }) {
   const discount = discountPercent(product.priceTsh, product.compareAtTsh);
   const stock = useStock(product.slug);
   const outOfStock = stock === 0;
   // PPR: stock badge hubadilika DOM wakati wa hydration — onyesha baada ya mount tu.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useSyncExternalStore(
+    subscribeNoop,
+    () => true,
+    () => false,
+  );
 
   return (
     <article className="card group flex h-full flex-col overflow-hidden">

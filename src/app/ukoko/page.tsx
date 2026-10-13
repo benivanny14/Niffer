@@ -159,7 +159,7 @@ export default function CheckoutPage() {
     setSubmitting(true);
 
     try {
-      const { order, stock } = await createOrder({
+      const { order, stock, paymentUrl } = await createOrder({
         customer: { name, phone, region, city, street, address, note },
         payment,
         lines: lines.map((l) => ({ slug: l.product.slug, qty: l.qty })),
@@ -171,6 +171,14 @@ export default function CheckoutPage() {
       applyServerStock(stock);
       pushOrder(order);
       clear();
+
+      // Malipo ya mtandaoni — elekeza kwenye gateway ya AzamPay.
+      if (paymentUrl) {
+        window.location.href = paymentUrl;
+        return;
+      }
+
+      // COD / malipo ya kawaida — onyesha oda.
       router.push(`/odha/${order.code}`);
     } catch (err) {
       setError(errorMessage(err));

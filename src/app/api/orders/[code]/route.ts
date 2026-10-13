@@ -1,10 +1,32 @@
 import { connection, type NextRequest } from "next/server";
 import { json, fail, readBody, toErrorResponse } from "@/lib/server/http";
 import { getOrder, updateOrderStatus } from "@/lib/server/orders";
-import { demoOrders, statusSteps, type OrderStatus } from "@/lib/orders";
+import { demoOrders, statusSteps, type Order, type OrderStatus } from "@/lib/orders";
 import { isAdminRequest } from "@/lib/server/auth";
 import { notifyCustomer } from "@/lib/server/customer-notify";
 import { rateLimit, rateLimitMessage } from "@/lib/server/rate-limit";
+
+/**
+ * Ondoa PII kutoka oda — public endpoint haipaswi kurudisha
+ * jina, simu, anwani au barua pepe ya mteja.
+ */
+function sanitizeOrder(order: Order) {
+  return {
+    code: order.code,
+    createdAt: order.createdAt,
+    status: order.status,
+    payment: order.payment,
+    paymentStatus: order.paymentStatus,
+    lines: order.lines,
+    subtotalTsh: order.subtotalTsh,
+    shippingTsh: order.shippingTsh,
+    totalTsh: order.totalTsh,
+    discountTsh: order.discountTsh,
+    giftDiscountTsh: order.giftDiscountTsh,
+    history: order.history,
+    demo: order.demo,
+  };
+}
 
 /**
  * Oda moja kwa nambari (umma).
@@ -28,7 +50,7 @@ export async function GET(
       );
 
     if (!order) return fail("Oda hiyo haipatikani.", 404);
-    return json({ ok: true, order });
+    return json({ ok: true, order: sanitizeOrder(order) });
   } catch (error) {
     return toErrorResponse(error);
   }
