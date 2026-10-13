@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { categories } from "@/lib/data/catalog";
 import { tanzaniaRegions } from "@/lib/site";
@@ -16,6 +17,7 @@ import { MapPinIcon } from "@/components/ui/icons";
  * huandika kwenye URL (?mkoa=&mji=…) ili viungi viweze kushirikiwa.
  */
 export function CatalogFilters({ counts }: { counts: ProductFilterCounts }) {
+  const [showLocationFilters, setShowLocationFilters] = useState(false);
   const router = useRouter();
   const params = useSearchParams();
 
@@ -150,7 +152,23 @@ export function CatalogFilters({ counts }: { counts: ProductFilterCounts }) {
       </div>
 
       {/* Eneo (mkoa → mji), bei, upangaji */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <button
+        type="button"
+        className="flex w-full items-center justify-between rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm font-semibold text-ink-700 sm:hidden"
+        aria-expanded={showLocationFilters}
+        aria-controls="catalog-location-filters"
+        onClick={() => setShowLocationFilters((visible) => !visible)}
+      >
+        <span>
+          {showLocationFilters ? "Ficha vichujio vya kina" : "Eneo, bei na upangaji"}
+          {region || city || bei ? " · Vimechaguliwa" : ""}
+        </span>
+        <span aria-hidden="true">{showLocationFilters ? "−" : "+"}</span>
+      </button>
+      <div
+        id="catalog-location-filters"
+        className={`${showLocationFilters ? "grid" : "hidden"} gap-3 sm:grid sm:grid-cols-2 lg:grid-cols-4`}
+      >
         <label className="block text-sm">
           <span className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
             <MapPinIcon className="h-3.5 w-3.5" />

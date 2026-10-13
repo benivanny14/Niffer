@@ -1,16 +1,8 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
-/* Rangi za giza hutegemea class `.dark` kwenye <html> (si media query). */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ============================================================
-   NIFFER COSMETICS — Design System
-   Premium beauty brand · Tanzania
-   Warm, soft, iliyokamilika. Hakuna gradients wala glow za AI.
-   ============================================================ */
-
 :root {
-  /* Brand — deep burgundy rose */
   --brand-50: #fdf4f6;
   --brand-100: #f8e6eb;
   --brand-200: #eecdd6;
@@ -22,14 +14,12 @@
   --brand-800: #5f1731;
   --brand-900: #4a1225;
 
-  /* Gold accent */
   --gold-100: #f7f0e2;
   --gold-300: #e3cda3;
   --gold-500: #c9a86a;
   --gold-600: #b08d4f;
   --gold-700: #8f713c;
 
-  /* Neutrals — warm ink & cream */
   --ink-900: #241c16;
   --ink-800: #33281f;
   --ink-700: #463930;
@@ -42,7 +32,6 @@
   --cream-200: #efe8dc;
   --cream-300: #e4d9c8;
 
-  /* Status */
   --success-600: #2f7d50;
   --success-100: #e4f3ea;
   --warning-600: #a86b12;
@@ -50,25 +39,17 @@
   --danger-600: #b3261e;
   --danger-100: #fbe7e5;
 
-  /* Semantic */
   --background: var(--cream-50);
   --foreground: var(--ink-900);
-
   --surface: #ffffff;
   --accent: #7a1f3f;
   --on-gold: #241c16;
   --on-success: #ffffff;
-
   color-scheme: light;
 }
 
-/* ============================================================
-   Dark theme
-   ============================================================ */
-
 .dark {
   color-scheme: dark;
-
   --background: #16120f;
   --foreground: #f2ece3;
   --cream-50: #16120f;
@@ -76,24 +57,20 @@
   --cream-200: #241e19;
   --cream-300: #352d25;
   --surface: #1e1815;
-
   --ink-900: #f2ece3;
   --ink-800: #e7dfd4;
   --ink-700: #d3c9bc;
   --ink-500: #a99b8c;
   --ink-400: #8a7d6f;
   --ink-300: #6d645a;
-
   --brand-50: #2c1720;
   --brand-100: #381b28;
   --brand-200: #553040;
   --brand-600: #d98ba6;
   --accent: #e3a2b8;
-
   --gold-100: #2e2618;
   --gold-600: #dcb978;
   --gold-700: #c9a86a;
-
   --success-100: #15301f;
   --success-600: #55c087;
   --warning-100: #322611;
@@ -110,7 +87,6 @@
   --color-accent: var(--accent);
   --color-on-gold: var(--on-gold);
   --color-on-success: var(--on-success);
-
   --color-brand-50: var(--brand-50);
   --color-brand-100: var(--brand-100);
   --color-brand-200: var(--brand-200);
@@ -121,25 +97,21 @@
   --color-brand-700: var(--brand-700);
   --color-brand-800: var(--brand-800);
   --color-brand-900: var(--brand-900);
-
   --color-gold-100: var(--gold-100);
   --color-gold-300: var(--gold-300);
   --color-gold-500: var(--gold-500);
   --color-gold-600: var(--gold-600);
   --color-gold-700: var(--gold-700);
-
   --color-ink-900: var(--ink-900);
   --color-ink-800: var(--ink-800);
   --color-ink-700: var(--ink-700);
   --color-ink-500: var(--ink-500);
   --color-ink-400: var(--ink-400);
   --color-ink-300: var(--ink-300);
-
   --color-cream-50: var(--cream-50);
   --color-cream-100: var(--cream-100);
   --color-cream-200: var(--cream-200);
   --color-cream-300: var(--cream-300);
-
   --color-success-600: var(--success-600);
   --color-success-100: var(--success-100);
   --color-warning-600: var(--warning-600);
@@ -150,47 +122,31 @@
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-playfair), ui-serif, Georgia, serif;
 
-  /* Motion — laini, ya kitaalamu */
   --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
   --animate-fade-in: fade-in 0.45s ease-out both;
   --animate-slide-in-right: slide-in-right 0.32s cubic-bezier(0.33, 1, 0.68, 1) both;
 
   @keyframes fade-up {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   @keyframes slide-in-right {
-    from {
-      transform: translateX(100%);
-    }
-    to {
-      transform: translateX(0);
-    }
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
   }
 }
 
-/* ============================================================
-   Base
-   ============================================================ */
-
 body {
-  background: var(--background);
+  background:
+    radial-gradient(circle at top, rgba(191, 138, 167, 0.08), transparent 24%),
+    linear-gradient(180deg, rgba(255,255,255,0.32), rgba(246,241,233,0) 24%),
+    var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -207,54 +163,19 @@ body {
   color: #17110c;
 }
 
-/* Focus laini ya lafudhi (si ya wino kali). */
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
   outline: 2px solid var(--brand-500);
   outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 }
-
-/* ============================================================
-   Risiti / ushuru (print)
-   ============================================================ */
-
-@media print {
-  header,
-  footer,
-  .no-print,
-  .fixed {
-    display: none !important;
-  }
-
-  body {
-    background: #fff !important;
-    color: #141414;
-  }
-
-  .card {
-    border: 1px solid #ddd !important;
-    box-shadow: none !important;
-  }
-
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
-}
-
-/* ============================================================
-   Component utilities — laini, iliyokamilika, ya kitaalamu
-   ============================================================ */
 
 @utility container-x {
   @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
@@ -265,11 +186,11 @@ body {
 }
 
 @utility btn-primary {
-  @apply btn bg-brand-700 text-white shadow-[0_1px_2px_rgba(36,28,22,0.12)] hover:bg-brand-800 active:scale-[0.985];
+  @apply btn bg-brand-700 text-white shadow-[0_12px_28px_-18px_rgba(122,31,63,0.95)] hover:bg-brand-800 active:scale-[0.985];
 }
 
 @utility btn-gold {
-  @apply btn bg-gold-500 text-on-gold shadow-[0_1px_2px_rgba(36,28,22,0.12)] hover:bg-gold-600 hover:text-white active:scale-[0.985];
+  @apply btn bg-gold-500 text-on-gold shadow-[0_12px_26px_-18px_rgba(201,168,106,0.9)] hover:bg-gold-600 hover:text-white active:scale-[0.985];
 }
 
 @utility btn-outline {
@@ -288,16 +209,22 @@ body {
   @apply font-display text-3xl leading-[1.08] tracking-[-0.015em] text-ink-900 sm:text-4xl lg:text-5xl;
 }
 
-/* Kadi — laini, kivuli taratibu tu, pembe za kati. */
 @utility card {
-  @apply rounded-2xl border border-cream-300 bg-surface shadow-[0_1px_2px_rgba(36,28,22,0.04)] transition-all duration-200 hover:border-cream-300 hover:shadow-[0_8px_24px_-12px_rgba(36,28,22,0.14)];
+  @apply rounded-[1.5rem] border border-cream-300 bg-surface shadow-[0_10px_36px_-28px_rgba(36,28,22,0.24)] transition-all duration-200 hover:border-cream-300 hover:shadow-[0_14px_36px_-24px_rgba(36,28,22,0.18)];
 }
 
 @utility badge {
   @apply inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide;
 }
 
-/* Zuia browser translation (Edge/Google Translate) — inaharibu React DOM. */
+@utility editorial-panel {
+  @apply relative overflow-hidden rounded-[2rem] border border-cream-300 bg-[#f9f3ee] shadow-[0_18px_42px_-30px_rgba(38,28,22,0.34)];
+}
+
+@utility editorial-tag {
+  @apply inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/75 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-700;
+}
+
 html[translate="no"],
 html.notranslate,
 html.notranslate * {
@@ -309,8 +236,6 @@ html.notranslate * {
   translate: none !important;
 }
 
-/* iOS: fomu za text-input zikiwa <16px zinazidisha ukubwa wa skrini
-   (auto-zoom). Lazimisha 16px kwenye skrini ndogo. */
 @media (max-width: 640px) {
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
   select,

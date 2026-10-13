@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
       (body.howToUse ?? "").trim(),
       Math.max(0, Math.floor(Number(body.stock ?? 10))),
       JSON.stringify(Array.isArray(body.badges) ? body.badges : []),
-      body.image?.trim() || `/images/products/${slug}.svg`,
+      body.image?.trim() || "",
       (body.imageAlt ?? name).trim(),
       (body.region ?? "").trim(),
       (body.city ?? "").trim(),

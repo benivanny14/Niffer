@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { connection } from "next/server";
 import { beautyVideos, categories } from "@/lib/data/catalog";
 import { listProducts } from "@/lib/server/catalog";
@@ -45,14 +45,12 @@ const trustPoints = [
 ];
 
 export default async function Home() {
-  // Katalogi na hakiki kutoka DB (admin + wateja) — dynamic render.
   await connection();
   const products = listProducts();
   const onSale = products.filter((p) => p.compareAtTsh);
   const freshIn = products.filter((p) => p.badges.includes("new"));
   const reviews = listReviews(8);
   const latest = latestArticles(3);
-  // Idadi halisi ya bidhaa kwa kategoria (DB, si hardcoded).
   const categoryCounts = new Map<string, number>();
   for (const p of products) {
     categoryCounts.set(p.category, (categoryCounts.get(p.category) ?? 0) + 1);
@@ -60,20 +58,18 @@ export default async function Home() {
 
   return (
     <>
-      {/* ============ HERO ============ */}
-      <section className="relative overflow-hidden">
-        <div className="container-x grid items-center gap-12 py-16 lg:grid-cols-2 lg:py-24">
+      <section className="relative overflow-hidden pb-8 pt-10 sm:pt-12">
+        <div className="container-x grid items-center gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:gap-12 lg:py-12">
           <div className="animate-fade-up">
-            <p className="eyebrow">Urembo halisi · Tanzania</p>
-            <h1 className="heading-display mt-4">
-              Urembo wako, ubora wetu —{" "}
-              <span className="text-accent">Niffer Cosmetics</span>
+            <p className="editorial-tag">Urembo halisi · Tanzania</p>
+            <h1 className="mt-4 max-w-xl font-display text-4xl leading-[0.98] tracking-[-0.04em] text-ink-900 sm:text-5xl lg:text-[4.2rem]">
+              Urembo wako, ubora wetu — <span className="text-accent">Niffer Cosmetics</span>
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-500">
-              Bidhaa za skincare, makeup na nywele zilizochaguliwa kwa makini.
-              Bei nafuu, malipo salama ya mobile money, na usafirishaji wa
-              haraka hadi mlangoni kwako.
+              Bidhaa za skincare, makeup na nywele zilizochaguliwa kwa makini. Bei nafuu,
+              malipo salama ya mobile money, na usafirishaji wa haraka hadi mlangoni kwako.
             </p>
+
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/bidhaa" className="btn-primary">
                 Nunua sasa
@@ -84,6 +80,7 @@ export default async function Home() {
                 Angalia video za urembo
               </Link>
             </div>
+
             <dl className="mt-10 flex flex-wrap gap-x-10 gap-y-4">
               {[
                 ["10k+", "Wateja wenye kuridhika"],
@@ -92,47 +89,44 @@ export default async function Home() {
               ].map(([value, label]) => (
                 <div key={label}>
                   <dt className="sr-only">{label}</dt>
-                  <dd className="font-display text-3xl font-semibold text-ink-900">
-                    {value}
-                  </dd>
-                  <dd className="mt-1 text-xs uppercase tracking-wide text-ink-400">
-                    {label}
-                  </dd>
+                  <dd className="font-display text-3xl font-semibold text-ink-900">{value}</dd>
+                  <dd className="mt-1 text-xs uppercase tracking-wide text-ink-400">{label}</dd>
                 </div>
               ))}
             </dl>
           </div>
 
-          <div className="relative mx-auto aspect-4/5 w-full max-w-md animate-fade-in overflow-hidden rounded-2xl border border-cream-300 bg-cream-200 lg:aspect-3/4">
-            <ProductImage
-              src="/images/hero.svg"
-              alt="Bidhaa za Niffer Cosmetics"
-              priority
-              className="h-full w-full"
-            />
-            <div className="card absolute bottom-6 left-6 right-6 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gold-600">
+          <div className="relative mx-auto w-full max-w-[31rem] animate-fade-in">
+            <div className="editorial-panel p-3 sm:p-4">
+              <div className="overflow-hidden rounded-[1.5rem] border border-cream-300 bg-cream-100">
+                <ProductImage src="/images/packs/pack-135k-qe.jpg" alt="Bidhaa za Niffer Cosmetics — Purest Glow Pack" priority className="h-[32rem] w-full object-cover sm:h-[36rem]" />
+              </div>
+            </div>
+
+            <div className="card absolute -bottom-2 left-4 w-[72%] max-w-[18rem] p-4 sm:left-6 sm:p-5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-600">
                 Inayouzwa zaidi
               </p>
-              <div className="mt-1 flex items-baseline justify-between gap-3">
-                <p className="font-display text-lg text-ink-900">
-                  Radiance Vitamin C Serum
-                </p>
-                <p className="text-sm font-semibold text-accent">
-                  {formatTsh(32000)}
-                </p>
+              <div className="mt-2 flex items-baseline justify-between gap-3">
+                <p className="font-display text-lg leading-snug text-ink-900">Purest Glow Pack</p>
+                <p className="text-sm font-semibold text-accent">{formatTsh(135000)}</p>
               </div>
+            </div>
+
+            <div className="absolute -left-3 top-8 hidden w-40 rounded-2xl border border-cream-300 bg-surface p-3 shadow-lg sm:block">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-600">Best seller</p>
+              <p className="mt-2 font-display text-base text-ink-900">Mwanachuo Pack</p>
+              <p className="mt-1 text-sm font-semibold text-accent">{formatTsh(45000)}</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ============ TRUST STRIP ============ */}
-      <section className="border-y border-cream-300 bg-cream-100">
+      <section className="border-y border-cream-300 bg-cream-100/80">
         <div className="container-x grid gap-8 py-12 sm:grid-cols-2 lg:grid-cols-4">
           {trustPoints.map(({ icon: Icon, title, description }) => (
-            <div key={title} className="flex items-start gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-accent">
+            <div key={title} className="flex items-start gap-3 rounded-2xl border border-transparent bg-white/30 p-2">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-accent ring-1 ring-brand-200">
                 <Icon className="h-5 w-5" />
               </span>
               <div>
@@ -144,17 +138,13 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ============ KATEGORIA ============ */}
       <section id="kategoria" className="container-x scroll-mt-24 py-16 lg:py-24">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Vinjari</p>
             <h2 className="heading-display mt-2">Kategoria zetu</h2>
           </div>
-          <Link
-            href="/bidhaa"
-            className="group inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent"
-          >
+          <Link href="/bidhaa" className="group inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent">
             Ona bidhaa zote
             <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
@@ -163,21 +153,11 @@ export default async function Home() {
         <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {categories.map((category) => (
             <li key={category.slug}>
-              <Link
-                href={`/bidhaa?kategoria=${category.slug}`}
-                className="card group flex h-full flex-col justify-between overflow-hidden p-6"
-              >
-                <div
-                  className={`-mx-6 -mt-6 mb-5 h-24 border-b border-cream-300 ${category.swatch}`}
-                  aria-hidden
-                />
+              <Link href={`/bidhaa?kategoria=${category.slug}`} className="card group flex h-full flex-col justify-between overflow-hidden p-6">
+                <div className={`-mx-6 -mt-6 mb-5 h-24 border-b border-cream-300 ${category.swatch}`} aria-hidden />
                 <div>
-                  <h3 className="font-display text-xl text-ink-900">
-                    {category.name}
-                  </h3>
-                  <p className="mt-1.5 text-sm text-ink-500">
-                    {category.description}
-                  </p>
+                  <h3 className="font-display text-xl text-ink-900">{category.name}</h3>
+                  <p className="mt-1.5 text-sm text-ink-500">{category.description}</p>
                 </div>
                 <div className="mt-5 flex items-center justify-between">
                   <span className="text-xs font-semibold uppercase tracking-wide text-ink-400">
@@ -193,7 +173,6 @@ export default async function Home() {
 
       <InstagramShowcase />
 
-      {/* ============ BIDHAA MAARUFU ============ */}
       <section id="bidhaa" className="scroll-mt-24 bg-cream-100 py-16 lg:py-24">
         <div className="container-x">
           <div className="flex flex-wrap items-end justify-between gap-4">
@@ -201,10 +180,7 @@ export default async function Home() {
               <p className="eyebrow">Chaguo la wateja</p>
               <h2 className="heading-display mt-2">Bidhaa maarufu</h2>
             </div>
-            <Link
-              href="/bidhaa"
-              className="group inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent"
-            >
+            <Link href="/bidhaa" className="group inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent">
               Vinjari kategoria
               <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
@@ -220,7 +196,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ============ PUNGUZO ============ */}
       {onSale.length > 0 ? (
         <section className="border-y border-ink-900 bg-brand-800 text-cream-50">
           <div className="container-x flex flex-wrap items-center justify-between gap-6 py-12">
@@ -229,30 +204,20 @@ export default async function Home() {
                 <TagIcon className="h-3.5 w-3.5" />
                 Punguzo la muda
               </p>
-              <h2 className="heading-display mt-4 text-white!">
-                Ofa maalum wiki hii
-              </h2>
+              <h2 className="heading-display mt-4 text-white!">Ofa maalum wiki hii</h2>
               <p className="mt-3 text-white/80">
-                Pungua hadi 18% kwa bidhaa zilizochaguliwa. Usikose — stoo ni
-                ndogo kwa baadhi ya bidhaa.
+                Punguza hadi 18% kwa bidhaa zilizochaguliwa. Usikose — stoo ni ndogo kwa baadhi ya bidhaa.
               </p>
             </div>
             <ul className="flex flex-wrap gap-3">
               {onSale.map((product) => (
                 <li key={product.id}>
-                  <Link
-                    href={`/bidhaa/${product.slug}`}
-                    className="btn-light flex-col rounded-2xl! px-5! py-3! text-left"
-                  >
+                  <Link href={`/bidhaa/${product.slug}`} className="btn-light flex-col rounded-2xl! px-5! py-3! text-left">
                     <span className="text-xs text-ink-500">{product.name}</span>
                     <span className="flex items-baseline gap-2">
-                      <span className="font-semibold text-accent">
-                        {formatTsh(product.priceTsh)}
-                      </span>
+                      <span className="font-semibold text-accent">{formatTsh(product.priceTsh)}</span>
                       {product.compareAtTsh ? (
-                        <span className="text-xs text-ink-400 line-through">
-                          {formatTsh(product.compareAtTsh)}
-                        </span>
+                        <span className="text-xs text-ink-400 line-through">{formatTsh(product.compareAtTsh)}</span>
                       ) : null}
                     </span>
                   </Link>
@@ -263,7 +228,6 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {/* ============ MPYA ============ */}
       {freshIn.length > 0 ? (
         <section className="container-x py-16 lg:py-24">
           <div className="flex flex-wrap items-end justify-between gap-4">
@@ -271,10 +235,7 @@ export default async function Home() {
               <p className="eyebrow">Zilizofika hivi karibuni</p>
               <h2 className="heading-display mt-2">Bidhaa mpya</h2>
             </div>
-            <Link
-              href="/bidhaa?kipengele=mpya"
-              className="group inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent"
-            >
+            <Link href="/bidhaa?kipengele=mpya" className="group inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent">
               Zote mpya
               <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
@@ -289,15 +250,13 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {/* ============ VIDEO ============ */}
       <section id="video" className="scroll-mt-24 bg-cream-100 py-16 lg:py-24">
         <div className="container-x">
           <div>
             <p className="eyebrow">Funika ndani</p>
             <h2 className="heading-display mt-2">Video za urembo</h2>
             <p className="mt-3 max-w-2xl text-ink-500">
-              Mwongozo wa matumizi, rutini za kila siku na vidokezo kutoka kwa
-              wataalamu wetu wa urembo.
+              Mwongozo wa matumizi, rutini za kila siku na vidokezo kutoka kwa wataalamu wetu wa urembo.
             </p>
           </div>
 
@@ -305,7 +264,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ============ MAONI ============ */}
       <section id="maoni" className="container-x scroll-mt-24 py-16 lg:py-24">
         <div className="max-w-2xl">
           <p className="eyebrow">Wateja wanavyosema</p>
@@ -316,13 +274,9 @@ export default async function Home() {
             <li key={review.id}>
               <figure className="card flex h-full flex-col gap-3 p-6">
                 <RatingStars rating={review.rating} size="md" />
-                <blockquote className="text-sm leading-relaxed text-ink-700">
-                  “{review.comment}”
-                </blockquote>
+                <blockquote className="text-sm leading-relaxed text-ink-700">“{review.comment}”</blockquote>
                 <figcaption className="mt-auto pt-2 text-sm">
-                  <span className="font-semibold text-ink-900">
-                    {review.customerName}
-                  </span>
+                  <span className="font-semibold text-ink-900">{review.customerName}</span>
                   <span className="text-ink-400"> · {review.location}</span>
                 </figcaption>
               </figure>
@@ -331,7 +285,6 @@ export default async function Home() {
         </ul>
       </section>
 
-      {/* ============ MAKALA ============ */}
       {latest.length > 0 ? (
         <section id="makala" className="scroll-mt-24 bg-cream-100 py-16 lg:py-24">
           <div className="container-x">
@@ -340,14 +293,10 @@ export default async function Home() {
                 <p className="eyebrow">Jarida la Niffer</p>
                 <h2 className="heading-display mt-2">Makala za urembo</h2>
                 <p className="mt-3 max-w-2xl text-ink-500">
-                  Mwongozo wa Kiswahili wa skincare, makeup, nywele na harufu —
-                  ulioandikwa na wataalamu wetu.
+                  Mwongozo wa Kiswahili wa skincare, makeup, nywele na harufu — ulioandikwa na wataalamu wetu.
                 </p>
               </div>
-              <Link
-                href="/makala"
-                className="group inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent"
-              >
+              <Link href="/makala" className="group inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent">
                 Soma zote
                 <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
@@ -355,16 +304,9 @@ export default async function Home() {
             <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {latest.map((article) => (
                 <li key={article.slug}>
-                  <Link
-                    href={`/makala/${article.slug}`}
-                    className="card group flex h-full flex-col overflow-hidden"
-                  >
+                  <Link href={`/makala/${article.slug}`} className="card group flex h-full flex-col overflow-hidden">
                     <div className="relative aspect-video bg-cream-200">
-                      <ProductImage
-                        src={article.image}
-                        alt={article.title}
-                        className="absolute inset-0 h-full w-full"
-                      />
+                      <ProductImage src={article.image} alt={article.title} className="absolute inset-0 h-full w-full" />
                     </div>
                     <div className="flex flex-1 flex-col gap-2 p-5">
                       <p className="text-xs font-semibold uppercase tracking-wide text-gold-600">
@@ -374,9 +316,7 @@ export default async function Home() {
                         {article.title}
                       </h3>
                       <p className="text-sm text-ink-500">{article.excerpt}</p>
-                      <p className="mt-auto pt-3 text-xs text-ink-400">
-                        {formatDate(article.date)}
-                      </p>
+                      <p className="mt-auto pt-3 text-xs text-ink-400">{formatDate(article.date)}</p>
                     </div>
                   </Link>
                 </li>
@@ -386,7 +326,6 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {/* ============ NEWSLETTER ============ */}
       <section id="jaribio" className="border-t border-cream-300 bg-cream-100 py-16 lg:py-20">
         <div className="container-x grid items-center gap-8 lg:grid-cols-2">
           <div>
@@ -395,36 +334,26 @@ export default async function Home() {
               Pokea ofa na vidokezo kwa barua pepe
             </h2>
             <p className="mt-3 max-w-md text-ink-500">
-              Jiunge na wateja 10,000+ wanaopata punguzo maalum, bidhaa mpya,
-              na mwongozo wa urembo kwa Kiswahili.
+              Jiunge na wateja 10,000+ wanaopata punguzo maalum, bidhaa mpya, na mwongozo wa urembo kwa Kiswahili.
             </p>
           </div>
           <NewsletterForm />
         </div>
       </section>
 
-      {/* ============ CTA ============ */}
       <section className="border-t border-cream-300 bg-gold-100">
         <div className="container-x flex flex-col items-center gap-6 py-16 text-center">
           <SparkleIcon className="h-10 w-10 text-brand-600" />
-          <h2 className="heading-display max-w-2xl">
-            Tayari kuanza safari yako ya urembo?
-          </h2>
+          <h2 className="heading-display max-w-2xl">Tayari kuanza safari yako ya urembo?</h2>
           <p className="max-w-xl text-ink-500">
-            Piga simu, tuma WhatsApp, au vinjari duka letu mtandaoni. Tunakusaidia
-            kuchagua bidhaa zinazokufaa.
+            Piga simu, tuma WhatsApp, au vinjari duka letu mtandaoni. Tunakusaidia kuchagua bidhaa zinazokufaa.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link href="/bidhaa" className="btn-primary">
               Nunua sasa
               <ArrowRightIcon className="h-4 w-4" />
             </Link>
-            <a
-              href="https://wa.me/255754000000"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-outline"
-            >
+            <a href="https://wa.me/255754000000" target="_blank" rel="noopener noreferrer" className="btn-outline">
               <ChatIcon className="h-4 w-4" />
               WhatsApp oda
             </a>

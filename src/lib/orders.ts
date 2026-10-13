@@ -102,8 +102,8 @@ export function demoOrders(now = Date.now()): Order[] {
       region: "Tanga",
       address: "Mtaa wa Mwakalinga, Jengo la Tatu",
       payment: "cod",
-      lines: [{ slug: "nourishing-body-lotion", qty: 2 }],
-      subtotal: 30000,
+      lines: [{ slug: "mwanachuo-pack-65k-vaseline", qty: 2 }],
+      subtotal: 130000,
     },
     {
       code: "NCF-2X9D",
@@ -113,7 +113,7 @@ export function demoOrders(now = Date.now()): Order[] {
       region: "Dodoma",
       address: "Kilimani, karibu na Soko la Dodoma",
       payment: "airtel",
-      lines: [{ slug: "amber-nights-eau-de-parfum", qty: 1 }],
+      lines: [{ slug: "mwanachuo-pack-45k", qty: 1 }],
       subtotal: 45000,
     },
     {
@@ -124,8 +124,8 @@ export function demoOrders(now = Date.now()): Order[] {
       region: "Dar es Salaam",
       address: "Mikocheni B, Nyumba ya Namba 14",
       payment: "mixx",
-      lines: [{ slug: "velvet-matte-lipstick-set", qty: 1 }],
-      subtotal: 24500,
+      lines: [{ slug: "purest-glow-pack-65k", qty: 1 }],
+      subtotal: 65000,
     },
     {
       code: "NCF-8F3K",
@@ -136,10 +136,10 @@ export function demoOrders(now = Date.now()): Order[] {
       address: "Masaki, Ukala Street",
       payment: "mpesa",
       lines: [
-        { slug: "radiance-vitamin-c-serum", qty: 1 },
-        { slug: "sun-shield-spf50", qty: 1 },
+        { slug: "purest-glow-pack-135k", qty: 1 },
+        { slug: "mwanachuo-pack-45k", qty: 1 },
       ],
-      subtotal: 54000,
+      subtotal: 180000,
     },
   ];
 

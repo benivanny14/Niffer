@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { categories } from "@/lib/data/catalog";
 import { site } from "@/lib/site";
 import {
@@ -33,24 +33,23 @@ const exploreLinks = [
 
 export function SiteFooter() {
   return (
-    <footer id="wasiliana" className="border-t border-cream-300 bg-cream-100">
+    <footer id="wasiliana" className="border-t border-cream-300 bg-cream-100/80">
       <div className="container-x grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <div className="max-w-xs">
-          <Link href="/" className="flex items-center gap-2">
-            <SparkleIcon className="h-7 w-7 text-accent" />
+          <Link href="/" className="flex items-center gap-2.5">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-accent ring-1 ring-brand-200">
+              <SparkleIcon className="h-5 w-5" />
+            </span>
             <span className="flex flex-col leading-none">
-              <span className="font-display text-xl font-semibold text-ink-900">
-                Niffer
-              </span>
+              <span className="font-display text-xl font-semibold text-ink-900">Niffer</span>
               <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-gold-600">
                 Cosmetics
               </span>
             </span>
           </Link>
           <p className="mt-4 text-sm leading-relaxed text-ink-500">
-            Bidhaa za urembo za ubora wa juu — skincare, makeup, nywele na
-            zaidi. Tunaletea Tanzania kwa bei nafuu na huduma ya wateja
-            inayojali.
+            Bidhaa za urembo za ubora wa juu — skincare, makeup, nywele na zaidi.
+            Tunaletea Tanzania kwa bei nafuu na huduma ya wateja inayojali.
           </p>
         </div>
 
@@ -107,10 +106,7 @@ export function SiteFooter() {
           <ul className="mt-4 space-y-3">
             <li className="flex items-start gap-2.5 text-sm text-ink-500">
               <PhoneIcon className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
-              <a
-                href={`tel:${site.phoneTel}`}
-                className="transition-colors hover:text-accent"
-              >
+              <a href={`tel:${site.phoneTel}`} className="transition-colors hover:text-accent">
                 {site.phoneDisplay}
               </a>
             </li>
@@ -132,16 +128,14 @@ export function SiteFooter() {
             </li>
           </ul>
           <div className="mt-5 flex flex-wrap gap-2">
-            {["M-Pesa", "Mixx by Yas", "Airtel Money", "Malipo poa"].map(
-              (method) => (
-                <span
-                  key={method}
-                  className="rounded-full border border-cream-300 bg-surface px-3 py-1 text-xs font-medium text-ink-500"
-                >
-                  {method}
-                </span>
-              ),
-            )}
+            {['M-Pesa', 'Mixx by Yas', 'Airtel Money', 'Malipo poa'].map((method) => (
+              <span
+                key={method}
+                className="rounded-full border border-cream-300 bg-surface px-3 py-1 text-xs font-medium text-ink-500"
+              >
+                {method}
+              </span>
+            ))}
           </div>
           <div className="mt-5 flex gap-2">
             <a
@@ -179,12 +173,8 @@ export function SiteFooter() {
         <div className="container-x flex flex-col items-center justify-between gap-2 py-5 text-xs text-ink-400 sm:flex-row">
           <p>© 2026 Niffer Cosmetics. Haki zote zimehifadhiwa.</p>
           <div className="flex items-center gap-4">
-            <Link href="/akaunti" className="hover:text-accent">
-              Akaunti
-            </Link>
-            <Link href="/admin" className="hover:text-accent">
-              Admin
-            </Link>
+            <Link href="/akaunti" className="hover:text-accent">Akaunti</Link>
+            <Link href="/admin" className="hover:text-accent">Admin</Link>
             <span>Bei zote ni kwa Shilingi ya Tanzania (TSh)</span>
           </div>
         </div>

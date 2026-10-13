@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { connection } from "next/server";
@@ -37,21 +37,14 @@ export default function AllProductsPage({ searchParams }: PageProps) {
       <nav aria-label="Njia" className="text-sm text-ink-400">
         <ol className="flex flex-wrap items-center gap-1.5">
           <li>
-            <Link href="/" className="hover:text-accent">
-              Nyumbani
-            </Link>
+            <Link href="/" className="hover:text-accent">Nyumbani</Link>
           </li>
           <li aria-hidden>›</li>
           <li className="text-ink-700">Bidhaa</li>
         </ol>
       </nav>
 
-      {/* searchParams ni runtime data — Suspense hukuruhusu prerender shell. */}
-      <Suspense
-        fallback={
-          <div className="mt-6 h-40 animate-pulse rounded-2xl bg-cream-200" />
-        }
-      >
+      <Suspense fallback={<div className="mt-6 h-40 animate-pulse rounded-2xl bg-cream-200" />}>
         <ProductGrid searchParams={searchParams} />
       </Suspense>
     </div>
@@ -83,7 +76,6 @@ function parseFilters(params: Awaited<PageProps["searchParams"]>): ProductFilter
 async function ProductGrid({ searchParams }: PageProps) {
   const params = await searchParams;
   const filters = parseFilters(params);
-  // Bidhaa kutoka DB (admin ndio mwanzo wa ukweli).
   await connection();
   const all = listProducts();
   const filtered = filterProducts(all, filters);
@@ -107,22 +99,23 @@ async function ProductGrid({ searchParams }: PageProps) {
 
   return (
     <>
-      <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="eyebrow">Duka letu</p>
-          <h1 className="heading-display mt-2">
-            {activeCategory ? activeCategory.name : heading}
-          </h1>
-          <p className="mt-3 max-w-2xl text-ink-500">
-            {activeCategory
-              ? activeCategory.description
-              : "Chuja kwa mkoa, mji, bei au kategoria — kama unavyotafuta kwenye jiji.com."}
+      <div className="mt-6 rounded-[2rem] border border-cream-300 bg-cream-100 p-6 shadow-[0_18px_40px_-32px_rgba(38,28,22,0.35)] sm:p-8">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="eyebrow">Duka letu</p>
+            <h1 className="heading-display mt-2">{activeCategory ? activeCategory.name : heading}</h1>
+            <p className="mt-3 max-w-2xl text-ink-500">
+              {activeCategory
+                ? activeCategory.description
+                : "Chuja kwa mkoa, mji, bei au kategoria ili kupata bidhaa inayokufaa."}
+            </p>
+          </div>
+          <p className="rounded-full border border-brand-200 bg-surface px-3 py-1.5 text-sm font-medium text-accent">
+            {filtered.length} bidhaa zimepatikana
           </p>
         </div>
-        <p className="text-sm text-ink-400">{filtered.length} bidhaa zimepatikana</p>
       </div>
 
-      {/* Vichujio: kategoria, eneo (mkoa/mji), bei, upangaji */}
       <div className="mt-8">
         <CatalogFilters counts={counts} />
       </div>
@@ -137,15 +130,9 @@ async function ProductGrid({ searchParams }: PageProps) {
         </ul>
       ) : (
         <div className="card mt-10 p-10 text-center">
-          <p className="font-display text-xl text-ink-900">
-            Hakuna bidhaa zinazolingana na vichujio vyako
-          </p>
-          <p className="mt-2 text-sm text-ink-500">
-            Jaribu kuondoa kichujio kimoja au vinjari bidhaa zote.
-          </p>
-          <Link href="/bidhaa" className="btn-primary mt-6">
-            Ona bidhaa zote
-          </Link>
+          <p className="font-display text-xl text-ink-900">Hakuna bidhaa zinazolingana na vichujio vyako</p>
+          <p className="mt-2 text-sm text-ink-500">Jaribu kuondoa kichujio kimoja au vinjari bidhaa zote.</p>
+          <Link href="/bidhaa" className="btn-primary mt-6">Ona bidhaa zote</Link>
         </div>
       )}
     </>

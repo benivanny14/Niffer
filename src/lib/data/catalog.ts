@@ -1,7 +1,6 @@
 /**
- * Sample catalog data — yaani ya mpangilio tu (mock).
- * Baada ya module ya database/products kujengwa, data halisi zitakuja
- * kutoka Prisma/DB kupitia features/catalog service. Badilisha hapa.
+ * Katalogi halisi — pack za Niffer Cosmetics kwa picha halisi.
+ * Kila pack ni bidhaa moja kwenye katalogi kwa bei ya picha (TSH).
  */
 
 export type Product = {
@@ -19,14 +18,8 @@ export type Product = {
   reviewCount: number;
   stock: number;
   badges: ProductBadge[];
-  /** Mkoa ambapo bidhaa hii inapatikana zaidi (uchujaji wa eneo kama jiji.com). */
   region?: string;
-  /** Mji/taasisi ndani ya mkoa (uchujaji kwa mji). */
   city?: string;
-  /**
-   * Media module: ProductImage hutumia `image` kama `/images/products/<slug>.svg`.
-   * Baada ya media module halisi, badilisha na ProductMedia (picha + video).
-   */
   image: string;
   imageAlt: string;
 };
@@ -34,356 +27,550 @@ export type Product = {
 export type ProductBadge = "new" | "bestseller" | "sale" | "low-stock";
 
 export type CategorySlug =
-  | "skincare"
-  | "makeup"
-  | "haircare"
-  | "fragrance"
+  | "mwanachuo-pack"
+  | "purest-glow"
   | "body-care"
-  | "accessories";
+  | "skincare";
 
 export type Category = {
   slug: CategorySlug;
   name: string;
   description: string;
   productCount: number;
-  /** Rangi imara ya bendi ya juu (editorial — si gradient). */
   swatch: string;
 };
 
 export const categories: Category[] = [
   {
-    slug: "skincare",
-    name: "Skincare",
-    description: "Cleansers, serums, moisturizers na sunscreen",
-    productCount: 24,
+    slug: "mwanachuo-pack",
+    name: "Mwanachuo Pack",
+    description: "Maseti rahisi ya bei nafuu kwa wanafunzi",
+    productCount: 10,
     swatch: "bg-brand-100",
   },
   {
-    slug: "makeup",
-    name: "Makeup",
-    description: "Lipsticks, foundations, mascaras na zaidi",
-    productCount: 31,
+    slug: "purest-glow",
+    name: "Purest Glow",
+    description: "Pack zenye The Purest Glow — mwanga na unyevu",
+    productCount: 8,
     swatch: "bg-gold-100",
-  },
-  {
-    slug: "haircare",
-    name: "Haircare",
-    description: "Shampoos, conditioners na hair treatments",
-    productCount: 18,
-    swatch: "bg-cream-200",
-  },
-  {
-    slug: "fragrance",
-    name: "Fragrance",
-    description: "Perfumes na body mists za kila siku",
-    productCount: 12,
-    swatch: "bg-brand-50",
   },
   {
     slug: "body-care",
     name: "Body Care",
-    description: "Body lotions, scrubs na soaps",
-    productCount: 15,
-    swatch: "bg-gold-100",
+    description: "Body lotions, oils na scrub za mwili",
+    productCount: 12,
+    swatch: "bg-cream-200",
   },
   {
-    slug: "accessories",
-    name: "Accessories",
-    description: "Tools, brushes na vitendegea vya urembo",
-    productCount: 9,
-    swatch: "bg-cream-200",
+    slug: "skincare",
+    name: "Skincare",
+    description: "Cream, serums na vitu vya ngozi ya uso",
+    productCount: 2,
+    swatch: "bg-brand-50",
   },
 ];
 
-export const products: Product[] = [
-  {
-    id: "p-001",
-    slug: "radiance-vitamin-c-serum",
-    name: "Radiance Vitamin C Serum",
-    category: "skincare",
-    priceTsh: 32000,
-    compareAtTsh: 40000,
-    shortDescription:
-      "Serum yenye Vitamin C 20% na hyaluronic acid kwa ngozi angavu na yenye mwanga.",
-    description:
-      "Radiance Vitamin C Serum ni tiba ya kila siku kwa ngozi iliyochoka na isiyo na mwanga. Wenye Vitamin C ya 20% (ascorbic acid) pamoja na hyaluronic acid, serum hii inasaidia kurejesha mwanga asili wa ngozi, kupunguza alama za chunvi, na kuzuia uharibiku wa mazingira. Inafaa kwa aina zote za ngozi na inatumika kila asubuhi kabla ya sunscreen.",
-    ingredients:
-      "20% L-Ascorbic Acid, Hyaluronic Acid, Vitamin E, Ferulic Acid, Aloe Vera Extract, Glycerin.",
-    howToUse:
-      "Baada ya kusafisha uso, tia tone 3–4 kwenye viganja vyako na paka kwenye uso na shingo kwa miezi. Fuatilia na moisturizer na sunscreen ya SPF 30+.",
+type Seed = Omit<
+  Product,
+  | "ingredients"
+  | "howToUse"
+  | "rating"
+  | "reviewCount"
+  | "region"
+  | "city"
+  | "stock"
+> & {
+  stock?: number;
+};
+
+const COMMON_INGREDIENTS =
+  "Mchanganyiko wa bidhaa halisi zilizopo kwenye pack — angalia kila bidhaa kwa madhumuni kamili.";
+
+const HOW_TO_USE =
+  "Tumia kila bidhaa kwenye pack kulingana na maagizo yake. Kwa body care: paka lotion au cream baada ya kuoga wakati ngozi bado ni mnyevu.";
+
+function fromSeed(seed: Seed, index: number): Product {
+  const { stock: stockOpt, ...rest } = seed;
+  return {
+    ...rest,
+    stock: stockOpt ?? 25,
+    ingredients: COMMON_INGREDIENTS,
+    howToUse: HOW_TO_USE,
     rating: 4.8,
-    reviewCount: 126,
-    stock: 40,
-    badges: ["bestseller", "sale"],
+    reviewCount: 12 + ((index * 7) % 40),
     region: "Dar es Salaam",
     city: "Kinondoni",
-    image: "/images/products/radiance-vitamin-c-serum.svg",
-    imageAlt: "Radiance Vitamin C Serum chupa ya glasi ya dhahabu",
+  };
+}
+
+const seeds: Seed[] = [
+  // Mwanachuo Pack (10)
+  {
+    id: "p-001",
+    slug: "mwanachuo-pack-45k",
+    name: "Mwanachuo Pack — Queen Elizabeth",
+    category: "mwanachuo-pack",
+    priceTsh: 45000,
+    shortDescription:
+      "Queen Elizabeth cocoa butter cream na glycerin — msingi wa ngozi laini kwa bei ya mwanafunzi.",
+    description:
+      "Pack hii ya Mwanachuo inajumuisha Queen Elizabeth Cocoa Butter Cream na Precious Glycerin. Nafuu na yenye ufanisi — inafaa kwa mwanafunzi anayeanza ratiba ya ngozi. Bidhaa halisi, malipo salama, na usafirishaji haraka Dar es Salaam.",
+    badges: ["bestseller"],
+    image: "/images/packs/pack-queen-elizabeth-45k.jpg",
+    imageAlt: "Mwanachuo Pack 45,000 — Queen Elizabeth cocoa butter",
   },
   {
     id: "p-002",
-    slug: "velvet-matte-lipstick-set",
-    name: "Velvet Matte Lipstick Set",
-    category: "makeup",
-    priceTsh: 24500,
+    slug: "mwanachuo-pack-65k-vaseline",
+    name: "Mwanachuo Pack — Vaseline + Purest Glow",
+    category: "mwanachuo-pack",
+    priceTsh: 65000,
     shortDescription:
-      "Seti ya miwili ya lipstick ya matte ya muda mrefu, nyumbafu na nyekundu.",
+      "Purest Glow shower gel, Vaseline Cocoa Radiant lotion, na Queen Elizabeth cream — bei ya mwanachuo.",
     description:
-      "Seti hii ya Velvet Matte Lipstick inajumuisha nyumbafu na nyekundu — rangi mbili zinazofaa kwa matukio yote. Muundo wa velvet matte hutoa rangi kamili bila kukausha midomo, na unadumu kwa saa 8+ bila kufuta. Imeandaliwa na vitamin E ili kudumisha unyevu wa midomo.",
-    ingredients:
-      "Dimethicone, Ricinus Communis (Castor) Oil, Vitamin E, Beeswax, Natural Pigments.",
-    howToUse:
-      "Paka kwenye midomo safi. Kwa matokeo bora, tia lip balm kwanza, futa ziada, kisha paka lipstick kwa tabaka mbili.",
-    rating: 4.7,
-    reviewCount: 89,
-    stock: 25,
-    badges: ["new"],
-    region: "Dar es Salaam",
-    city: "Ilala",
-    image: "/images/products/velvet-matte-lipstick-set.svg",
-    imageAlt: "Velvet Matte Lipstick Set ya vipande viwili vya rangi",
+      "Pack kamili ya mwanafunzi: Purest Glow Glutathione & Amino Acid Shower Gel, Vaseline Intensive Care Cocoa Radiant, na Queen Elizabeth Cocoa Butter. Ngozi safi, laini, na yenye mwanga kwa bei nafuu.",
+    badges: [],
+    image: "/images/packs/pack-mwanachuo-65k-vaseline.jpg",
+    imageAlt: "Mwanachuo Pack 65,000 — Vaseline na Purest Glow",
   },
   {
     id: "p-003",
-    slug: "hydra-glow-moisturizer",
-    name: "Hydra Glow Moisturizer",
-    category: "skincare",
-    priceTsh: 28000,
+    slug: "mwanachuo-pack-65k-purest-glow",
+    name: "Mwanachuo Pack — Purest Glow + Queen Elizabeth",
+    category: "mwanachuo-pack",
+    priceTsh: 65000,
     shortDescription:
-      "Moisturizer yenye hyaluronic acid na aloe vera kwa urembo wa asili kila siku.",
+      "Purest Glow shower gel na Queen Elizabeth cream + glycerin — rahisi na yenye ufanisi.",
     description:
-      "Hydra Glow Moisturizer ni nyunyo rahisi ya unyevu wa muda mrefu. Wenye hyaluronic acid ya triple-weight na aloe vera, huongeza unyevu mara moja na kudumisha ngozi laini saa 24. Muundo wake mwepesi haufinyangi ngozi na unafaa chini ya makeup.",
-    ingredients:
-      "Hyaluronic Acid, Aloe Vera, Shea Butter, Glycerin, Ceramide Complex, Vitamin B5.",
-    howToUse:
-      "Paka tabaka nyepesi kwenye uso na shingo mara mbili kwa siku — asubuhi na jioni — baada ya serum.",
-    rating: 4.9,
-    reviewCount: 203,
-    stock: 5,
-    badges: ["bestseller", "low-stock"],
-    region: "Dar es Salaam",
-    city: "Kinondoni",
-    image: "/images/products/hydra-glow-moisturizer.svg",
-    imageAlt: "Hydra Glow Moisturizer kasha la nyeupe",
+      "Kwa mwanafunzi anayependa Purest Glow: pack hii ina Purest Glow Glutathione Shower Gel na Queen Elizabeth Cocoa Butter Cream pamoja na Glycerin. Mchanganyiko rahisi wa kila siku kwa ngozi yenye mwanga.",
+    badges: [],
+    image: "/images/packs/pack-mwanachuo-65k-purest-glow.jpg",
+    imageAlt: "Mwanachuo Pack 65,000 — Purest Glow na Queen Elizabeth",
   },
   {
     id: "p-004",
-    slug: "silk-touch-conditioner",
-    name: "Silk Touch Conditioner",
-    category: "haircare",
-    priceTsh: 19500,
+    slug: "mwanachuo-pack-80k",
+    name: "Mwanachuo Pack — St Ives",
+    category: "mwanachuo-pack",
+    priceTsh: 80000,
     shortDescription:
-      "Conditioner laini yenye argan oil kwa nywele zenye unyevu na mwanga.",
+      "St Ives scrub, lotion, na ziada — mwanafunzi anayependa ngozi laini.",
     description:
-      "Silk Touch Conditioner huondoa kuzora na kurejesha unyevu kwa nywele kavu au zilizodhurika. Wenye argan oil na keratin, hufanya nywele kuwa laini, rahisi kusuka, na zenye mwanga wa afya. Inafaa kwa nywele zilizopishwa rangi na zisizopishwa.",
-    ingredients:
-      "Argan Oil, Keratin, Coconut Oil, Glycerin, Shea Butter, Panthenol.",
-    howToUse:
-      "Baada ya shampoo, paka kwenye nywele kutoka katikati hadi ukingo. Acha kwa dakika 2–3 kisha suka kwa maji baridi.",
-    rating: 4.6,
-    reviewCount: 54,
-    stock: 60,
-    badges: [],
-    region: "Mwanza",
-    city: "Nyamagana",
-    image: "/images/products/silk-touch-conditioner.svg",
-    imageAlt: "Silk Touch Conditioner chupa ya dhahabu",
+      "Pack yenye St Ives products kwa mwanachuo. Scrub laini huondoa seli za mwisho, lotion huweka unyevu, na muundo unafaa kwa ngozi ya mijini. Bei ya mwanafunzi bila kuathiri ubora.",
+    badges: ["new"],
+    image: "/images/packs/pack-mwanachuo-80k-st-ives.jpg",
+    imageAlt: "Mwanachuo Pack 80,000 — St Ives",
   },
   {
     id: "p-005",
-    slug: "amber-nights-eau-de-parfum",
-    name: "Amber Nights Eau de Parfum",
-    category: "fragrance",
-    priceTsh: 45000,
-    compareAtTsh: 55000,
+    slug: "mwanachuo-pack-90k",
+    name: "Mwanachuo Pack — Vaseline + SAFE",
+    category: "mwanachuo-pack",
+    priceTsh: 90000,
     shortDescription:
-      "Perfume ya amber na vanilla — harufu ya jioni isiyosahaulika.",
+      "Vaseline Daily Brightening, SAFE Vitamin C serum, na Queen Elizabeth — mwanga kwa mwanafunzi.",
     description:
-      "Amber Nights ni harufu ya jioni yenye mchanganyiko wa amber, vanilla, na msitu wa cedar. Inaanzia kwa midundo ya bergamot na kuishia kwenye base ya musk na vanilla — harufu yenye muda mrefu inayodumu saa 8–10. Inafaa kwa matukio maalum na kwa mtu anayependa harufu yenye utajiri.",
-    ingredients:
-      "Alcohol Denat., Parfum, Amber Accord, Vanilla Absolute, Cedarwood, Bergamot, Musk.",
-    howToUse:
-      "Paka kwenye maeneo ya nabii — shingo, nyuma ya masikio, na pulse points. Usifute ili iendelee kudumu.",
-    rating: 4.8,
-    reviewCount: 72,
-    stock: 18,
-    badges: ["sale"],
-    region: "Dar es Salaam",
-    city: "Ubungo",
-    image: "/images/products/amber-nights-eau-de-parfum.svg",
-    imageAlt: "Amber Nights perfume chupa ya dhahabu na nyeusi",
+      "Pack hii ina Vaseline Healthy Bright Daily Brightening Lotion, SAFE Double Care Vitamin C + Glutathione, na Queen Elizabeth Cocoa Butter. Mchanganyiko wa bei nafuu wenye matokeo ya kuona.",
+    badges: ["bestseller"],
+    image: "/images/packs/pack-mwanachuo-90k.jpg",
+    imageAlt: "Mwanachuo Pack 90,000 — Vaseline na SAFE",
   },
   {
     id: "p-006",
-    slug: "nourishing-body-lotion",
-    name: "Nourishing Body Lotion",
-    category: "body-care",
-    priceTsh: 15000,
+    slug: "mwanachuo-pack-95k-argan",
+    name: "Mwanachuo Pack — Argan",
+    category: "mwanachuo-pack",
+    priceTsh: 95000,
     shortDescription:
-      "Body lotion yenye shea butter kwa ngozi laini na yenye unyevu mchana kutwa.",
+      "Argan oil, scrub, na cream — tiba ya ngozi kavu kwa mwanafunzi.",
     description:
-      "Nourishing Body Lotion huinua ngozi kavu kwa shea butter na vitamin E. Muundo wake wa kina huingia haraka na hauna ukoko, huchafulia ngozi laini na yenye unyevu mchana kutwa. Ina harufu nyepesi ya cream na inafaa kwa aina zote za ngozi.",
-    ingredients:
-      "Shea Butter, Vitamin E, Glycerin, Coconut Oil, Aloe Vera, Jojoba Oil.",
-    howToUse:
-      "Paka kwenye ngozi ya mwili mara moja au mbili kwa siku, hasa baada ya kuoga wakati ngozi bado ni mnyevu.",
-    rating: 4.5,
-    reviewCount: 41,
-    stock: 80,
-    badges: ["new"],
-    region: "Mwanza",
-    city: "Ilemela",
-    image: "/images/products/nourishing-body-lotion.svg",
-    imageAlt: "Nourishing Body Lotion chupa ya cream",
+      "Pack ya argan kwa wanafunzi: oil, scrub na cream zinazosaidia ngozi kavu na iliyochoka. Inafaa kwa wale wanaotaka tiba rahisi ya wiki nzima kwa bei ya mwanafunzi.",
+    badges: [],
+    image: "/images/packs/pack-mwanachuo-95k-argan.jpg",
+    imageAlt: "Mwanachuo Pack 95,000 — Argan",
   },
   {
     id: "p-007",
-    slug: "gentle-foam-cleanser",
-    name: "Gentle Foam Cleanser",
-    category: "skincare",
-    priceTsh: 18000,
+    slug: "mwanachuo-pack-95k-mixa",
+    name: "Mwanachuo Pack — Mixa",
+    category: "mwanachuo-pack",
+    priceTsh: 95000,
     shortDescription:
-      "Cleanser ya foam laini huondoa uchafu bila kukausha ngozi yako.",
+      "Mixa lotions na scrub — ngozi laini kwa mwanafunzi wa chuo.",
     description:
-      "Gentle Foam Cleanser ni hatua ya kwanza ya usafi wa ngozi. Wenye pH sahihi (5.5) na chamomile, huondoa uchafu, mafuta ya ziada, na alama za makeup bila kuvunja kinga ya ngozi. Ngozi hubaki safi, laini, na haijaachwa kukaushwa.",
-    ingredients:
-      "Chamomile Extract, Glycerin, Cocamidopropyl Betaine, Panthenol, Allantoin.",
-    howToUse:
-      "Paka kwenye uso wa mnyevu, piga mviringo kwa dakika 60, kisha suka na maji ya uvuguvugu. Tumia asubuhi na jioni.",
-    rating: 4.7,
-    reviewCount: 98,
-    stock: 55,
-    badges: ["bestseller"],
-    region: "Arusha",
-    city: "Arusha Jiji",
-    image: "/images/products/gentle-foam-cleanser.svg",
-    imageAlt: "Gentle Foam Cleanser chupa nyeupe",
+      "Mixa products kwa mwanachuo: lotions na scrub zinazofaa kwa aina zote za ngozi. Muundo wa kifanshi wa Ulaya kwa bei ya mwanafunzi wa Tanzania.",
+    badges: [],
+    image: "/images/packs/pack-mwanachuo-95k-mixa.jpg",
+    imageAlt: "Mwanachuo Pack 95,000 — Mixa",
   },
   {
     id: "p-008",
-    slug: "sun-shield-spf50",
-    name: "Sun Shield SPF 50",
-    category: "skincare",
-    priceTsh: 22000,
+    slug: "mwanachuo-pack-95k-palmers",
+    name: "Mwanachuo Pack — Palmer's",
+    category: "mwanachuo-pack",
+    priceTsh: 95000,
     shortDescription:
-      "Sunscreen ya SPF 50 PA++++ bila ukungu — kinga ya jua kila siku.",
+      "Palmer's cocoa butter lotion, oil, na cream — ngozi yenye unyevu mchana kutwa.",
     description:
-      "Sun Shield SPF 50 hutoa kinga ya juu dhidi ya miale ya UVA na UVB bila kuacha ukungu nyeupe kwenye ngozi ya giza. Muundo wake wa gel-cream unafaa chini ya makeup na hauna mafuta. Ni hatua muhimu ya mwisho ya skincare kila asubuhi.",
-    ingredients:
-      "Zinc Oxide, Octinoxate, Niacinamide, Hyaluronic Acid, Vitamin E, Green Tea Extract.",
-    howToUse:
-      "Paka kiasi cha kijiko kidogo (¼ teaspoon) kwenye uso na shingo dakika 15 kabla ya kuchukuliwa na jua. Rudia kila saa 2 ikiwa uko nje.",
-    rating: 4.9,
-    reviewCount: 167,
-    stock: 35,
+      "Palmer's Cocoa Butter Formula pack kwa mwanachuo: body lotion, body oil, na cream. Wenye Vitamin E na cocoa butter huinua ngozi kavu na kuacha mwanga wa afya.",
     badges: ["bestseller"],
-    region: "Dar es Salaam",
-    city: "Temeke",
-    image: "/images/products/sun-shield-spf50.svg",
-    imageAlt: "Sun Shield SPF 50 chupa ya machungwa",
+    image: "/images/packs/pack-mwanachuo-95k-palmers.jpg",
+    imageAlt: "Mwanachuo Pack 95,000 — Palmer's",
   },
   {
     id: "p-009",
-    slug: "volumizing-mascara",
-    name: "Volumizing Mascara",
-    category: "makeup",
-    priceTsh: 16500,
+    slug: "mwanachuo-pack-100k-rose",
+    name: "Mwanachuo Pack — Rose",
+    category: "mwanachuo-pack",
+    priceTsh: 100000,
     shortDescription:
-      "Mascara ya volume na urefu — macho makubwa kwa tabaka moja.",
+      "Rose water scrub, lotion, na cream — harufu ya maua kwa mwanafunzi.",
     description:
-      "Volumizing Mascara huongeza urefu na unene kwa kila unyunyizaji. Brush yake ya nyumba hukamata kila unywele wa jicho, huku muundo wake wa smudge-proof ukidumu saa 12 bila kuyeyuka. Inaondolewa rahisi na cleanser ya ngozi.",
-    ingredients:
-      "Water, Beeswax, Carnauba Wax, Panthenol, Vitamin E, Iron Oxides.",
-    howToUse:
-      "Paka kutoka msingi hadi ukingo wa unywele kwa mtindo wa zigzag. Rudia tabaka la pili kwa volume zaidi. Acha kukauka sekunde 30 kabla ya kufunga jicho.",
-    rating: 4.6,
-    reviewCount: 112,
-    stock: 42,
+      "Pack ya rose kwa wanafunzi: scrub na cream zenye harufu ya maua ya rose. Inafaa kwa mchana na jioni, na ni bora kwa wale wanaopenda harufu nyepesi ya asili.",
     badges: ["new"],
-    region: "Arusha",
-    city: "Arusha Jiji",
-    image: "/images/products/volumizing-mascara.svg",
-    imageAlt: "Volumizing Mascara nyeusi na brush",
+    image: "/images/packs/pack-mwanachuo-100k-rose.jpg",
+    imageAlt: "Mwanachuo Pack 100,000 — Rose",
   },
   {
     id: "p-010",
-    slug: "argan-repair-shampoo",
-    name: "Argan Repair Shampoo",
-    category: "haircare",
-    priceTsh: 17500,
+    slug: "mwanachuo-pack-100k-purest-glow",
+    name: "Mwanachuo Pack — Purest Glow",
+    category: "mwanachuo-pack",
+    priceTsh: 100000,
     shortDescription:
-      "Shampoo ya argan repair huondoa uchafu na kurejesha nywele zilizodhurika.",
+      "Purest Glow shower gel, lotion, na cream — mwanga kamili kwa bei ya mwanafunzi.",
     description:
-      "Argan Repair Shampoo husafisha nywele kwa upole huku ikizirejeshea. Wenye argan oil, biotin, na protein, huimarisha nywele zilizopishwa rangi, zilizokorofishwa, au zilizodhurika kwa joto. Inatoa unyevu na mwanga bila kuyeyusha rangi.",
-    ingredients:
-      "Argan Oil, Biotin, Hydrolyzed Keratin, Coconut Cleanser, Panthenol, Aloe Vera.",
-    howToUse:
-      "Paka kwenye nywele mnyevu, piga massage kwenye scalpa kwa dakika 1, kisha suka. Rudia kama inahitajika. Fuatilia na Silk Touch Conditioner.",
-    rating: 4.7,
-    reviewCount: 88,
-    stock: 48,
-    badges: [],
-    region: "Mwanza",
-    city: "Nyamagana",
-    image: "/images/products/argan-repair-shampoo.svg",
-    imageAlt: "Argan Repair Shampoo chupa ya kahawia",
+      "Pack kamili ya Purest Glow kwa mwanachuo: shower gel, lotion, na cream. Mchanganyiko unaotoa mwanga wa asili na unyevu wa muda mrefu kwa bei ya chuo.",
+    badges: ["bestseller"],
+    image: "/images/packs/pack-mwanachuo-100k-purest-glow.jpg",
+    imageAlt: "Mwanachuo Pack 100,000 — Purest Glow",
   },
+
+  // Purest Glow (8)
   {
     id: "p-011",
-    slug: "tropical-bloom-body-mist",
-    name: "Tropical Bloom Body Mist",
-    category: "fragrance",
-    priceTsh: 14000,
+    slug: "purest-glow-pack-65k",
+    name: "Purest Glow Pack — Queen Elizabeth",
+    category: "purest-glow",
+    priceTsh: 65000,
     shortDescription:
-      "Body mist ya maua ya tropiki — harufu nyepesi ya kila siku.",
+      "Purest Glow shower gel na Queen Elizabeth cream — mwanga rahisi kwa siku.",
     description:
-      "Tropical Bloom Body Mist ni harufu nyepesi ya kila siku yenye maua ya frangipani, coconut, na citrus. Ni nyepesi kuliko perfume na inafaa kwa matumizi ya mchana au kama refresh ya mchana. Inaonyeshwa kwa chupa ya spray yenye rahisi kubebeka.",
-    ingredients:
-      "Alcohol Denat., Parfum, Frangipani Extract, Coconut Water, Citrus Blend, Aloe Vera.",
-    howToUse:
-      "Nyunyiza kwenye mwili kutoka mbali sentimita 20. Tumia baada ya kuoga au wakati wowote unapohitaji kujivinjari.",
-    rating: 4.5,
-    reviewCount: 63,
-    stock: 70,
-    badges: ["new"],
-    region: "Dar es Salaam",
-    city: "Kigamboni",
-    image: "/images/products/tropical-bloom-body-mist.svg",
-    imageAlt: "Tropical Bloom Body Mist chupa ya rangi ya machungwa",
+      "Pack ndogo ya Purest Glow: Glutathione & Amino Acid Shower Gel pamoja na Queen Elizabeth Cocoa Butter. Rahisi, nafuu, na yenye matokeo ya kuona ndani ya wiki chache.",
+    badges: [],
+    image: "/images/packs/pack-65k-qe.jpg",
+    imageAlt: "Purest Glow Pack 65,000 — Queen Elizabeth",
   },
   {
     id: "p-012",
-    slug: "pro-makeup-brush-set",
-    name: "Pro Makeup Brush Set",
-    category: "accessories",
-    priceTsh: 35000,
+    slug: "purest-glow-pack-100k",
+    name: "Purest Glow Pack — Vaseline + Queen Elizabeth",
+    category: "purest-glow",
+    priceTsh: 100000,
     shortDescription:
-      "Seti ya vipande 8 vya brashi za kitaalamu — zote unazohitaji.",
+      "Purest Glow, Vaseline lotion, na Queen Elizabeth — ngozi laini na yenye mwanga.",
     description:
-      "Pro Makeup Brush Set ni seti ya brashi 8 za kitaalamu zilizofunikwa kwa nywele za sintetiki za hali ya juu. Zina brashi za uso, macho, midomo, na contour — kila kitu unachohitaji kwa look kamili. Zinakuja kwenye kisanduku cha kifahari kinacholinda brashi zako.",
-    ingredients:
-      "Sintetiki ya hali ya juu, Handles za mbao za bamboo, Metal ferrules za dhahabu.",
-    howToUse:
-      "Tumia brashi kwa product husika: foundation brush kwa msingi, blending brush kwa macho, lip brush kwa midomo. Fua kila wiki kwa sabuni laini.",
-    rating: 4.8,
-    reviewCount: 45,
-    stock: 20,
+      "Purest Glow shower gel, Vaseline Intensive Care Cocoa Radiant lotion, na Queen Elizabeth Cocoa Butter + Glycerin. Mseto kamili wa asubuhi na jioni kwa ngozi yenye mwanga.",
     badges: ["bestseller"],
-    region: "Arusha",
-    city: "Karatu",
-    image: "/images/products/pro-makeup-brush-set.svg",
-    imageAlt: "Pro Makeup Brush Set ya brashi 8",
+    image: "/images/packs/pack-100k-vaseline-qe.jpg",
+    imageAlt: "Purest Glow Pack 100,000 — Vaseline na Queen Elizabeth",
+  },
+  {
+    id: "p-013",
+    slug: "purest-glow-pack-110k",
+    name: "Purest Glow Pack — American Dream",
+    category: "purest-glow",
+    priceTsh: 110000,
+    shortDescription:
+      "Purest Glow yellow scrub gel, Palmer's oil, na American Dream cream.",
+    description:
+      "Tumeric & Kojic Acid Whitening Scrub Shower Gel, Palmer's Cocoa Butter Body Oil, na American Dream Cocoa Butter Cream. Mchanganyiko wa kusafisha na kulisha ngozi kwa mwanga wa asili.",
+    badges: [],
+    image: "/images/packs/pack-110k-american-dream.jpg",
+    imageAlt: "Purest Glow Pack 110,000 — American Dream",
+  },
+  {
+    id: "p-014",
+    slug: "purest-glow-pack-135k",
+    name: "Purest Glow Pack — Queen Elizabeth Set",
+    category: "purest-glow",
+    priceTsh: 135000,
+    shortDescription:
+      "Purest Glow red + yellow, Palmer's oil, na Queen Elizabeth cream + glycerin.",
+    description:
+      "Pack kamili: Purest Glow Glutathione (nyekundu) na Tumeric & Kojic (njano), Palmer's Cocoa Butter Body Oil, Queen Elizabeth Cream na Glycerin. Kusafisha, kulisha, na kuacha ngozi yenye mwanga.",
+    badges: ["bestseller"],
+    image: "/images/packs/pack-135k-qe.jpg",
+    imageAlt: "Purest Glow Pack 135,000 — Queen Elizabeth Set",
+  },
+  {
+    id: "p-015",
+    slug: "purest-glow-pack-170k",
+    name: "Purest Glow Pack — Dr Teal's",
+    category: "purest-glow",
+    priceTsh: 170000,
+    shortDescription:
+      "Purest Glow, Dr Teal's lotion + scrub, na Palmer's oil — spa nyumbani.",
+    description:
+      "Purest Glow Glutathione Shower Gel, Dr Teal's Body Lotion (Glow & Radiance), Dr Teal's Shea Sugar Scrub, na Palmer's Cocoa Butter Body Oil. Mchanganyiko wa spa unaojisikia nyumbani.",
+    badges: ["new"],
+    image: "/images/packs/pack-170k-dr-teals.jpg",
+    imageAlt: "Purest Glow Pack 170,000 — Dr Teal's",
+  },
+  {
+    id: "p-016",
+    slug: "purest-glow-pack-185k",
+    name: "Purest Glow Pack — Palmer's Full",
+    category: "purest-glow",
+    priceTsh: 185000,
+    shortDescription:
+      "Purest Glow red + yellow, Palmer's lotion, oil, na bonus cream.",
+    description:
+      "Pack kamili ya Palmer's na Purest Glow: shower gels mbili, Palmer's Cocoa Butter Lotion, Body Oil, na Cream ya ziada. Unyevu wa saa 24 kwa ngozi ya mwili mzima.",
+    badges: ["bestseller"],
+    image: "/images/packs/pack-185k-palmers-full.jpg",
+    imageAlt: "Purest Glow Pack 185,000 — Palmer's Full",
+  },
+  {
+    id: "p-017",
+    slug: "purest-glow-pack-200k",
+    name: "Purest Glow Pack — Belle Glow + Mixa",
+    category: "purest-glow",
+    priceTsh: 200000,
+    shortDescription:
+      "Purest Glow red + yellow, Belle Glow serum, na Mixa cream.",
+    description:
+      "Purest Glow shower gels mbili, Belle Glow Body Serum Oil, na Mixa La Crème Nutritive. Mchanganyiko wa mwanga, unyevu, na harufu nzuri kwa ngozi ya mwili.",
+    badges: [],
+    image: "/images/packs/pack-200k-belle-mixa.jpg",
+    imageAlt: "Purest Glow Pack 200,000 — Belle Glow na Mixa",
+  },
+  {
+    id: "p-018",
+    slug: "purest-glow-pack-340k",
+    name: "Purest Glow Pack — Mixa Double",
+    category: "purest-glow",
+    priceTsh: 340000,
+    compareAtTsh: 400000,
+    shortDescription:
+      "Purest Glow x4, Palmer's oil, na Mixa x2 — pack kubwa zaidi ya familia.",
+    description:
+      "Pack kubwa zaidi: Purest Glow shower gels nne (mbili nyekundu, mbili njano), Palmer's Cocoa Butter Body Oil, na Mixa lotions mbili. Inafaa kwa familia au kwa yule anayetaka stoo ya muda mrefu.",
+    badges: ["sale", "bestseller"],
+    image: "/images/packs/pack-340k-mixa-double.jpg",
+    imageAlt: "Purest Glow Pack 340,000 — Mixa Double",
+  },
+
+  // Body Care (11)
+  {
+    id: "p-019",
+    slug: "body-pack-125k",
+    name: "Body Pack — Executive Glow + Queen Elizabeth",
+    category: "body-care",
+    priceTsh: 125000,
+    shortDescription:
+      "Purest Glow yellow, Executive Glow Carrote lotion, na Queen Elizabeth cream.",
+    description:
+      "Tumeric & Kojic Acid Scrub, Executive Glow Carrote Super Lightening Lotion, na Queen Elizabeth Cocoa Butter + Glycerin. Mseto wa mwili kwa mwanga na unyevu.",
+    badges: [],
+    image: "/images/packs/pack-125k-executive-qe.jpg",
+    imageAlt: "Body Pack 125,000 — Executive Glow na Queen Elizabeth",
+  },
+  {
+    id: "p-020",
+    slug: "body-pack-140k",
+    name: "Body Pack — Belle Glow + Palmer's",
+    category: "body-care",
+    priceTsh: 140000,
+    shortDescription:
+      "Belle Glow serum + cream na Palmer's lotion — mwanga wa ngozi ya mwili.",
+    description:
+      "Belle Glow Body Serum Oil, Belle Glow Advance Brightening Cream, na Palmer's Cocoa Butter Daily Skin Therapy Lotion. Mseto wa mwanga na unyevu kwa ngozi ya mwili mzima.",
+    badges: ["bestseller"],
+    image: "/images/packs/pack-140k-belle-palmers.jpg",
+    imageAlt: "Body Pack 140,000 — Belle Glow na Palmer's",
+  },
+  {
+    id: "p-021",
+    slug: "body-pack-160k",
+    name: "Body Pack — Executive Glow + Coffee Scrub",
+    category: "body-care",
+    priceTsh: 160000,
+    shortDescription:
+      "Purest Glow yellow, Executive Glow, Queen Elizabeth, na Coffee Sea Salt Scrub.",
+    description:
+      "Pack kamili ya body: Purest Glow Scrub Gel, Executive Glow Carrote Lotion, Queen Elizabeth Cream + Glycerin, na Coffee Sea Salt Bath Whitening SPA Scrub. Kusafisha, kulisha, na kuacha ngozi laini.",
+    badges: [],
+    image: "/images/packs/pack-160k-executive-coffee.jpg",
+    imageAlt: "Body Pack 160,000 — Executive Glow na Coffee Scrub",
+  },
+  {
+    id: "p-022",
+    slug: "body-pack-165k",
+    name: "Body Pack — Palmer's + Executive Glow",
+    category: "body-care",
+    priceTsh: 165000,
+    shortDescription:
+      "Executive Glow Carrote na Palmer's trio — lotion, oil, na cream.",
+    description:
+      "Executive Glow Carrote Super Lightening Lotion, Palmer's Cocoa Butter Body Oil, Palmer's Heals & Softens Cream, na Palmer's Daily Skin Therapy Lotion. Unyevu wa saa 24 kwa ngozi ya mwili.",
+    badges: [],
+    image: "/images/packs/pack-165k-palmers-executive.jpg",
+    imageAlt: "Body Pack 165,000 — Palmer's na Executive Glow",
+  },
+  {
+    id: "p-023",
+    slug: "body-pack-195k-coffee",
+    name: "Body Pack — Purest Glow + Coffee Scrub",
+    category: "body-care",
+    priceTsh: 195000,
+    shortDescription:
+      "Purest Glow yellow, Executive Glow, Queen Elizabeth, na Coffee Scrub.",
+    description:
+      "Tumeric & Kojic Acid Scrub, Executive Glow Carrote Lotion, Queen Elizabeth Cream + Glycerin, na Coffee Sea Salt Whitening SPA Scrub. Mseto wa kina wa body care kwa wiki nzima.",
+    badges: ["bestseller"],
+    image: "/images/packs/pack-195k-executive-coffee.jpg",
+    imageAlt: "Body Pack 195,000 — Purest Glow na Coffee Scrub",
+  },
+  {
+    id: "p-024",
+    slug: "body-pack-195k-purec",
+    name: "Body Pack — PureC Egyptian Gold",
+    category: "body-care",
+    priceTsh: 195000,
+    shortDescription:
+      "PureC Egyptian Gold shower milk, Executive Glow, Queen Elizabeth, na Coffee Scrub.",
+    description:
+      "PureC Egyptian Magic Whitening Gold Lightening Shower Milk, Executive Glow Carrote Lotion, Queen Elizabeth Cream + Glycerin, na Coffee Sea Salt Scrub. Mseto wa kimataifa kwa ngozi ya mwili.",
+    badges: ["new"],
+    image: "/images/packs/pack-195k-purec-egyptian.jpg",
+    imageAlt: "Body Pack 195,000 — PureC Egyptian Gold",
+  },
+  {
+    id: "p-025",
+    slug: "body-pack-195k-vivida",
+    name: "Body Pack — Vivida Extra Glow",
+    category: "body-care",
+    priceTsh: 195000,
+    shortDescription:
+      "Vivida Milk & Honey shower gel, Executive Glow, Queen Elizabeth, na Coffee Scrub.",
+    description:
+      "Vivida Extra Glow Shower Gel (Milk & Honey), Executive Glow Carrote Lotion, Queen Elizabeth Cream + Glycerin, na Coffee Sea Salt Scrub. Harufu ya asili ya maziwi na asali kwa ngozi yenye mwanga.",
+    badges: [],
+    image: "/images/packs/pack-195k-vivida.jpg",
+    imageAlt: "Body Pack 195,000 — Vivida Extra Glow",
+  },
+  {
+    id: "p-026",
+    slug: "body-pack-200k-glass",
+    name: "Body Pack — Glass Skin Spring",
+    category: "body-care",
+    priceTsh: 200000,
+    shortDescription:
+      "Glass Skin Almond Milk & Honey shower gel, Executive Glow, Queen Elizabeth, na Coffee Scrub.",
+    description:
+      "Glass Skin Spring Almond Milk & Honey Shower Gel (Extreme Brightening), Executive Glow Carrote Lotion, Queen Elizabeth Cream + Glycerin, na Coffee Sea Salt Scrub. Ngozi laini kama glasi.",
+    badges: ["bestseller"],
+    image: "/images/packs/pack-200k-glass-skin.jpg",
+    imageAlt: "Body Pack 200,000 — Glass Skin Spring",
+  },
+  {
+    id: "p-027",
+    slug: "body-pack-225k",
+    name: "Body Pack — Veet Gold Sugar & Milk",
+    category: "body-care",
+    priceTsh: 225000,
+    shortDescription:
+      "Veet Gold Sugar & Milk Body Magic, Executive Glow, Queen Elizabeth, na Coffee Scrub.",
+    description:
+      "Veet Gold Sugar & Milk Body Magic Shower Bath, Executive Glow Carrote Lotion, Queen Elizabeth Cream + Glycerin, na Coffee Sea Salt Scrub. Whitening body magic kwa ngozi ya mwili mzima.",
+    badges: [],
+    image: "/images/packs/pack-225k-veet-gold.jpg",
+    imageAlt: "Body Pack 225,000 — Veet Gold Sugar & Milk",
+  },
+  {
+    id: "p-028",
+    slug: "body-pack-245k-coconut",
+    name: "Body Pack — OGX Coconut Coffee",
+    category: "body-care",
+    priceTsh: 245000,
+    shortDescription:
+      "OGX Coconut Coffee scrub, Executive Glow, Queen Elizabeth, na Coffee Scrub.",
+    description:
+      "OGX Smoothing Coconut Coffee Scrub & Wash, Executive Glow Carrote Lotion, Queen Elizabeth Cream + Glycerin, na Coffee Sea Salt Scrub. Harufu ya kahawa na nazi kwa body spa nyumbani.",
+    badges: ["new"],
+    image: "/images/packs/pack-245k-ogx-coconut.jpg",
+    imageAlt: "Body Pack 245,000 — OGX Coconut Coffee",
+  },
+  {
+    id: "p-029",
+    slug: "body-pack-245k-rose",
+    name: "Body Pack — OGX Rose Water",
+    category: "body-care",
+    priceTsh: 245000,
+    shortDescription:
+      "OGX Rose Water scrub, Executive Glow, Queen Elizabeth, na Coffee Scrub.",
+    description:
+      "OGX Rose Water & Pink Sea Salt Scrub & Wash, Executive Glow Carrote Lotion, Queen Elizabeth Cream + Glycerin, na Coffee Sea Salt Scrub. Harufu ya rose na chumvi ya bahari kwa ngozi laini.",
+    badges: ["bestseller"],
+    image: "/images/packs/pack-245k-ogx-rose.jpg",
+    imageAlt: "Body Pack 245,000 — OGX Rose Water",
+  },
+  {
+    id: "p-030",
+    slug: "body-pack-265k",
+    name: "Body Pack — EOS Pistachio",
+    category: "body-care",
+    priceTsh: 265000,
+    shortDescription:
+      "EOS Cashmere body wash + 24H lotion, Executive Glow, na Palmer's oil.",
+    description:
+      "EOS Shea Better Cashmere Body Wash na 24H Moisture Body Lotion (Crème de Pistachio), Executive Glow Carrote, na Palmer's Cocoa Butter Body Oil. Seti ya kimataifa ya body care kwa unyevu wa saa 24.",
+    badges: ["bestseller"],
+    image: "/images/packs/pack-265k-eos.jpg",
+    imageAlt: "Body Pack 265,000 — EOS Pistachio",
+  },
+
+  // Skincare (3)
+  {
+    id: "p-031",
+    slug: "skincare-pack-175k",
+    name: "Skincare Pack — Belle Glow + Palmer's",
+    category: "skincare",
+    priceTsh: 175000,
+    shortDescription:
+      "Belle Glow shimmer oil + cream, Palmer's heals cream, na Palmer's lotion.",
+    description:
+      "Belle Glow Body Shimmer Oil, Belle Glow Advance Brightening Cream, Palmer's Heals & Softens Cream, na Palmer's Cocoa Butter Daily Skin Therapy. Mseto wa ngozi ya uso na mwili kwa mwanga wa ndani.",
+    badges: ["bestseller"],
+    image: "/images/packs/pack-175k-belle-palmers.jpg",
+    imageAlt: "Skincare Pack 175,000 — Belle Glow na Palmer's",
+  },
+  {
+    id: "p-032",
+    slug: "skincare-pack-185k",
+    name: "Skincare Pack — Belle Glow + Vitamin E",
+    category: "skincare",
+    priceTsh: 185000,
+    shortDescription:
+      "Belle Glow serum + cream, Vitamin E body cream, na Coffee Scrub.",
+    description:
+      "Belle Glow Body Serum Oil, Belle Glow Advance Brightening Cream, Vitamin E Intensive All Over Body Cream, na Coffee Sea Salt Whitening SPA Scrub. Mseto wa skincare na body scrub kwa mwanga kamili.",
+    badges: ["new"],
+    image: "/images/packs/pack-185k-belle-vitamin-e.jpg",
+    imageAlt: "Skincare Pack 185,000 — Belle Glow na Vitamin E",
   },
 ];
+
+export const products: Product[] = seeds.map((s, i) => fromSeed(s, i));
 
 export type BeautyVideo = {
   id: string;
   title: string;
   description: string;
   duration: string;
-  /** YouTube/Vimeo ID baada ya media module; sasa ni placeholder */
   providerId?: string;
-  /** Mp4 moja kwa moja (fallback ya embed) */
   mp4Url?: string;
   thumbnail: string;
   relatedProductSlug?: string;
@@ -392,33 +579,43 @@ export type BeautyVideo = {
 export const beautyVideos: BeautyVideo[] = [
   {
     id: "v-001",
-    title: "Rutini ya asubuhi ya skincare ndani ya dakika 5",
+    title: "Video ya Purest Glow Pack",
     description:
-      "Jinsi ya kupaka serum, moisturizer na sunscreen kwa utaratibu sahihi.",
-    duration: "5:12",
-    providerId: "eEanU3wxMV4",
-    thumbnail: "/images/videos/skincare-routine.svg",
-    relatedProductSlug: "radiance-vitamin-c-serum",
+      "Ona jinsi pack za Purest Glow zinavyoonekana — ubora na matokeo halisi.",
+    duration: "0:30",
+    mp4Url: "/videos/video-1.mp4",
+    thumbnail: "/images/packs/pack-135k-qe.jpg",
+    relatedProductSlug: "purest-glow-pack-135k",
   },
   {
     id: "v-002",
-    title: "Mat lipstick ya muda mrefu: hatua kwa hatua",
+    title: "Video ya Body Care Pack",
     description:
-      "Technique za kupaka lipstick isiyoondoke kwa siku nzima.",
-    duration: "7:45",
-    providerId: "TImxlxwY0kA",
-    thumbnail: "/images/videos/lipstick-tutorial.svg",
-    relatedProductSlug: "velvet-matte-lipstick-set",
+      "Body care packs — Executive Glow, Queen Elizabeth, na Coffee Scrub pamoja.",
+    duration: "0:30",
+    mp4Url: "/videos/video-2.mp4",
+    thumbnail: "/images/packs/pack-195k-executive-coffee.jpg",
+    relatedProductSlug: "body-pack-195k-coffee",
   },
   {
     id: "v-003",
-    title: "Kuchagua perfume inayokufaa",
+    title: "Video ya Mwanachuo Pack",
     description:
-      "Mwongozo wa harufu: jinsi ya kuchagua fragrance kwa hali ya hewa na matukio.",
-    duration: "4:30",
-    providerId: "5KVsamZits4",
-    thumbnail: "/images/videos/perfume-guide.svg",
-    relatedProductSlug: "amber-nights-eau-de-parfum",
+      "Mwanachuo Pack — bei nafuu na ubora kwa wanafunzi.",
+    duration: "0:30",
+    mp4Url: "/videos/video-3.mp4",
+    thumbnail: "/images/packs/pack-mwanachuo-90k.jpg",
+    relatedProductSlug: "mwanachuo-pack-90k",
+  },
+  {
+    id: "v-004",
+    title: "Video ya EOS + Executive Pack",
+    description:
+      "EOS Pistachio na Executive Glow — seti ya kimataifa ya body care.",
+    duration: "0:30",
+    mp4Url: "/videos/video-4.mp4",
+    thumbnail: "/images/packs/pack-265k-eos.jpg",
+    relatedProductSlug: "body-pack-265k",
   },
 ];
 
@@ -438,8 +635,8 @@ export const reviews: Review[] = [
     location: "Dar es Salaam",
     rating: 5,
     comment:
-      "Vitamin C serum hii imabadilisha ngozi yangu. Ngozi yangu angavu zaidi baada ya wiki tatu tu!",
-    productSlug: "radiance-vitamin-c-serum",
+      "Purest Glow Pack 135,000 ni bora! Ngozi yangu angavu zaidi baada ya wiki tatu tu. Bidhaa halisi na bei nzuri.",
+    productSlug: "purest-glow-pack-135k",
   },
   {
     id: "r-002",
@@ -447,8 +644,8 @@ export const reviews: Review[] = [
     location: "Mwanza",
     rating: 5,
     comment:
-      "Lipstick inadumu kweli. Naweza kula chakula bila kufuta. Na huduma ya wateja ilikuwa bora.",
-    productSlug: "velvet-matte-lipstick-set",
+      "Mwanachuo Pack nilinunua ni wa thamani. Queen Elizabeth cream ni ngumu kupita — inadumu na ina harufu nzuri.",
+    productSlug: "mwanachuo-pack-45k",
   },
   {
     id: "r-003",
@@ -456,8 +653,8 @@ export const reviews: Review[] = [
     location: "Arusha",
     rating: 4,
     comment:
-      "Moisturizer nzuri sana, inaingia haraka na haifinyangi ngozi. Delivery ilifika kwa wakati.",
-    productSlug: "hydra-glow-moisturizer",
+      "Body Pack na Coffee Scrub ni mseto mzuri. Scrub huondoa seli za mwisho na lotion huweka unyevu mchana kutwa.",
+    productSlug: "body-pack-195k-coffee",
   },
   {
     id: "r-004",
@@ -465,8 +662,8 @@ export const reviews: Review[] = [
     location: "Dodoma",
     rating: 5,
     comment:
-      "Perfume hii ni ya ajabu! Kila mtu ananiuliza nimepaka nini. Inadumu siku nzima.",
-    productSlug: "amber-nights-eau-de-parfum",
+      "Skincare Pack ya Belle Glow ni ya ajabu! Serum huenda haraka na cream haifinyangi ngozi. Kila mtu ananiuliza nimetumia nini.",
+    productSlug: "skincare-pack-175k",
   },
   {
     id: "r-005",
@@ -474,8 +671,8 @@ export const reviews: Review[] = [
     location: "Tanga",
     rating: 5,
     comment:
-      "Cleanser hii haikaushi ngozi yangu kama zingine nilizotumia. Ngozi yangu imebaki laini.",
-    productSlug: "gentle-foam-cleanser",
+      "EOS Pack ni bora zaidi niliyowahi kununua. Body wash na lotion zina harufu nzuri sana na unyevu unadumu siku nzima.",
+    productSlug: "body-pack-265k",
   },
   {
     id: "r-006",
@@ -483,8 +680,8 @@ export const reviews: Review[] = [
     location: "Mbeya",
     rating: 5,
     comment:
-      "Sunscreen hii hauna ukungu kwenye ngozi yangu ya giza! Imebadilisha rutini yangu ya asubuhi.",
-    productSlug: "sun-shield-spf50",
+      "Mwanachuo Pack 90k ni nzuri kwa mwanafunzi. SAFE serum na Vaseline pamoja na Queen Elizabeth — mchanganyiko bora kwa bei.",
+    productSlug: "mwanachuo-pack-90k",
   },
   {
     id: "r-007",
@@ -492,8 +689,8 @@ export const reviews: Review[] = [
     location: "Iringa",
     rating: 4,
     comment:
-      "Brashi nzuri sana na laini. Zinafanya makeup yangu ionekane ya kitaalamu.",
-    productSlug: "pro-makeup-brush-set",
+      "OGX Rose Water Pack ni harufu nzuri na scrub laini. Queen Elizabeth cream huweka unyevu muda mrefu.",
+    productSlug: "body-pack-245k-rose",
   },
   {
     id: "r-008",
@@ -501,8 +698,8 @@ export const reviews: Review[] = [
     location: "Morogoro",
     rating: 5,
     comment:
-      "Shampoo hii imesafisha nywele zangu vizuri sana. Nywele zangu zinaonekana afya na zina mwanga.",
-    productSlug: "argan-repair-shampoo",
+      "Dr Teal's Pack ni spa nyumbani! Scrub ya Dr Teal's na lotion pamoja na Purest Glow — ngozi yangu imebadilika kabisa.",
+    productSlug: "purest-glow-pack-170k",
   },
 ];
 

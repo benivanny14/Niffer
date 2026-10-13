@@ -37,7 +37,7 @@ export function FloatingActions() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Oda au ombi kwa WhatsApp"
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-success-600 text-on-success shadow-xl transition-transform hover:scale-105"
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-700 text-white shadow-xl transition-colors hover:scale-105 hover:bg-brand-800"
       >
         <ChatIcon className="h-7 w-7" />
       </a>

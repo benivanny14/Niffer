@@ -19,10 +19,10 @@ const baseOrder: Order = {
     address: "Mtaa",
   },
   payment: "mpesa",
-  lines: [{ slug: "gentle-foam-cleanser", qty: 1 }],
-  subtotalTsh: 18000,
+  lines: [{ slug: "purest-glow-pack-65k", qty: 1 }],
+  subtotalTsh: 65000,
   shippingTsh: 0,
-  totalTsh: 18000,
+  totalTsh: 65000,
 };
 
 describe("statusSteps", () => {

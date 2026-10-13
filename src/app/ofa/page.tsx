@@ -16,32 +16,24 @@ export const metadata: Metadata = {
 
 const bundles = [
   {
-    slug: "rutini-ya-asubuhi",
-    title: "Bundle: Rutini ya Asubuhi",
-    description: "Cleanser + Vitamin C Serum + Sunscreen — hatua tatu za asubuhi.",
-    slugs: [
-      "gentle-foam-cleanser",
-      "radiance-vitamin-c-serum",
-      "sun-shield-spf50",
-    ],
+    slug: "mwanachuo-starter",
+    title: "Bundle: Mwanachuo Starter",
+    description: "Mwanachuo Pack 45k + 65k — msingi wa ngozi kwa mwanafunzi.",
+    slugs: ["mwanachuo-pack-45k", "mwanachuo-pack-65k-vaseline"],
     discountPercent: 12,
   },
   {
-    slug: "urembo-kamili",
-    title: "Bundle: Urembo Kamili",
-    description: "Lipstick set + Mascara + Brashi — kwa matukio maalum.",
-    slugs: [
-      "velvet-matte-lipstick-set",
-      "volumizing-mascara",
-      "pro-makeup-brush-set",
-    ],
+    slug: "purest-glow-duo",
+    title: "Bundle: Purest Glow Duo",
+    description: "Purest Glow Pack 65k + 100k — mwanga kwa bei nafuu.",
+    slugs: ["purest-glow-pack-65k", "purest-glow-pack-100k"],
     discountPercent: 10,
   },
   {
-    slug: "nywele-zenye-afya",
-    title: "Bundle: Nywele Zenye Afya",
-    description: "Shampoo + Conditioner — ratiba kamili ya wiki.",
-    slugs: ["argan-repair-shampoo", "silk-touch-conditioner"],
+    slug: "body-care-weekly",
+    title: "Bundle: Body Care Weekly",
+    description: "Body Pack 125k + Skincare Pack 175k — ratiba kamili ya wiki.",
+    slugs: ["body-pack-125k", "skincare-pack-175k"],
     discountPercent: 8,
   },
 ];

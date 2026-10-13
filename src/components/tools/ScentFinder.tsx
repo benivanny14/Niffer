@@ -67,7 +67,7 @@ function score(product: Product, answers: Record<string, string>): number {
   }
   if (answers.strength === "muda_mrefu" && text.includes("parfum")) value += 3;
   if (answers.strength === "nyepesi" && (text.includes("mist") || text.includes("light"))) value += 3;
-  if (product.category === "fragrance") value += 2;
+  if (product.category === "purest-glow" || product.category === "skincare") value += 2;
   if (product.badges.includes("bestseller")) value += 1;
   return value;
 }
@@ -84,7 +84,7 @@ export function ScentFinder({ products: items }: { products?: Product[] }) {
   const results = useMemo(() => {
     if (!finished) return [];
     return catalog
-      .filter((p) => p.category === "fragrance" || p.category === "body-care")
+      .filter((p) => p.category === "purest-glow" || p.category === "body-care" || p.category === "skincare")
       .map((product) => ({ product, value: score(product, answers) }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 3)

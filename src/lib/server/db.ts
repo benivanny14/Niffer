@@ -58,7 +58,10 @@ CREATE TABLE IF NOT EXISTS orders (
   history          TEXT NOT NULL DEFAULT '[]',
   demo             INTEGER NOT NULL DEFAULT 0,
   gift_card_code   TEXT,
-  gift_discount_tsh INTEGER
+  gift_discount_tsh INTEGER,
+  customer_id      TEXT,
+  payment_status   TEXT NOT NULL DEFAULT 'pending',
+  payment_ref      TEXT
 );
 
 CREATE TABLE IF NOT EXISTS order_events (

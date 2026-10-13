@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -22,7 +22,6 @@ const navLinks = [
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
 
-  // Funga menu ya simu ukibofya mahali popote nje ya drawer.
   useEffect(() => {
     if (!open) return;
     function onKeyDown(event: KeyboardEvent) {
@@ -33,24 +32,22 @@ export function SiteHeader() {
   }, [open]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-cream-300 bg-cream-50/90 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-cream-300 bg-cream-50/90 backdrop-blur-xl">
       <div className="bg-brand-800 text-white">
         <div className="container-x flex min-h-9 items-center justify-center gap-2 py-1.5 text-xs leading-snug">
           <SparkleIcon className="hidden h-3.5 w-3.5 shrink-0 text-gold-500 sm:block" />
           <p className="text-center">
-            Usafirishaje bure Dar es Salaam kwa oda zaidi ya TSh 50,000 ·
+            Usafirishaji bure Dar es Salaam kwa oda zaidi ya TSh 50,000 ·
             Malipo salama: M-Pesa, Mixx by Yas, Airtel Money
           </p>
         </div>
       </div>
 
       <div className="container-x flex h-16 items-center justify-between gap-4">
-        <Link
-          href="/"
-          className="flex items-center gap-2"
-          onClick={() => setOpen(false)}
-        >
-          <SparkleIcon className="h-7 w-7 text-accent" />
+        <Link href="/" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-accent shadow-sm ring-1 ring-brand-200">
+            <SparkleIcon className="h-5 w-5" />
+          </span>
           <span className="flex flex-col leading-none">
             <span className="font-display text-xl font-semibold tracking-tight text-ink-900">
               Niffer
@@ -88,20 +85,13 @@ export function SiteHeader() {
             aria-label={open ? "Funga menyu" : "Fungua menyu"}
             onClick={() => setOpen((v) => !v)}
           >
-            {open ? (
-              <CloseIcon className="h-5 w-5" />
-            ) : (
-              <MenuIcon className="h-5 w-5" />
-            )}
+            {open ? <CloseIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
           </button>
         </div>
       </div>
 
       {open ? (
-        <div
-          id="mobile-menu"
-          className="border-t border-cream-300 bg-cream-50 lg:hidden"
-        >
+        <div id="mobile-menu" className="border-t border-cream-300 bg-cream-50 lg:hidden">
           <nav aria-label="Menyu ya simu" className="container-x py-4">
             <ul className="flex flex-col gap-1">
               {navLinks.map((link) => (

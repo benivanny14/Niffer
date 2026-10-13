@@ -40,9 +40,9 @@ const items: Product[] = [
     city: "Kinondoni",
   }),
   make({
-    slug: "lipstick",
-    name: "Velvet Matte Lipstick",
-    category: "makeup",
+    slug: "body",
+    name: "Body Pack Executive",
+    category: "body-care",
     priceTsh: 24500,
     rating: 4.7,
     reviewCount: 89,
@@ -52,8 +52,8 @@ const items: Product[] = [
   }),
   make({
     slug: "mist",
-    name: "Tropical Bloom Body Mist",
-    category: "fragrance",
+    name: "Purest Glow Mini",
+    category: "purest-glow",
     priceTsh: 14000,
     rating: 4.5,
     reviewCount: 63,
@@ -77,19 +77,20 @@ const items: Product[] = [
 
 describe("filterProducts", () => {
   it("huchuja kwa kategoria", () => {
-    const out = filterProducts(items, { category: "makeup" });
-    expect(out.map((p) => p.slug)).toEqual(["lipstick"]);
+    expect(
+      filterProducts(items, { category: "body-care" }).map((p) => p.slug),
+    ).toEqual(["body", "lotion"]);
   });
 
   it("huchuja kwa mkoa na mji", () => {
     expect(
       filterProducts(items, { region: "Dar es Salaam" }).map((p) => p.slug),
-    ).toEqual(["serum", "lipstick"]);
+    ).toEqual(["serum", "body"]);
     expect(
       filterProducts(items, { region: "Dar es Salaam", city: "Ilala" }).map(
         (p) => p.slug,
       ),
-    ).toEqual(["lipstick"]);
+    ).toEqual(["body"]);
   });
 
   it("mji usio ndani ya mkoa haufanyi kazi pekee bila mkoa", () => {
@@ -104,12 +105,12 @@ describe("filterProducts", () => {
       filterProducts(items, { minPrice: 20000, maxPrice: 30000 }).map(
         (p) => p.slug,
       ),
-    ).toEqual(["lipstick"]);
+    ).toEqual(["body"]);
   });
 
   it("huchuja kwa kipengele (mpya / punguzo / inayoisha)", () => {
     expect(filterProducts(items, { feature: "mpya" }).map((p) => p.slug)).toEqual([
-      "lipstick",
+      "body",
       "mist",
     ]);
     expect(filterProducts(items, { feature: "punguzo" }).map((p) => p.slug)).toEqual([
@@ -141,7 +142,7 @@ describe("sortProducts", () => {
     expect(sortProducts(items, "bei-chini").map((p) => p.slug)).toEqual([
       "mist",
       "lotion",
-      "lipstick",
+      "body",
       "serum",
     ]);
     expect(sortProducts(items, "bei-juu")[0].slug).toBe("serum");
@@ -157,14 +158,14 @@ describe("sortProducts", () => {
 
   it("mpya huweka bidhaa mpya juu", () => {
     const out = sortProducts(items, "mpya");
-    expect(out.slice(0, 2).map((p) => p.slug)).toEqual(["lipstick", "mist"]);
+    expect(out.slice(0, 2).map((p) => p.slug)).toEqual(["body", "mist"]);
   });
 });
 
 describe("filterCounts", () => {
   it("hesabu kategoria na mkoa bila kujali kichujio", () => {
     const counts = filterCounts(items, {});
-    expect(counts.category.makeup).toBe(1);
+    expect(counts.category["body-care"]).toBe(2);
     expect(counts.region["Dar es Salaam"]).toBe(2);
   });
 

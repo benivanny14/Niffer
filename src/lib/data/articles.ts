@@ -35,7 +35,7 @@ export const articles: Article[] = [
     author: "Neema M.",
     date: "2026-09-12",
     readMinutes: 5,
-    image: "/images/videos/skincare-routine.svg",
+    image: "/images/packs/pack-135k-qe.jpg",
     body: [
       {
         paragraph:
@@ -62,9 +62,9 @@ export const articles: Article[] = [
       },
     ],
     relatedProductSlugs: [
-      "gentle-foam-cleanser",
-      "radiance-vitamin-c-serum",
-      "sun-shield-spf50",
+      "purest-glow-pack-65k",
+      "purest-glow-pack-100k",
+      "purest-glow-pack-135k",
     ],
   },
   {
@@ -76,7 +76,7 @@ export const articles: Article[] = [
     author: "Asha K.",
     date: "2026-09-28",
     readMinutes: 4,
-    image: "/images/videos/lipstick-tutorial.svg",
+    image: "/images/packs/pack-200k-glass-skin.jpg",
     body: [
       {
         paragraph:
@@ -103,7 +103,7 @@ export const articles: Article[] = [
           "Weka kitambaa kati ya midomo yako na bonyeza upole — huondoa mafuta ya ziada na kubakiza rangi pekee. Sasa lipstick yako imekamilika kwa siku nzima.",
       },
     ],
-    relatedProductSlugs: ["velvet-matte-lipstick-set", "pro-makeup-brush-set"],
+    relatedProductSlugs: ["body-pack-200k-glass", "body-pack-245k-rose"],
   },
   {
     slug: "kuchagua-perfume-inayokufaa",
@@ -114,7 +114,7 @@ export const articles: Article[] = [
     author: "Zainabu H.",
     date: "2026-10-02",
     readMinutes: 6,
-    image: "/images/videos/perfume-guide.svg",
+    image: "/images/packs/pack-265k-eos.jpg",
     body: [
       {
         paragraph:
@@ -141,8 +141,8 @@ export const articles: Article[] = [
       },
     ],
     relatedProductSlugs: [
-      "amber-nights-eau-de-parfum",
-      "tropical-bloom-body-mist",
+      "body-pack-265k",
+      "body-pack-140k",
     ],
   },
   {
@@ -154,7 +154,7 @@ export const articles: Article[] = [
     author: "Rehema J.",
     date: "2026-10-05",
     readMinutes: 5,
-    image: "/images/products/argan-repair-shampoo.svg",
+    image: "/images/packs/pack-mwanachuo-95k-argan.jpg",
     body: [
       {
         paragraph:
@@ -180,7 +180,7 @@ export const articles: Article[] = [
           "Epuka joto la moja kwa moja bila spray ya kinga, na punguza kupiga nywele kwa mavuzi. Uthabiti ndio siri kubwa kuliko bidhaa yoyote.",
       },
     ],
-    relatedProductSlugs: ["argan-repair-shampoo", "silk-touch-conditioner"],
+    relatedProductSlugs: ["mwanachuo-pack-95k-argan", "body-pack-195k-coffee"],
   },
   {
     slug: "habari-kubwa-niffer-duka-jipya-dar",
@@ -191,7 +191,7 @@ export const articles: Article[] = [
     author: "Timu ya Niffer",
     date: "2026-10-08",
     readMinutes: 3,
-    image: "/images/hero.svg",
+    image: "/images/packs/pack-245k-ogx-rose.jpg",
     body: [
       {
         paragraph:
