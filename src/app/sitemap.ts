@@ -6,6 +6,8 @@ import { baseUrl } from "@/lib/seo";
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
+  // Kurasa ZINAZOTAFUTWA tu — /fuatilia, /upendwa, /ukoko, /kikapu, /akaunti
+  // ni za kibinafsi (noindex), hazitakiwi kwenye sitemap.
   const staticRoutes = [
     "",
     "/bidhaa",
@@ -23,9 +25,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/usafirishaji",
     "/marejesho",
     "/maswali",
-    "/fuatilia",
-    "/upendwa",
-    "/ukoko",
+    "/tafuta",
+    "/jarida/acha",
     "/masharti",
     "/faragha",
   ].map((path) => ({

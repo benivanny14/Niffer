@@ -8,6 +8,7 @@ import {
 } from "@/lib/data/articles";
 import { getProductBySlug } from "@/lib/data/catalog";
 import { formatTsh } from "@/lib/format";
+import { articleJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { ProductImage } from "@/components/media/ProductImage";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { ArrowRightIcon } from "@/components/ui/icons";
@@ -24,7 +25,20 @@ export async function generateMetadata({
   const { slug } = await params;
   const article = getArticleBySlug(slug);
   if (!article) return { title: "Makala haipo" };
-  return { title: article.title, description: article.excerpt };
+  return {
+    title: article.title,
+    description: article.excerpt,
+    alternates: { canonical: `/makala/${article.slug}` },
+    openGraph: {
+      type: "article",
+      locale: "sw_TZ",
+      siteName: "Niffer Cosmetics",
+      title: article.title,
+      description: article.excerpt,
+      publishedTime: article.date,
+      images: [{ url: article.image, width: 1200, height: 630 }],
+    },
+  };
 }
 
 export default async function ArticlePage({ params }: PageProps) {
@@ -41,6 +55,24 @@ export default async function ArticlePage({ params }: PageProps) {
 
   return (
     <div className="container-x max-w-3xl py-12 lg:py-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(articleJsonLd(article)),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            breadcrumbJsonLd([
+              { name: "Nyumbani", path: "/" },
+              { name: "Makala", path: "/makala" },
+              { name: article.title, path: `/makala/${article.slug}` },
+            ]),
+          ),
+        }}
+      />
       <nav aria-label="Njia" className="text-sm text-ink-400">
         <ol className="flex flex-wrap items-center gap-1.5">
           <li>

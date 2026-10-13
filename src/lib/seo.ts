@@ -72,3 +72,26 @@ export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
     })),
   };
 }
+
+export function articleJsonLd(article: {
+  title: string;
+  slug: string;
+  excerpt: string;
+  date?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.excerpt,
+    url: `${baseUrl}/makala/${article.slug}`,
+    mainEntityOfPage: `${baseUrl}/makala/${article.slug}`,
+    author: { "@type": "Organization", name: site.name },
+    publisher: {
+      "@type": "Organization",
+      name: site.name,
+      url: baseUrl,
+    },
+    ...(article.date ? { datePublished: article.date } : {}),
+  };
+}

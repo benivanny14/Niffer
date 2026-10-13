@@ -13,18 +13,61 @@ type Props = { open: boolean; onClose: () => void };
 export function CartDrawer({ open, onClose }: Props) {
   const { lines, subtotalTsh, count, setQty, remove } = useStore();
 
-  // Funga kwa Escape + zuia body scroll wakiwa wazi.
+  // Funga kwa Escape, zuia body scroll, nafunga focus ndani ya drawer
+  // (focus trap ya kiwango cha AA — Tab haendi nje ya dialog).
   useEffect(() => {
     if (!open) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+    const dialog = document.querySelector<HTMLElement>(
+      '[aria-label="Kikapu chako"]',
+    );
+    const previous = document.activeElement as HTMLElement | null;
+
+    function focusables() {
+      if (!dialog) return [] as HTMLElement[];
+      return Array.from(
+        dialog.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((el) => el.offsetParent !== null);
     }
+
+    // Weka kwenye kipengele cha kwanza (kitufe cha kufunga).
+    focusables()[0]?.focus();
+
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const items = focusables();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      } else if (
+        !dialog?.contains(document.activeElement) &&
+        document.activeElement
+      ) {
+        // Focus iliondoka dialog bila Tab (mfano: click nje) — rudisha.
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
     document.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
+      // Rudisha focus kwenye kipengele kilichochochea drawer.
+      previous?.focus?.();
     };
   }, [open, onClose]);
 

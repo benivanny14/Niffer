@@ -436,20 +436,25 @@ export function ProductManager() {
               </label>
 
               <div className="sm:col-span-2">
-                <span className="mb-1.5 block text-sm font-medium text-ink-700">
+                <label className="mb-1.5 block text-sm font-medium text-ink-700">
                   Picha
-                </span>
+                </label>
                 <div className="flex items-center gap-4">
                   <ProductImage
                     src={
                       draft.file ? URL.createObjectURL(draft.file) : draft.image
                     }
-                    alt=""
+                    alt={
+                      draft.file
+                        ? `Hakiki ya ${draft.file.name}`
+                        : `Hakiki ya ${draft.name || "picha ya bidhaa"}`
+                    }
                     className="h-16 w-16 rounded-xl border border-cream-300 object-cover"
                   />
                   <input
                     type="file"
                     accept="image/*"
+                    aria-label="Picha ya bidhaa"
                     onChange={(e) =>
                       setDraft({ ...draft, file: e.target.files?.[0] ?? null })
                     }

@@ -52,6 +52,16 @@ export async function generateMetadata({
   return {
     title: product.name,
     description: product.shortDescription,
+    alternates: { canonical: `/bidhaa/${product.slug}` },
+    openGraph: {
+      type: "website",
+      locale: "sw_TZ",
+      siteName: "Niffer Cosmetics",
+      title: product.name,
+      description: product.shortDescription,
+      url: `/bidhaa/${product.slug}`,
+      images: [{ url: product.image, width: 1200, height: 630 }],
+    },
   };
 }
 

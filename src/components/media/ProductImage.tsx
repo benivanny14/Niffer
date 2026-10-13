@@ -37,11 +37,15 @@ export function ProductImage({
     );
   }
 
+  // Picha za katalogi ni 4:5. width/height ni "presentational hints" —
+  // CSS classes (h-/w-) huzi-override, lakini zinazuia layout shift.
   return (
     // eslint-disable-next-line @next/next/no-img-element -- SVG static assets; swap to <Image> after real photoshoot
     <img
       src={src}
       alt={alt}
+      width={800}
+      height={1000}
       loading={priority ? "eager" : "lazy"}
       decoding="async"
       onError={() => setFailed(true)}

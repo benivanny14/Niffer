@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -53,6 +53,14 @@ export const metadata: Metadata = {
   icons: {
     icon: "/icon.svg",
   },
+  manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fdfbf8" },
+    { media: "(prefers-color-scheme: dark)", color: "#131010" },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
