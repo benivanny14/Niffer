@@ -7,7 +7,7 @@ import { tierFor } from "@/lib/wholesale";
 import { SearchIcon } from "@/components/ui/icons";
 
 const field =
-  "w-full rounded-sm border border-ink-900/25 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-ink-900";
+  "w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
 
 type Rfq = {
   code: string;

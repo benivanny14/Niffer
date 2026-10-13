@@ -38,7 +38,7 @@ type CustomerNotification = {
 };
 
 const field =
-  "w-full rounded-sm border border-ink-900/25 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-ink-900";
+  "w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
 
 export default function AccountPage() {
   const [customer, setCustomer] = useState<Customer | null>(null);
@@ -634,7 +634,7 @@ function Dashboard({
         ) : loading ? (
           <div className="mt-6 space-y-4">
             {[0, 1].map((i) => (
-              <div key={i} className="h-24 animate-pulse rounded-sm bg-cream-200" />
+              <div key={i} className="h-24 animate-pulse rounded-2xl bg-cream-200" />
             ))}
           </div>
         ) : myOrders.length === 0 ? (

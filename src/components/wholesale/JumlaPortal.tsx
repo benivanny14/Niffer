@@ -15,7 +15,7 @@ import { apiPost, errorMessage } from "@/lib/api";
 import { CheckIcon, TagIcon } from "@/components/ui/icons";
 
 const field =
-  "w-full rounded-sm border border-ink-900/25 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-ink-900";
+  "w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
 
 /**
  * Kikokotoo cha bei ya jumla — chagua bidhaa na wingi, unapata bei ya unit,

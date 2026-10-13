@@ -103,7 +103,7 @@ export default async function Home() {
             </dl>
           </div>
 
-          <div className="relative mx-auto aspect-4/5 w-full max-w-md animate-fade-in overflow-hidden rounded-sm border border-cream-300 bg-cream-200 lg:aspect-3/4">
+          <div className="relative mx-auto aspect-4/5 w-full max-w-md animate-fade-in overflow-hidden rounded-2xl border border-cream-300 bg-cream-200 lg:aspect-3/4">
             <ProductImage
               src="/images/hero.svg"
               alt="Bidhaa za Niffer Cosmetics"
@@ -242,7 +242,7 @@ export default async function Home() {
                 <li key={product.id}>
                   <Link
                     href={`/bidhaa/${product.slug}`}
-                    className="btn-light flex-col rounded-sm! px-5! py-3! text-left"
+                    className="btn-light flex-col rounded-2xl! px-5! py-3! text-left"
                   >
                     <span className="text-xs text-ink-500">{product.name}</span>
                     <span className="flex items-baseline gap-2">

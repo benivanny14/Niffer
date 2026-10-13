@@ -64,7 +64,7 @@ export default function NewsletterUnsubscribePage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="wewe@mfano.com"
               autoComplete="email"
-              className="w-full rounded-sm border border-ink-900/25 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-ink-900"
+              className="w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500"
             />
           </label>
           {error ? (

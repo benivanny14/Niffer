@@ -53,7 +53,7 @@ export default function TrackOrderPage() {
       </p>
 
       <form onSubmit={lookup} className="mt-6 flex gap-2">
-        <div className="flex flex-1 items-center gap-2 rounded-sm border border-ink-900/25 bg-surface px-4">
+        <div className="flex flex-1 items-center gap-2 rounded-xl border border-cream-300 bg-surface px-4">
           <SearchIcon className="h-5 w-5 shrink-0 text-ink-400" />
           <input
             value={code}

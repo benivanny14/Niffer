@@ -16,7 +16,7 @@ import { CheckIcon, CloseIcon, TrashIcon } from "@/components/ui/icons";
 import { ProductImage } from "@/components/media/ProductImage";
 
 const field =
-  "w-full rounded-sm border border-ink-900/25 bg-surface px-3 py-2.5 text-sm text-ink-900 outline-none transition-colors focus:border-ink-900";
+  "w-full rounded-xl border border-cream-300 bg-surface px-3 py-2.5 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
 
 type Draft = {
   mode: "edit" | "create";
@@ -180,7 +180,7 @@ export function ProductManager() {
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="rounded-sm border border-ink-900/25 bg-surface px-3 py-2 text-sm"
+          className="rounded-xl border border-cream-300 bg-surface px-3 py-2 text-sm"
         >
           <option value="zote">Zote</option>
           {categories.map((c) => (
@@ -449,7 +449,7 @@ export function ProductManager() {
                         ? `Hakiki ya ${draft.file.name}`
                         : `Hakiki ya ${draft.name || "picha ya bidhaa"}`
                     }
-                    className="h-16 w-16 rounded-sm border border-ink-900/25 object-cover"
+                    className="h-16 w-16 rounded-xl border border-cream-300 object-cover"
                   />
                   <input
                     type="file"

@@ -231,7 +231,7 @@ export default function CheckoutPage() {
   }
 
   const field =
-    "w-full rounded-sm border border-ink-900/25 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-ink-900";
+    "w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
 
   return (
     <div className="container-x py-10 lg:py-14">
@@ -436,7 +436,7 @@ export default function CheckoutPage() {
             {/* Msimbo wa punguzo */}
             {/* Si <form>: HTML hairuhusu form ndani ya fomu kuu ya oda. */}
             <div className="mt-5 flex gap-2">
-              <div className="flex flex-1 items-center gap-2 rounded-sm border border-ink-900/25 bg-surface px-3">
+              <div className="flex flex-1 items-center gap-2 rounded-xl border border-cream-300 bg-surface px-3">
                 <TagIcon className="h-4 w-4 shrink-0 text-ink-400" />
                 <input
                   value={promoInput}
@@ -472,7 +472,7 @@ export default function CheckoutPage() {
 
             {/* Kadi ya zawadi */}
             <div className="mt-3 flex gap-2">
-              <div className="flex flex-1 items-center gap-2 rounded-sm border border-ink-900/25 bg-surface px-3">
+              <div className="flex flex-1 items-center gap-2 rounded-xl border border-cream-300 bg-surface px-3">
                 <SparkleIcon className="h-4 w-4 shrink-0 text-ink-400" />
                 <input
                   value={giftInput}

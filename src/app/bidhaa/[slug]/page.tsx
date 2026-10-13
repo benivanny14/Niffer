@@ -79,7 +79,7 @@ export default function ProductPage({ params }: PageProps) {
       <Suspense
         fallback={
           <div className="grid gap-10 lg:grid-cols-2">
-            <div className="aspect-[4/5] animate-pulse rounded-sm bg-cream-200" />
+            <div className="aspect-[4/5] animate-pulse rounded-2xl bg-cream-200" />
             <div className="space-y-4">
               <div className="h-8 w-2/3 animate-pulse rounded-lg bg-cream-200" />
               <div className="h-4 w-1/2 animate-pulse rounded bg-cream-200" />
@@ -151,7 +151,7 @@ async function ProductDetail({ params }: PageProps) {
 
       <div className="mt-6 grid gap-10 lg:grid-cols-2">
         {/* Gallery — picha halisi ya bidhaa */}
-        <div className="relative aspect-[4/5] animate-fade-in overflow-hidden rounded-sm border border-cream-300 bg-cream-200">
+        <div className="relative aspect-[4/5] animate-fade-in overflow-hidden rounded-2xl border border-cream-300 bg-cream-200">
           <ProductImage
             src={product.image}
             alt={product.imageAlt}

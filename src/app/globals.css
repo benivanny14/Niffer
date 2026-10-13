@@ -4,8 +4,9 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ============================================================
-   NIFFER COSMETICS — Editorial design system
-   Wino juu ya karatasi. Hakuna gradient wala glow.
+   NIFFER COSMETICS — Design System
+   Premium beauty brand · Tanzania
+   Warm, soft, iliyokamilika. Hakuna gradients wala glow za AI.
    ============================================================ */
 
 :root {
@@ -22,28 +23,28 @@
   --brand-900: #4a1225;
 
   /* Gold accent */
-  --gold-100: #f6eedd;
-  --gold-300: #e2cba0;
+  --gold-100: #f7f0e2;
+  --gold-300: #e3cda3;
   --gold-500: #c9a86a;
   --gold-600: #b08d4f;
   --gold-700: #8f713c;
 
-  /* Neutrals — warm ink & paper */
-  --ink-900: #1f1712;
-  --ink-800: #2a2018;
-  --ink-700: #3d3026;
-  --ink-500: #6b5c4e;
-  --ink-400: #8c7d6e;
-  --ink-300: #b5a798;
+  /* Neutrals — warm ink & cream */
+  --ink-900: #241c16;
+  --ink-800: #33281f;
+  --ink-700: #463930;
+  --ink-500: #6d5f52;
+  --ink-400: #8b7c6d;
+  --ink-300: #b3a797;
 
-  --cream-50: #faf6f0;
-  --cream-100: #f4eee4;
-  --cream-200: #ece4d6;
-  --cream-300: #ddd2bf;
+  --cream-50: #fbf8f3;
+  --cream-100: #f6f1e9;
+  --cream-200: #efe8dc;
+  --cream-300: #e4d9c8;
 
   /* Status */
-  --success-600: #2e7d4f;
-  --success-100: #e3f4ea;
+  --success-600: #2f7d50;
+  --success-100: #e4f3ea;
   --warning-600: #a86b12;
   --warning-100: #fbf0dc;
   --danger-600: #b3261e;
@@ -53,11 +54,10 @@
   --background: var(--cream-50);
   --foreground: var(--ink-900);
 
-  /* Vipengele vya juu vya design system */
-  --surface: #fffdf9; /* uso wa kadi / fomu */
-  --accent: #7a1f3f; /* maandishi ya lafudhi (brand-700) */
-  --on-gold: #1f1712; /* maandishi juu ya gold */
-  --on-success: #ffffff; /* maandishi juu ya success imara */
+  --surface: #ffffff;
+  --accent: #7a1f3f;
+  --on-gold: #241c16;
+  --on-success: #ffffff;
 
   color-scheme: light;
 }
@@ -69,28 +69,28 @@
 .dark {
   color-scheme: dark;
 
-  --background: #131010;
-  --foreground: #f4efe8;
-  --cream-50: #131010;
-  --cream-100: #191512;
-  --cream-200: #221d18;
-  --cream-300: #362f26;
-  --surface: #1b1713;
+  --background: #16120f;
+  --foreground: #f2ece3;
+  --cream-50: #16120f;
+  --cream-100: #1c1713;
+  --cream-200: #241e19;
+  --cream-300: #352d25;
+  --surface: #1e1815;
 
-  --ink-900: #f4efe8;
-  --ink-800: #eae3d9;
-  --ink-700: #d6cdc1;
-  --ink-500: #a99c8d;
-  --ink-400: #8b7f71;
-  --ink-300: #6e655a;
+  --ink-900: #f2ece3;
+  --ink-800: #e7dfd4;
+  --ink-700: #d3c9bc;
+  --ink-500: #a99b8c;
+  --ink-400: #8a7d6f;
+  --ink-300: #6d645a;
 
-  --brand-50: #2b1620;
-  --brand-100: #371a27;
-  --brand-200: #55303f;
-  --brand-600: #d97f9f;
-  --accent: #e8a9bd;
+  --brand-50: #2c1720;
+  --brand-100: #381b28;
+  --brand-200: #553040;
+  --brand-600: #d98ba6;
+  --accent: #e3a2b8;
 
-  --gold-100: #2f2717;
+  --gold-100: #2e2618;
   --gold-600: #dcb978;
   --gold-700: #c9a86a;
 
@@ -150,15 +150,15 @@
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-playfair), ui-serif, Georgia, serif;
 
-  /* Motion — polepole kidogo, si ya haraka ya template */
-  --animate-fade-up: fade-up 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) both;
-  --animate-fade-in: fade-in 0.4s ease-out both;
-  --animate-slide-in-right: slide-in-right 0.3s cubic-bezier(0.33, 1, 0.68, 1) both;
+  /* Motion — laini, ya kitaalamu */
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.45s ease-out both;
+  --animate-slide-in-right: slide-in-right 0.32s cubic-bezier(0.33, 1, 0.68, 1) both;
 
   @keyframes fade-up {
     from {
       opacity: 0;
-      transform: translateY(8px);
+      transform: translateY(10px);
     }
     to {
       opacity: 1;
@@ -186,7 +186,7 @@
 }
 
 /* ============================================================
-   Base — karatasi + wino
+   Base
    ============================================================ */
 
 body {
@@ -197,16 +197,8 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Kiungo ndani ya maandishi (prose) — mstari mwembamba chini. */
-.prose a,
-article a:not(.btn) {
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-}
-
 ::selection {
-  background: var(--brand-700);
+  background: var(--brand-600);
   color: #fff;
 }
 
@@ -215,13 +207,12 @@ article a:not(.btn) {
   color: #17110c;
 }
 
-/* Focus ring ya wino (si ya AI iliyo na glow). */
+/* Focus laini ya lafudhi (si ya wino kali). */
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid var(--ink-900);
+  outline: 2px solid var(--brand-500);
   outline-offset: 2px;
 }
 
-/* Respect reduced motion globally */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -251,7 +242,7 @@ article a:not(.btn) {
   }
 
   .card {
-    border: 1px solid #ccc !important;
+    border: 1px solid #ddd !important;
     box-shadow: none !important;
   }
 
@@ -262,7 +253,7 @@ article a:not(.btn) {
 }
 
 /* ============================================================
-   Component utilities — editorial, pembe kali, hakuna glow
+   Component utilities — laini, iliyokamilika, ya kitaalamu
    ============================================================ */
 
 @utility container-x {
@@ -270,41 +261,40 @@ article a:not(.btn) {
 }
 
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-sm px-6 py-3 text-[13px] font-semibold uppercase tracking-[0.12em] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900 disabled:cursor-not-allowed disabled:opacity-40;
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold tracking-[0.01em] transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:cursor-not-allowed disabled:opacity-50;
 }
 
 @utility btn-primary {
-  @apply btn border border-ink-900 bg-ink-900 text-cream-50 hover:bg-brand-700 hover:border-brand-700;
+  @apply btn bg-brand-700 text-white shadow-[0_1px_2px_rgba(36,28,22,0.12)] hover:bg-brand-800 active:scale-[0.985];
 }
 
 @utility btn-gold {
-  @apply btn border border-gold-600 bg-gold-500 text-ink-900 hover:bg-ink-900 hover:border-ink-900 hover:text-cream-50;
+  @apply btn bg-gold-500 text-on-gold shadow-[0_1px_2px_rgba(36,28,22,0.12)] hover:bg-gold-600 hover:text-white active:scale-[0.985];
 }
 
 @utility btn-outline {
-  @apply btn border border-ink-900/40 bg-transparent text-ink-900 hover:bg-ink-900 hover:text-cream-50 hover:border-ink-900;
+  @apply btn border border-ink-900/15 bg-transparent text-ink-900 hover:border-ink-900/30 hover:bg-ink-900/4;
 }
 
 @utility btn-light {
-  @apply btn border border-cream-300 bg-surface text-ink-900 hover:border-ink-900/40 hover:bg-cream-100;
+  @apply btn bg-surface text-ink-900 shadow-[0_1px_2px_rgba(36,28,22,0.08)] hover:bg-cream-100 active:scale-[0.985];
 }
 
-/* Kichwa cha sehemu kidogo — herufi kubwa, mstari chini. */
 @utility eyebrow {
-  @apply inline-block border-b border-ink-900/25 pb-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-ink-500;
+  @apply inline-block text-[11px] font-semibold uppercase tracking-[0.24em] text-brand-600;
 }
 
 @utility heading-display {
-  @apply font-display text-3xl leading-[1.05] tracking-[-0.01em] text-ink-900 sm:text-4xl lg:text-5xl;
+  @apply font-display text-3xl leading-[1.08] tracking-[-0.015em] text-ink-900 sm:text-4xl lg:text-5xl;
 }
 
-/* Kadi — karatasi nyuzi, pembe kali, bila glow. */
+/* Kadi — laini, kivuli taratibu tu, pembe za kati. */
 @utility card {
-  @apply rounded-sm border border-cream-300 bg-surface transition-colors duration-200 hover:border-ink-900/30;
+  @apply rounded-2xl border border-cream-300 bg-surface shadow-[0_1px_2px_rgba(36,28,22,0.04)] transition-all duration-200 hover:border-cream-300 hover:shadow-[0_8px_24px_-12px_rgba(36,28,22,0.14)];
 }
 
 @utility badge {
-  @apply inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em];
+  @apply inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide;
 }
 
 /* Zuia browser translation (Edge/Google Translate) — inaharibu React DOM. */

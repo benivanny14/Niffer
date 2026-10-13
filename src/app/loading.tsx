@@ -8,7 +8,7 @@ export default function Loading() {
         {Array.from({ length: 4 }, (_, i) => (
           <div
             key={i}
-            className="aspect-[4/5] animate-pulse rounded-sm bg-cream-200"
+            className="aspect-[4/5] animate-pulse rounded-2xl bg-cream-200"
           />
         ))}
       </div>

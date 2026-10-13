@@ -378,7 +378,7 @@ export default function OrderPage() {
                   onChange={(e) => setCancelPhone(e.target.value)}
                   placeholder="0754 000 000"
                   aria-label="Namba ya simu ya oda"
-                  className="w-full max-w-56 flex-1 rounded-sm border border-ink-900/25 bg-surface px-4 py-2.5 text-sm text-ink-900 outline-none transition-colors focus:border-ink-900"
+                  className="w-full max-w-56 flex-1 rounded-xl border border-cream-300 bg-surface px-4 py-2.5 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500"
                 />
                 <button
                   type="submit"

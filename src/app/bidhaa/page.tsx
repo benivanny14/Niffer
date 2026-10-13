@@ -49,7 +49,7 @@ export default function AllProductsPage({ searchParams }: PageProps) {
       {/* searchParams ni runtime data — Suspense hukuruhusu prerender shell. */}
       <Suspense
         fallback={
-          <div className="mt-6 h-40 animate-pulse rounded-sm bg-cream-200" />
+          <div className="mt-6 h-40 animate-pulse rounded-2xl bg-cream-200" />
         }
       >
         <ProductGrid searchParams={searchParams} />

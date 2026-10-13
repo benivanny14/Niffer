@@ -136,7 +136,7 @@ export function CartDrawer({ open, onClose }: Props) {
                     <Link
                       href={`/bidhaa/${product.slug}`}
                       onClick={onClose}
-                      className="h-20 w-16 shrink-0 overflow-hidden rounded-sm border border-ink-900/25"
+                      className="h-20 w-16 shrink-0 overflow-hidden rounded-xl border border-cream-300"
                     >
                       <ProductImage
                         src={product.image}

@@ -132,7 +132,7 @@ export function SearchOverlay({ open, onClose }: Props) {
         </div>
 
         <form onSubmit={submit} className="mt-4">
-          <div className="flex items-center gap-3 rounded-sm border border-cream-300 bg-surface px-4 py-3">
+          <div className="flex items-center gap-3 rounded-2xl border border-cream-300 bg-surface px-4 py-3">
             <SearchIcon className="h-5 w-5 shrink-0 text-ink-400" />
             <input
               ref={inputRef}
@@ -156,12 +156,12 @@ export function SearchOverlay({ open, onClose }: Props) {
               {[0, 1, 2].map((i) => (
                 <li
                   key={i}
-                  className="h-20 animate-pulse rounded-sm bg-surface"
+                  className="h-20 animate-pulse rounded-2xl bg-surface"
                 />
               ))}
             </ul>
           ) : results.length === 0 ? (
-            <div className="rounded-sm border border-cream-300 bg-surface p-8 text-center">
+            <div className="rounded-2xl border border-cream-300 bg-surface p-8 text-center">
               <p className="font-display text-lg text-ink-900">
                 Hakuna matokeo ya “{query}”
               </p>
@@ -189,9 +189,9 @@ export function SearchOverlay({ open, onClose }: Props) {
                       <Link
                         href={result.href}
                         onClick={onClose}
-                        className="flex items-center gap-4 rounded-sm border border-transparent bg-surface p-3 transition-colors hover:border-cream-300"
+                        className="flex items-center gap-4 rounded-2xl border border-transparent bg-surface p-3 transition-colors hover:border-cream-300"
                       >
-                        <span className="h-16 w-14 shrink-0 overflow-hidden rounded-sm border border-ink-900/25">
+                        <span className="h-16 w-14 shrink-0 overflow-hidden rounded-xl border border-cream-300">
                           {product ? (
                             <ProductImage
                               src={product.image}

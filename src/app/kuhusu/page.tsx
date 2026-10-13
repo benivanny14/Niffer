@@ -84,12 +84,12 @@ export default function AboutPage() {
             </Link>
           </div>
         </div>
-        <div className="relative aspect-4/5 overflow-hidden rounded-sm bg-cream-200">
+        <div className="relative aspect-4/5 overflow-hidden rounded-2xl bg-cream-200">
           <SparkleIcon className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 text-brand-300" />
         </div>
       </section>
 
-      <section className="mt-16 rounded-sm bg-cream-100 p-8">
+      <section className="mt-16 rounded-2xl bg-cream-100 p-8">
         <h2 className="font-display text-2xl text-ink-900">Wasiliana</h2>
         <div className="mt-4 grid gap-4 text-sm sm:grid-cols-3">
           <div>
