@@ -39,7 +39,7 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <article className="card group flex h-full flex-col overflow-hidden">
-      <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-brand-100 via-cream-200 to-gold-100">
+      <div className="relative aspect-[4/5] overflow-hidden bg-cream-200">
         <Link
           href={`/bidhaa/${product.slug}`}
           className="block h-full w-full"

@@ -102,7 +102,7 @@ export function GiftCardPanel() {
               value={recipient}
               onChange={(e) => setRecipient(e.target.value)}
               placeholder="Mfano: Neema"
-              className="w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500"
+              className="w-full rounded-sm border border-ink-900/25 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-ink-900"
             />
           </label>
           <label className="mt-4 block text-sm">
@@ -114,12 +114,12 @@ export function GiftCardPanel() {
               onChange={(e) => setMessage(e.target.value)}
               rows={3}
               placeholder="Mfano: Hongera siku yako ya kuzaliwa!"
-              className="w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500"
+              className="w-full rounded-sm border border-ink-900/25 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-ink-900"
             />
           </label>
 
           {issued ? (
-            <div className="mt-6 rounded-2xl border border-success-200 bg-success-50 p-5 text-center">
+            <div className="mt-6 rounded-sm border border-success-200 bg-success-50 p-5 text-center">
               <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-success-100 text-success-600">
                 <CheckIcon className="h-5 w-5" />
               </span>
@@ -176,7 +176,7 @@ export function GiftCardPanel() {
 
         {/* Maelezo */}
         <div>
-          <div className="relative overflow-hidden rounded-3xl border border-cream-300 bg-gradient-to-br from-brand-200 via-cream-200 to-gold-100 p-8 text-center">
+          <div className="relative overflow-hidden rounded-sm border border-cream-300 bg-cream-200 p-8 text-center">
             <SparkleIcon className="mx-auto h-10 w-10 text-brand-600" />
             <p className="mt-4 font-display text-3xl text-ink-900">
               Niffer Gift Card
@@ -205,7 +205,7 @@ export function GiftCardPanel() {
             ))}
           </ol>
 
-          <ul className="mt-8 space-y-2.5 rounded-2xl bg-cream-100 p-5 text-sm text-ink-500">
+          <ul className="mt-8 space-y-2.5 rounded-sm bg-cream-100 p-5 text-sm text-ink-500">
             {[
               "Kadi inatumika kwa bidhaa zote za Niffer Cosmetics",
               "Haiwezi kubadilishwa kuwa pesa taslimu",

@@ -39,7 +39,7 @@ export default function MakalaPage() {
           href={`/makala/${featured.slug}`}
           className="card group mt-10 grid overflow-hidden md:grid-cols-2"
         >
-          <div className="relative aspect-video bg-gradient-to-br from-brand-200 via-cream-200 to-gold-100 md:aspect-auto md:min-h-72">
+          <div className="relative aspect-video bg-cream-200 md:aspect-auto md:min-h-72">
             <ProductImage
               src={featured.image}
               alt={featured.title}
@@ -72,7 +72,7 @@ export default function MakalaPage() {
               href={`/makala/${article.slug}`}
               className="card group flex h-full flex-col overflow-hidden"
             >
-              <div className="relative aspect-video bg-gradient-to-br from-brand-100 via-cream-200 to-gold-100">
+              <div className="relative aspect-video bg-cream-200">
                 <ProductImage
                   src={article.image}
                   alt={article.title}

@@ -30,7 +30,7 @@ export function ProductImage({
       <div
         role="img"
         aria-label={alt}
-        className={`flex items-center justify-center bg-gradient-to-br from-brand-100 via-cream-200 to-gold-100 ${className}`}
+        className={`flex items-center justify-center bg-cream-200 ${className}`}
       >
         <SparkleIcon className="h-1/3 w-1/3 max-h-24 max-w-24 text-brand-300" />
       </div>

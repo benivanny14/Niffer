@@ -46,7 +46,8 @@ export type Category = {
   name: string;
   description: string;
   productCount: number;
-  gradient: string;
+  /** Rangi imara ya bendi ya juu (editorial — si gradient). */
+  swatch: string;
 };
 
 export const categories: Category[] = [
@@ -55,42 +56,42 @@ export const categories: Category[] = [
     name: "Skincare",
     description: "Cleansers, serums, moisturizers na sunscreen",
     productCount: 24,
-    gradient: "from-rose-100 via-brand-100 to-gold-100",
+    swatch: "bg-brand-100",
   },
   {
     slug: "makeup",
     name: "Makeup",
     description: "Lipsticks, foundations, mascaras na zaidi",
     productCount: 31,
-    gradient: "from-brand-100 via-gold-100 to-cream-200",
+    swatch: "bg-gold-100",
   },
   {
     slug: "haircare",
     name: "Haircare",
     description: "Shampoos, conditioners na hair treatments",
     productCount: 18,
-    gradient: "from-gold-100 via-cream-200 to-rose-100",
+    swatch: "bg-cream-200",
   },
   {
     slug: "fragrance",
     name: "Fragrance",
     description: "Perfumes na body mists za kila siku",
     productCount: 12,
-    gradient: "from-cream-200 via-brand-100 to-rose-100",
+    swatch: "bg-brand-50",
   },
   {
     slug: "body-care",
     name: "Body Care",
     description: "Body lotions, scrubs na soaps",
     productCount: 15,
-    gradient: "from-rose-100 via-cream-200 to-gold-100",
+    swatch: "bg-gold-100",
   },
   {
     slug: "accessories",
     name: "Accessories",
     description: "Tools, brushes na vitendegea vya urembo",
     productCount: 9,
-    gradient: "from-cream-200 via-gold-100 to-brand-100",
+    swatch: "bg-cream-200",
   },
 ];
 

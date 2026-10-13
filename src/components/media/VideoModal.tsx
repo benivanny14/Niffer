@@ -64,7 +64,7 @@ export function VideoModal({ video, onClose }: Props) {
           </button>
         </div>
 
-        <div className="overflow-hidden rounded-2xl bg-black shadow-2xl">
+        <div className="overflow-hidden rounded-sm bg-black shadow-2xl">
           {embedUrl ? (
             <iframe
               src={embedUrl}

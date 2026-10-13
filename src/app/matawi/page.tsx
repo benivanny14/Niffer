@@ -65,7 +65,7 @@ export default function BranchesPage() {
 
       {/* Ramani ya eneo */}
       <section className="card mt-12 overflow-hidden">
-        <div className="relative aspect-video bg-gradient-to-br from-brand-100 via-cream-200 to-gold-100">
+        <div className="relative aspect-video bg-cream-200">
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
             <MapPinIcon className="h-12 w-12 text-brand-600" />
             <p className="font-display text-xl text-ink-900">

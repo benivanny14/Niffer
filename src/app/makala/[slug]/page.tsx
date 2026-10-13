@@ -100,7 +100,7 @@ export default async function ArticlePage({ params }: PageProps) {
           {article.author} · dakika {article.readMinutes} za kusoma
         </p>
 
-        <div className="relative mt-8 aspect-video overflow-hidden rounded-3xl border border-cream-300 bg-gradient-to-br from-brand-100 via-cream-200 to-gold-100">
+        <div className="relative mt-8 aspect-video overflow-hidden rounded-sm border border-cream-300 bg-cream-200">
           <ProductImage
             src={article.image}
             alt={article.title}
@@ -137,7 +137,7 @@ export default async function ArticlePage({ params }: PageProps) {
               >
                 <Link
                   href={`/bidhaa/${product.slug}`}
-                  className="h-20 w-16 shrink-0 overflow-hidden rounded-xl border border-cream-300"
+                  className="h-20 w-16 shrink-0 overflow-hidden rounded-sm border border-ink-900/25"
                 >
                   <ProductImage
                     src={product.image}
@@ -189,7 +189,7 @@ export default async function ArticlePage({ params }: PageProps) {
                 href={`/makala/${other.slug}`}
                 className="card group flex h-full flex-col overflow-hidden"
               >
-                <div className="relative aspect-video bg-gradient-to-br from-brand-100 via-cream-200 to-gold-100">
+                <div className="relative aspect-video bg-cream-200">
                   <ProductImage
                     src={other.image}
                     alt={other.title}

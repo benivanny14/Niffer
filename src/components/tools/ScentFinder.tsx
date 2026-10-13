@@ -168,7 +168,7 @@ export function ScentFinder({ products: items }: { products?: Product[] }) {
             key={option.value}
             type="button"
             onClick={() => choose(q.id, option.value)}
-            className="rounded-xl border border-cream-300 bg-surface px-4 py-3.5 text-left text-sm text-ink-700 transition-colors hover:border-brand-300 hover:bg-cream-100"
+            className="rounded-sm border border-ink-900/25 bg-surface px-4 py-3.5 text-left text-sm text-ink-700 transition-colors hover:border-brand-300 hover:bg-cream-100"
           >
             {option.label}
           </button>

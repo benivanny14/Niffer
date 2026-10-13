@@ -134,7 +134,7 @@ type RfqRecord = {
 };
 
 const field =
-  "w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
+  "w-full rounded-sm border border-ink-900/25 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-ink-900";
 
 export default function AdminPage() {
   const authed = useSyncExternalStore(
@@ -911,7 +911,7 @@ function OdaTab({
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tafuta nambari, jina au simu…"
             aria-label="Tafuta oda"
-            className="w-56 rounded-full border border-cream-300 bg-surface px-4 py-1.5 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500"
+            className="w-56 rounded-full border border-cream-300 bg-surface px-4 py-1.5 text-sm text-ink-900 outline-none transition-colors focus:border-ink-900"
           />
           <button
             type="button"

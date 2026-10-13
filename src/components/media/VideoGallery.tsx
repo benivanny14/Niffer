@@ -25,7 +25,7 @@ export function VideoGallery({ videos }: { videos: BeautyVideo[] }) {
         {videos.map((video) => (
           <li key={video.id}>
             <article className="card group flex h-full flex-col overflow-hidden">
-              <div className="relative aspect-video bg-gradient-to-br from-brand-200 via-cream-200 to-gold-100">
+              <div className="relative aspect-video bg-cream-200">
                 <ProductImage
                   src={video.thumbnail}
                   alt={video.title}

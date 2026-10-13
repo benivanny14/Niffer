@@ -40,7 +40,7 @@ export default function ShippingPage() {
         <h2 className="font-display text-2xl text-ink-900">
           Usafirishaji
         </h2>
-        <div className="mt-4 overflow-hidden rounded-2xl border border-cream-300">
+        <div className="mt-4 overflow-hidden rounded-sm border border-cream-300">
           <table className="w-full text-left text-sm">
             <thead className="bg-cream-100 text-xs uppercase tracking-wide text-ink-500">
               <tr>
@@ -81,7 +81,7 @@ export default function ShippingPage() {
           ].map((p) => (
             <li
               key={p.name}
-              className="flex items-center justify-between rounded-xl border border-cream-300 bg-surface px-4 py-3"
+              className="flex items-center justify-between rounded-sm border border-ink-900/25 bg-surface px-4 py-3"
             >
               <span className="font-medium text-ink-900">{p.name}</span>
               <span className="text-sm text-ink-500">{p.note}</span>

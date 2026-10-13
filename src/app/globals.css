@@ -4,8 +4,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ============================================================
-   NIFFER COSMETICS — Design System Tokens
-   Premium beauty brand · Tanzania
+   NIFFER COSMETICS — Editorial design system
+   Wino juu ya karatasi. Hakuna gradient wala glow.
    ============================================================ */
 
 :root {
@@ -28,7 +28,7 @@
   --gold-600: #b08d4f;
   --gold-700: #8f713c;
 
-  /* Neutrals — warm ink & cream */
+  /* Neutrals — warm ink & paper */
   --ink-900: #1f1712;
   --ink-800: #2a2018;
   --ink-700: #3d3026;
@@ -36,10 +36,10 @@
   --ink-400: #8c7d6e;
   --ink-300: #b5a798;
 
-  --cream-50: #fdfbf8;
-  --cream-100: #fbf7f2;
-  --cream-200: #f5eee5;
-  --cream-300: #ece2d4;
+  --cream-50: #faf6f0;
+  --cream-100: #f4eee4;
+  --cream-200: #ece4d6;
+  --cream-300: #ddd2bf;
 
   /* Status */
   --success-600: #2e7d4f;
@@ -54,32 +54,29 @@
   --foreground: var(--ink-900);
 
   /* Vipengele vya juu vya design system */
-  --surface: #ffffff; /* uso wa kadi / fomu (badala ya rangi ngumu) */
+  --surface: #fffdf9; /* uso wa kadi / fomu */
   --accent: #7a1f3f; /* maandishi ya lafudhi (brand-700) */
-  --on-gold: #1f1712; /* maandishi juu ya gold (hubaki meusi katika giza) */
+  --on-gold: #1f1712; /* maandishi juu ya gold */
   --on-success: #ffffff; /* maandishi juu ya success imara */
 
   color-scheme: light;
 }
 
 /* ============================================================
-   Dark theme — tubadilisha token kwenye `.dark`, na utility zote
-   (text-ink-900, bg-cream-200, border-cream-300 n.k.) zinafuata.
+   Dark theme
    ============================================================ */
 
 .dark {
   color-scheme: dark;
 
-  /* Ukurasa + uso */
   --background: #131010;
   --foreground: #f4efe8;
   --cream-50: #131010;
   --cream-100: #191512;
   --cream-200: #221d18;
-  --cream-300: #342d25;
+  --cream-300: #362f26;
   --surface: #1b1713;
 
-  /* Ink: text nyepesi juu ya mandhari meusi */
   --ink-900: #f4efe8;
   --ink-800: #eae3d9;
   --ink-700: #d6cdc1;
@@ -87,19 +84,16 @@
   --ink-400: #8b7f71;
   --ink-300: #6e655a;
 
-  /* Brand: tints na lafudhi (bg kuu ya brand-700/800 hubaki sawa) */
   --brand-50: #2b1620;
   --brand-100: #371a27;
   --brand-200: #55303f;
   --brand-600: #d97f9f;
   --accent: #e8a9bd;
 
-  /* Gold */
   --gold-100: #2f2717;
   --gold-600: #dcb978;
   --gold-700: #c9a86a;
 
-  /* Status */
   --success-100: #15301f;
   --success-600: #55c087;
   --warning-100: #322611;
@@ -156,15 +150,15 @@
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-playfair), ui-serif, Georgia, serif;
 
-  /* Motion */
-  --animate-fade-up: fade-up 0.5s ease-out both;
+  /* Motion — polepole kidogo, si ya haraka ya template */
+  --animate-fade-up: fade-up 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) both;
   --animate-fade-in: fade-in 0.4s ease-out both;
-  --animate-slide-in-right: slide-in-right 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-slide-in-right: slide-in-right 0.3s cubic-bezier(0.33, 1, 0.68, 1) both;
 
   @keyframes fade-up {
     from {
       opacity: 0;
-      transform: translateY(14px);
+      transform: translateY(8px);
     }
     to {
       opacity: 1;
@@ -183,18 +177,16 @@
 
   @keyframes slide-in-right {
     from {
-      opacity: 0;
       transform: translateX(100%);
     }
     to {
-      opacity: 1;
       transform: translateX(0);
     }
   }
 }
 
 /* ============================================================
-   Base
+   Base — karatasi + wino
    ============================================================ */
 
 body {
@@ -202,16 +194,31 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Kiungo ndani ya maandishi (prose) — mstari mwembamba chini. */
+.prose a,
+article a:not(.btn) {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
 
 ::selection {
-  background: var(--brand-600);
+  background: var(--brand-700);
   color: #fff;
 }
 
 .dark ::selection {
   background: var(--brand-600);
   color: #17110c;
+}
+
+/* Focus ring ya wino (si ya AI iliyo na glow). */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--ink-900);
+  outline-offset: 2px;
 }
 
 /* Respect reduced motion globally */
@@ -227,7 +234,7 @@ body {
 }
 
 /* ============================================================
-   Risiti / ushuru (print) — fiche kichwa, footer na vitufe
+   Risiti / ushuru (print)
    ============================================================ */
 
 @media print {
@@ -244,7 +251,7 @@ body {
   }
 
   .card {
-    border: 1px solid #ddd !important;
+    border: 1px solid #ccc !important;
     box-shadow: none !important;
   }
 
@@ -255,48 +262,49 @@ body {
 }
 
 /* ============================================================
-   Component utilities
+   Component utilities — editorial, pembe kali, hakuna glow
    ============================================================ */
 
-/* Custom utilities via @utility so they can be @apply'd in Tailwind v4. */
 @utility container-x {
   @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
 }
 
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold tracking-wide transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-50;
+  @apply inline-flex items-center justify-center gap-2 rounded-sm px-6 py-3 text-[13px] font-semibold uppercase tracking-[0.12em] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-900 disabled:cursor-not-allowed disabled:opacity-40;
 }
 
 @utility btn-primary {
-  @apply btn bg-brand-700 text-white hover:bg-brand-800 active:scale-[0.98];
+  @apply btn border border-ink-900 bg-ink-900 text-cream-50 hover:bg-brand-700 hover:border-brand-700;
 }
 
 @utility btn-gold {
-  @apply btn bg-gold-500 text-on-gold hover:bg-gold-600 hover:text-white active:scale-[0.98];
+  @apply btn border border-gold-600 bg-gold-500 text-ink-900 hover:bg-ink-900 hover:border-ink-900 hover:text-cream-50;
 }
 
 @utility btn-outline {
-  @apply btn border border-ink-900/20 bg-transparent text-ink-900 hover:border-ink-900/50 hover:bg-ink-900/5;
+  @apply btn border border-ink-900/40 bg-transparent text-ink-900 hover:bg-ink-900 hover:text-cream-50 hover:border-ink-900;
 }
 
 @utility btn-light {
-  @apply btn bg-surface text-ink-900 hover:bg-cream-200 active:scale-[0.98];
+  @apply btn border border-cream-300 bg-surface text-ink-900 hover:border-ink-900/40 hover:bg-cream-100;
 }
 
+/* Kichwa cha sehemu kidogo — herufi kubwa, mstari chini. */
 @utility eyebrow {
-  @apply text-xs font-semibold uppercase tracking-[0.22em] text-brand-600;
+  @apply inline-block border-b border-ink-900/25 pb-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-ink-500;
 }
 
 @utility heading-display {
-  @apply font-display text-3xl leading-tight tracking-tight text-ink-900 sm:text-4xl lg:text-5xl;
+  @apply font-display text-3xl leading-[1.05] tracking-[-0.01em] text-ink-900 sm:text-4xl lg:text-5xl;
 }
 
+/* Kadi — karatasi nyuzi, pembe kali, bila glow. */
 @utility card {
-  @apply rounded-2xl border border-cream-300 bg-surface shadow-[0_1px_3px_rgba(31,23,18,0.04)] transition-shadow duration-300 hover:shadow-[0_12px_32px_-12px_rgba(95,23,49,0.18)];
+  @apply rounded-sm border border-cream-300 bg-surface transition-colors duration-200 hover:border-ink-900/30;
 }
 
 @utility badge {
-  @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide;
+  @apply inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em];
 }
 
 /* Zuia browser translation (Edge/Google Translate) — inaharibu React DOM. */

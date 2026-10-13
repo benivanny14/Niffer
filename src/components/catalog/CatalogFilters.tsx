@@ -92,7 +92,7 @@ export function CatalogFilters({ counts }: { counts: ProductFilterCounts }) {
   }
 
   const field =
-    "rounded-xl border border-cream-300 bg-surface px-3 py-2.5 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
+    "rounded-sm border border-ink-900/25 bg-surface px-3 py-2.5 text-sm text-ink-900 outline-none transition-colors focus:border-ink-900";
 
   return (
     <div className="space-y-5">

@@ -103,7 +103,7 @@ export default async function Home() {
             </dl>
           </div>
 
-          <div className="relative mx-auto aspect-4/5 w-full max-w-md animate-fade-in overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-brand-200 via-cream-200 to-gold-100 lg:aspect-3/4">
+          <div className="relative mx-auto aspect-4/5 w-full max-w-md animate-fade-in overflow-hidden rounded-sm border border-cream-300 bg-cream-200 lg:aspect-3/4">
             <ProductImage
               src="/images/hero.svg"
               alt="Bidhaa za Niffer Cosmetics"
@@ -168,7 +168,7 @@ export default async function Home() {
                 className="card group flex h-full flex-col justify-between overflow-hidden p-6"
               >
                 <div
-                  className={`-mx-6 -mt-6 mb-5 h-24 bg-gradient-to-r ${category.gradient}`}
+                  className={`-mx-6 -mt-6 mb-5 h-24 border-b border-cream-300 ${category.swatch}`}
                   aria-hidden
                 />
                 <div>
@@ -222,7 +222,7 @@ export default async function Home() {
 
       {/* ============ PUNGUZO ============ */}
       {onSale.length > 0 ? (
-        <section className="border-y border-cream-300 bg-gradient-to-r from-brand-800 via-brand-700 to-brand-800 text-white">
+        <section className="border-y border-ink-900 bg-brand-800 text-cream-50">
           <div className="container-x flex flex-wrap items-center justify-between gap-6 py-12">
             <div className="max-w-xl">
               <p className="inline-flex items-center gap-1.5 rounded-full bg-gold-500 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-on-gold">
@@ -242,7 +242,7 @@ export default async function Home() {
                 <li key={product.id}>
                   <Link
                     href={`/bidhaa/${product.slug}`}
-                    className="btn-light flex-col rounded-2xl! px-5! py-3! text-left"
+                    className="btn-light flex-col rounded-sm! px-5! py-3! text-left"
                   >
                     <span className="text-xs text-ink-500">{product.name}</span>
                     <span className="flex items-baseline gap-2">
@@ -359,7 +359,7 @@ export default async function Home() {
                     href={`/makala/${article.slug}`}
                     className="card group flex h-full flex-col overflow-hidden"
                   >
-                    <div className="relative aspect-video bg-gradient-to-br from-brand-100 via-cream-200 to-gold-100">
+                    <div className="relative aspect-video bg-cream-200">
                       <ProductImage
                         src={article.image}
                         alt={article.title}
@@ -404,7 +404,7 @@ export default async function Home() {
       </section>
 
       {/* ============ CTA ============ */}
-      <section className="border-t border-cream-300 bg-gradient-to-r from-gold-100 via-cream-200 to-brand-100">
+      <section className="border-t border-cream-300 bg-gold-100">
         <div className="container-x flex flex-col items-center gap-6 py-16 text-center">
           <SparkleIcon className="h-10 w-10 text-brand-600" />
           <h2 className="heading-display max-w-2xl">

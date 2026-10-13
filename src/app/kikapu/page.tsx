@@ -65,7 +65,7 @@ export default function CartPage() {
               <li key={product.slug} className="card flex gap-4 p-4">
                 <Link
                   href={`/bidhaa/${product.slug}`}
-                  className="h-24 w-20 shrink-0 overflow-hidden rounded-xl border border-cream-300"
+                  className="h-24 w-20 shrink-0 overflow-hidden rounded-sm border border-ink-900/25"
                 >
                   <ProductImage
                     src={product.image}

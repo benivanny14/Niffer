@@ -7,7 +7,7 @@ import { apiPost, errorMessage } from "@/lib/api";
 import { CheckIcon, StarIcon } from "@/components/ui/icons";
 
 const field =
-  "w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
+  "w-full rounded-sm border border-ink-900/25 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-ink-900";
 
 /**
  * Fomu ya kuacha hakiki — huhifadhi kwenye database ya seva.
