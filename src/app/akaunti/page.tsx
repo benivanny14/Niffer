@@ -78,13 +78,22 @@ export default function AccountPage() {
 /* ============ Ingia / Jiandikishe ============ */
 
 function AuthSection({ onLogin }: { onLogin: (c: Customer) => void }) {
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<"login" | "register" | "forgot">("login");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  // Kusahau nywila — hatua mbili (ombi la msimbo → weka nywila mpya).
+  const [resetPhone, setResetPhone] = useState("");
+  const [resetCode, setResetCode] = useState("");
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetStep, setResetStep] = useState<"phone" | "code">("phone");
+  const [resetMessage, setResetMessage] = useState("");
+  const [resetError, setResetError] = useState("");
+  const [resetBusy, setResetBusy] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -112,6 +121,142 @@ function AuthSection({ onLogin }: { onLogin: (c: Customer) => void }) {
     } finally {
       setBusy(false);
     }
+  }
+
+  async function submitForgot(e: React.FormEvent) {
+    e.preventDefault();
+    if (resetBusy) return;
+    setResetBusy(true);
+    setResetError("");
+    try {
+      if (resetStep === "phone") {
+        const data = await apiPost<{ ok: boolean; message: string }>(
+          "/api/customers/forgot",
+          { phone: resetPhone },
+        );
+        setResetMessage(data.message);
+        setResetStep("code");
+      } else {
+        const data = await apiPost<{ ok: boolean; message: string }>(
+          "/api/customers/reset",
+          { token: resetCode, password: resetPassword },
+        );
+        // Imefanikwa — rudi kwenye fomu ya kuingia.
+        setMode("login");
+        setPhone(resetPhone);
+        setPassword("");
+        setResetMessage(data.message);
+        setResetStep("phone");
+        setResetCode("");
+        setResetPassword("");
+      }
+    } catch (err) {
+      setResetError(errorMessage(err));
+    } finally {
+      setResetBusy(false);
+    }
+  }
+
+  if (mode === "forgot") {
+    return (
+      <div className="container-x max-w-md py-16">
+        <p className="eyebrow">Akaunti yako</p>
+        <h1 className="heading-display mt-2">Kusahau nywila</h1>
+        <p className="mt-3 text-ink-500">
+          {resetStep === "phone"
+            ? "Weka namba yako ya simu — tutakutumia msimbo wa kubadili nywila kwa barua pepe (ikiwa imewekwa kwenye akaunti yako)."
+            : "Weka msimbo uliopokea na nywila mpya."}
+        </p>
+
+        <form onSubmit={submitForgot} className="card mt-8 space-y-4 p-6">
+          {resetStep === "phone" ? (
+            <label className="block text-sm">
+              <span className="mb-1.5 block font-medium text-ink-700">
+                Namba ya simu *
+              </span>
+              <input
+                required
+                value={resetPhone}
+                onChange={(e) => setResetPhone(e.target.value)}
+                className={field}
+                placeholder="0754 000 000"
+                inputMode="tel"
+                autoComplete="tel"
+              />
+            </label>
+          ) : (
+            <>
+              <label className="block text-sm">
+                <span className="mb-1.5 block font-medium text-ink-700">
+                  Msimbo wa tarakimu 6 *
+                </span>
+                <input
+                  required
+                  value={resetCode}
+                  onChange={(e) => setResetCode(e.target.value)}
+                  className={field}
+                  placeholder="mfano 482913"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="mb-1.5 block font-medium text-ink-700">
+                  Nywila mpya * (herufi 6+)
+                </span>
+                <input
+                  required
+                  type="password"
+                  value={resetPassword}
+                  onChange={(e) => setResetPassword(e.target.value)}
+                  className={field}
+                  placeholder="••••••"
+                  minLength={6}
+                  autoComplete="new-password"
+                />
+              </label>
+            </>
+          )}
+
+          {resetMessage ? (
+            <p className="rounded-lg bg-success-100 px-3 py-2 text-sm text-success-600">
+              {resetMessage}
+            </p>
+          ) : null}
+          {resetError ? (
+            <p className="rounded-lg bg-danger-100 px-3 py-2 text-sm text-danger-600">
+              {resetError}
+            </p>
+          ) : null}
+
+          <button
+            type="submit"
+            disabled={resetBusy}
+            className="btn-primary w-full disabled:opacity-60"
+          >
+            {resetBusy
+              ? "Inasubiri…"
+              : resetStep === "phone"
+                ? "Tuma msimbo"
+                : "Badilisha nywila"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setMode("login");
+              setResetError("");
+              setResetMessage("");
+              setResetStep("phone");
+            }}
+            className="w-full text-center text-sm text-ink-500 transition-colors hover:text-accent"
+          >
+            ← Rudi kwenye kuingia
+          </button>
+        </form>
+      </div>
+    );
   }
 
   return (
@@ -188,6 +333,25 @@ function AuthSection({ onLogin }: { onLogin: (c: Customer) => void }) {
             autoComplete={mode === "login" ? "current-password" : "new-password"}
           />
         </label>
+
+        {mode === "login" ? (
+          <button
+            type="button"
+            onClick={() => {
+              setMode("forgot");
+              setError("");
+            }}
+            className="text-sm text-accent transition-colors hover:underline"
+          >
+            Umesahau nywila?
+          </button>
+        ) : null}
+
+        {resetMessage ? (
+          <p className="rounded-lg bg-success-100 px-3 py-2 text-sm text-success-600">
+            {resetMessage}
+          </p>
+        ) : null}
 
         {error ? (
           <p className="rounded-lg bg-danger-100 px-3 py-2 text-sm text-danger-600">

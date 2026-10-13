@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { formatTsh } from "@/lib/format";
 import { getProductBySlug } from "@/lib/data/catalog";
-import { liveStatus, statusSteps, type Order } from "@/lib/orders";
+import { liveStatus, statusLabel, statusSteps, type Order } from "@/lib/orders";
 import { fetchOrder } from "@/lib/orders-client";
 import { errorMessage } from "@/lib/api";
 import { formatPhone } from "@/lib/format";
@@ -36,8 +36,10 @@ export default function TrackOrderPage() {
     }
   }
 
-  const stepIndex = order
-    ? statusSteps.findIndex((s) => s.id === liveStatus(order))
+  const currentStatus = order ? liveStatus(order) : null;
+  const isCancelled = currentStatus === "ghairiwa";
+  const stepIndex = currentStatus
+    ? statusSteps.findIndex((s) => s.id === currentStatus)
     : -1;
 
   return (
@@ -115,10 +117,21 @@ export default function TrackOrderPage() {
                 {order.code}
               </p>
             </div>
-            <span className="badge bg-brand-100 text-accent">
-              {statusSteps[stepIndex]?.label}
+            <span
+              className={`badge ${
+                isCancelled
+                  ? "bg-danger-100 text-danger-600"
+                  : "bg-brand-100 text-accent"
+              }`}
+            >
+              {currentStatus ? statusLabel(currentStatus) : ""}
             </span>
           </div>
+          {isCancelled ? (
+            <p className="mt-3 rounded-lg bg-danger-50 px-3 py-2 text-sm text-danger-600">
+              Oda hii imeghairiwa. Tupigie simu kwa msaada zaidi.
+            </p>
+          ) : null}
           <p className="mt-3 text-sm">
             <Link
               href={`/odha/${order.code}`}

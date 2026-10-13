@@ -124,3 +124,32 @@ export function notifyAdmin(input: {
   notify(input);
   void sendAdminEmail(input.title, [input.body, input.ref ? `Ref: ${input.ref}` : ""].filter(Boolean).join("\n"));
 }
+
+/** Tuma barua pepe kwa mteja (Resend — nyepesi; hakuna hitilafu kama hakuna API key). */
+export async function sendCustomerEmail(
+  to: string,
+  subject: string,
+  text: string,
+): Promise<boolean> {
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+  if (!apiKey || !to.trim()) return false;
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        from: process.env.EMAIL_FROM?.trim() || "Niffer <onboarding@resend.dev>",
+        to: [to],
+        subject,
+        text,
+      }),
+    });
+    return res.ok;
+  } catch (error) {
+    console.error("[sendCustomerEmail] barua pepe haijatumwa:", error);
+    return false;
+  }
+}

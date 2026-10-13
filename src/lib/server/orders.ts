@@ -84,7 +84,10 @@ export type CreateOrderInput = {
   customerId?: string;
 };
 
-const VALID_STATUSES: OrderStatus[] = statusSteps.map((s) => s.id);
+const VALID_STATUSES: OrderStatus[] = [
+  ...statusSteps.map((s) => s.id),
+  "ghairiwa",
+];
 
 function validPayment(id: string): PaymentId {
   const found = paymentMethods.find((m) => m.id === id);
@@ -381,6 +384,8 @@ export function updateOrderStatus(
   if (!VALID_STATUSES.includes(status)) {
     throw new InputError("Hatua ya oda si sahihi.");
   }
+  // Kughairiwa — hudumisha stoo na kadi ya zawadi.
+  if (status === "ghairiwa") return cancelOrder(code);
   const key = code.trim().toUpperCase();
   const existing = getOrder(key);
   if (!existing) throw new InputError("Oda haipatikani.", 404);
@@ -404,6 +409,78 @@ export function updateOrderStatus(
   return getOrder(key);
 }
 
+/**
+ * Ghairi oda — kurudisha stoo na (ikiwa kupo) kadi ya zawadi.
+ * Inaruhusiwa tu wakati oda bado "imapokelewa" (hajanza kuandaliwa).
+ */
+export function cancelOrder(code: string): Order | undefined {
+  const key = code.trim().toUpperCase();
+  const existing = getOrder(key);
+  if (!existing) throw new InputError("Oda haipatikani.", 404);
+  if (existing.demo) {
+    throw new InputError("Oda ya majaribio haiwezi kughairiwa.");
+  }
+  if (existing.status === "ghairiwa") return existing;
+  if (existing.status !== "imapokelewa") {
+    throw new InputError(
+      "Oda hii tayari imeanza kuandaliwa — haiwezi kughairiwa. Tupigie simu kwa msaada.",
+      409,
+    );
+  }
+
+  const at = nowIso();
+  const db = getDb();
+  db.exec("BEGIN");
+  try {
+    // Rudisha stoo ya kila bidhaa.
+    const inc = db.prepare(
+      "UPDATE stock SET qty = qty + ?, updated_at = ? WHERE slug = ?",
+    );
+    for (const line of existing.lines) {
+      inc.run(line.qty, at, line.slug);
+    }
+    // Rudisha kadi ya zawadi (kama ilikuwa imetumika na oda hii).
+    if (existing.giftCardCode) {
+      db.prepare(
+        `UPDATE gift_cards SET status = 'issued', redeemed_at = NULL, order_code = NULL
+         WHERE code = ? AND status = 'redeemed' AND order_code = ?`,
+      ).run(existing.giftCardCode, key);
+    }
+
+    const history = [...(existing.history ?? [])];
+    if (!history.some((h) => h.status === "ghairiwa")) {
+      history.push({ status: "ghairiwa", at });
+    }
+    db.prepare(
+      "UPDATE orders SET status = 'ghairiwa', history = ? WHERE code = ?",
+    ).run(JSON.stringify(history), key);
+    db.prepare(
+      "INSERT INTO order_events (code, status, at) VALUES (?, 'ghairiwa', ?)",
+    ).run(key, at);
+    db.exec("COMMIT");
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
+
+  notifyAdmin({
+    kind: "oda",
+    title: `Oda ${key} imeghairishwa`,
+    body: `Oda ${key} ya ${existing.customer.name} (${existing.customer.phone}) imeghairishwa. Stoo imerudishwa.`,
+    ref: "/admin",
+  });
+  notifyCustomer({
+    customerId: existing.customerId,
+    phone: existing.customer.phone,
+    orderCode: key,
+    kind: "status",
+    title: `Oda ${key} imeghairiwa`,
+    body: `Oda yako ${key} imeghairishwa kama ulivyoomba. Stoo imerudishwa; ikiwa ulilipa tayari, tutakuarifu kuhusu marejesho.`,
+  });
+
+  return getOrder(key);
+}
+
 /** Takwimu za dashibodi. */
 export function orderStats(): {
   orderCount: number;
@@ -413,8 +490,8 @@ export function orderStats(): {
   const row = getDb()
     .prepare(
       `SELECT COUNT(*) AS orderCount,
-              COALESCE(SUM(total_tsh), 0) AS revenueTsh,
-              COALESCE(SUM(CASE WHEN status != 'imefika' THEN 1 ELSE 0 END), 0) AS pendingCount
+              COALESCE(SUM(CASE WHEN status != 'ghairiwa' THEN total_tsh ELSE 0 END), 0) AS revenueTsh,
+              COALESCE(SUM(CASE WHEN status NOT IN ('imefika', 'ghairiwa') THEN 1 ELSE 0 END), 0) AS pendingCount
        FROM orders`,
     )
     .get() as

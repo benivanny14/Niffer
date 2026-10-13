@@ -2,12 +2,20 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useOrderLookup } from "@/lib/orders-client";
+import { useState } from "react";
+import { useOrderLookup, cancelMyOrder } from "@/lib/orders-client";
 import { useNow } from "@/lib/clock";
-import { liveStatus, statusEvents, statusSteps } from "@/lib/orders";
+import {
+  liveStatus,
+  statusEvents,
+  statusLabel,
+  statusSteps,
+  type OrderStatus,
+} from "@/lib/orders";
 import { getProductBySlug } from "@/lib/data/catalog";
 import { formatTsh, formatPhone } from "@/lib/format";
 import { site, waLink } from "@/lib/site";
+import { errorMessage } from "@/lib/api";
 import { ProductImage } from "@/components/media/ProductImage";
 import {
   BagIcon,
@@ -31,6 +39,25 @@ export default function OrderPage() {
   const { order, loading, error } = useOrderLookup(code);
   // Saa ya client (husasishwa kila sekunde) — demo inasonga yenyewe.
   const now = useNow();
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelPhone, setCancelPhone] = useState("");
+  const [cancelBusy, setCancelBusy] = useState(false);
+  const [cancelError, setCancelError] = useState("");
+
+  async function handleCancel(e: React.FormEvent) {
+    e.preventDefault();
+    if (cancelBusy) return;
+    setCancelBusy(true);
+    setCancelError("");
+    try {
+      await cancelMyOrder(order!.code, cancelPhone);
+      window.location.reload();
+    } catch (err) {
+      setCancelError(errorMessage(err));
+    } finally {
+      setCancelBusy(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -76,7 +103,8 @@ export default function OrderPage() {
     );
   }
 
-  const status = now > 0 ? liveStatus(order, now) : order.status;
+  const status: OrderStatus = now > 0 ? liveStatus(order, now) : order.status;
+  const isCancelled = status === "ghairiwa";
   const stepIndex = statusSteps.findIndex((s) => s.id === status);
   const events = statusEvents(order);
   const waText = `Habari ${site.name}, nina oda ${order.code}. Jumla: ${formatTsh(order.totalTsh)}`;
@@ -85,14 +113,30 @@ export default function OrderPage() {
     <div className="container-x max-w-3xl py-12 lg:py-16">
       {/* Header ya mafanikio */}
       <div className="text-center">
-        <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-100 text-success-600">
-          <CheckIcon className="h-8 w-8" />
+        <span
+          className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${
+            isCancelled
+              ? "bg-danger-100 text-danger-600"
+              : "bg-success-100 text-success-600"
+          }`}
+        >
+          {isCancelled ? (
+            <span className="text-2xl font-bold" aria-hidden>
+              ✕
+            </span>
+          ) : (
+            <CheckIcon className="h-8 w-8" />
+          )}
         </span>
-        <h1 className="heading-display mt-6">Asante! Oda yako imepokelewa</h1>
+        <h1 className="heading-display mt-6">
+          {isCancelled ? "Oda yako imeghairiwa" : "Asante! Oda yako imepokelewa"}
+        </h1>
         <p className="mt-3 text-ink-500">
           Nambari ya oda yako ni{" "}
           <span className="font-semibold text-ink-900">{order.code}</span>.
-          Tutakupigia simu kuthibitisha ndani ya dakika chache.
+          {isCancelled
+            ? " Stoo imerudishwa; ikiwa ulilipa tayari, tutakuarifu kuhusu marejesho."
+            : " Tutakupigia simu kuthibitisha ndani ya dakika chache."}
         </p>
         <button
           type="button"
@@ -109,25 +153,39 @@ export default function OrderPage() {
             <p className="text-sm text-ink-500">Nambari ya oda</p>
             <p className="font-display text-xl text-ink-900">{order.code}</p>
           </div>
-          <span className="badge bg-brand-100 text-accent">
-            {statusSteps[stepIndex]?.label}
+          <span
+            className={`badge ${
+              isCancelled
+                ? "bg-danger-100 text-danger-600"
+                : "bg-brand-100 text-accent"
+            }`}
+          >
+            {statusLabel(status)}
           </span>
         </div>
 
         {/* Hatua */}
         <ol className="mt-6 grid grid-cols-4 gap-2">
           {statusSteps.map((step, i) => {
-            const done = i <= stepIndex;
+            const done = !isCancelled && i <= stepIndex;
             return (
               <li key={step.id} className="text-center">
                 <div
                   className={`mx-auto h-2 w-full rounded-full ${
-                    done ? "bg-brand-700" : "bg-cream-300"
+                    isCancelled
+                      ? "bg-cream-300"
+                      : done
+                        ? "bg-brand-700"
+                        : "bg-cream-300"
                   }`}
                 />
                 <span
                   className={`mt-2 block text-[11px] ${
-                    done ? "font-semibold text-accent" : "text-ink-400"
+                    isCancelled
+                      ? "text-ink-400"
+                      : done
+                        ? "font-semibold text-accent"
+                        : "text-ink-400"
                   }`}
                 >
                   {step.label}
@@ -136,13 +194,19 @@ export default function OrderPage() {
             );
           })}
         </ol>
+        {isCancelled ? (
+          <p className="mt-3 rounded-lg bg-danger-50 px-3 py-2 text-center text-sm text-danger-600">
+            Oda hii imeghairiwa — hatua za usafirishaji zimesimama.
+          </p>
+        ) : null}
 
         {/* Matukio */}
         <ul className="mt-6 space-y-2 border-t border-cream-200 pt-4 text-sm">
           {events.map((event) => {
-            const label = statusSteps.find((s) => s.id === event.status)?.label;
+            const label = statusLabel(event.status);
             const future =
               now > 0 && event.at != null && event.at.getTime() > now;
+            const cancelledEvent = event.status === "ghairiwa";
             return (
               <li
                 key={event.status}
@@ -150,9 +214,11 @@ export default function OrderPage() {
               >
                 <span
                   className={
-                    event.at && !future
-                      ? "font-medium text-ink-900"
-                      : "text-ink-400"
+                    cancelledEvent
+                      ? "font-medium text-danger-600"
+                      : event.at && !future
+                        ? "font-medium text-ink-900"
+                        : "text-ink-400"
                   }
                 >
                   {label}
@@ -276,6 +342,69 @@ export default function OrderPage() {
           </li>
         </ul>
       </div>
+
+      {/* Ghairi oda — wakati bado imepokelewa */}
+      {status === "imapokelewa" && !order.demo ? (
+        <div className="card no-print mt-8 border-warning-200 bg-warning-50 p-5">
+          {!cancelOpen ? (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="font-medium text-ink-900">Hujakubali oda hii?</p>
+                <p className="text-sm text-ink-500">
+                  Unaweza kuighairi bila gharama ikiwa bado haijaanza
+                  kuandaliwa.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCancelOpen(true)}
+                className="rounded-full bg-danger-100 px-4 py-1.5 text-xs font-semibold text-danger-600 transition-colors hover:bg-danger-200"
+              >
+                Ghairi oda
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleCancel}>
+              <p className="font-medium text-ink-900">Thibitisha kughairi</p>
+              <p className="mt-1 text-sm text-ink-500">
+                Weka namba ya simu uliyotumia kuweka oda ili kuthibitisha
+                ni wewe.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <input
+                  type="tel"
+                  required
+                  value={cancelPhone}
+                  onChange={(e) => setCancelPhone(e.target.value)}
+                  placeholder="0754 000 000"
+                  aria-label="Namba ya simu ya oda"
+                  className="w-full max-w-56 flex-1 rounded-xl border border-cream-300 bg-surface px-4 py-2.5 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500"
+                />
+                <button
+                  type="submit"
+                  disabled={cancelBusy}
+                  className="rounded-full bg-danger-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-danger-700 disabled:opacity-60"
+                >
+                  {cancelBusy ? "Inaghairi…" : "Ndiyo, ghairi"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCancelOpen(false);
+                    setCancelError("");
+                  }}
+                  className="btn-outline px-4 py-2 text-xs"
+                >
+                  Rudi
+                </button>
+              </div>
+              {cancelError ? (
+                <p className="mt-2 text-sm text-danger-600">{cancelError}</p>
+              ) : null}
+            </form>
+          )}
+        </div>
+      ) : null}
 
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <a

@@ -70,16 +70,19 @@ export async function PATCH(
     if (!body?.status) return fail("Hatua mpya haijawekwa.");
     const order = updateOrderStatus(code, body.status);
     if (!order) return fail("Oda haipatikani.", 404);
-    // Arifu mteja kwa mkupuo wa hatua mpya.
-    const stepLabel = statusSteps.find((s) => s.id === body.status)?.label ?? body.status;
-    notifyCustomer({
-      customerId: order.customerId,
-      phone: order.customer.phone,
-      orderCode: order.code,
-      kind: "status",
-      title: `Oda ${order.code}: ${stepLabel}`,
-      body: `Oda yako ${order.code} imefikia hatua ya ${stepLabel.toLowerCase()}.`,
-    });
+    // Arifu mteja kwa mkupuo wa hatua mpya (kughairiwa: cancelOrder tayari
+    // imetuma arifa kwa mteja na admin).
+    if (body.status !== "ghairiwa") {
+      const stepLabel = statusSteps.find((s) => s.id === body.status)?.label ?? body.status;
+      notifyCustomer({
+        customerId: order.customerId,
+        phone: order.customer.phone,
+        orderCode: order.code,
+        kind: "status",
+        title: `Oda ${order.code}: ${stepLabel}`,
+        body: `Oda yako ${order.code} imefikia hatua ya ${stepLabel.toLowerCase()}.`,
+      });
+    }
     return json({ ok: true, order });
   } catch (error) {
     return toErrorResponse(error);

@@ -120,6 +120,25 @@ export async function patchOrderStatus(
   return data.order;
 }
 
+/** Ghairi oda (mteja) — hurudisha oda mpya yenye status "ghairiwa". */
+export async function cancelMyOrder(
+  code: string,
+  phone: string,
+): Promise<Order> {
+  const key = code.trim().toUpperCase();
+  const data = await apiPost<{ ok: boolean; order: Order }>(
+    `/api/orders/${encodeURIComponent(key)}/cancel`,
+    { phone },
+  );
+  const local = ordersStore.get();
+  if (local.some((o) => o.code === data.order.code)) {
+    ordersStore.set(
+      local.map((o) => (o.code === data.order.code ? data.order : o)),
+    );
+  }
+  return data.order;
+}
+
 /* ============ Hooks ============ */
 
 /** Oda zote za server (admin) — zinasasishwa kila dakika 30. */

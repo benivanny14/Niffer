@@ -5,13 +5,13 @@ import { createLocalStore } from "@/lib/local-store";
 import { useAsync } from "@/lib/use-async";
 import {
   liveStatus,
+  statusLabel,
   statusSteps,
   type Order,
   type OrderStatus,
 } from "@/lib/orders";
 import { useAdminOrders, patchOrderStatus } from "@/lib/orders-client";
 import { apiGet, apiPatch, apiPost, errorMessage } from "@/lib/api";
-import { products } from "@/lib/data/catalog";
 import { ProductManager } from "@/components/admin/ProductManager";
 import { formatTsh, formatPhone } from "@/lib/format";
 import { site } from "@/lib/site";
@@ -95,6 +95,8 @@ type NotificationRecord = {
 };
 
 type SubscriberRecord = { email: string; createdAt: string };
+
+type AdminProductRow = { slug: string; name: string; stock: number };
 type GiftCardRecord = {
   code: string;
   amountTsh: number;
@@ -253,10 +255,11 @@ function AdminDashboard() {
     subscribers: SubscriberRecord[];
     giftCards: GiftCardRecord[];
     customers: CustomerRecord[];
+    adminProducts: AdminProductRow[];
   }>(
     "admin-data",
     async () => {
-      const [s, m, r, rv, pr, nt, nl, gc, cu] = await Promise.all([
+      const [s, m, r, rv, pr, nt, nl, gc, cu, pd] = await Promise.all([
         apiGet<Stats>("/api/stats"),
         apiGet<{ ok: boolean; messages: MessageRecord[] }>("/api/messages"),
         apiGet<{ ok: boolean; rfqs: RfqRecord[] }>("/api/rfq"),
@@ -276,6 +279,9 @@ function AdminDashboard() {
         apiGet<{ ok: boolean; customers: CustomerRecord[] }>(
           "/api/customers/list",
         ),
+        apiGet<{ ok: boolean; products: { slug: string; name: string; stock: number }[] }>(
+          "/api/products",
+        ),
       ]);
       return {
         stats: s,
@@ -287,6 +293,11 @@ function AdminDashboard() {
         subscribers: nl.subscribers,
         giftCards: gc.giftCards,
         customers: cu.customers,
+        adminProducts: (pd.products ?? []).map((p) => ({
+          slug: p.slug,
+          name: p.name,
+          stock: p.stock,
+        })),
       };
     },
     { intervalMs: 60_000 },
@@ -301,6 +312,7 @@ function AdminDashboard() {
   const subscribers = adminData.data?.subscribers ?? [];
   const giftCards = adminData.data?.giftCards ?? [];
   const customers = adminData.data?.customers ?? [];
+  const adminProducts = adminData.data?.adminProducts ?? [];
   const dataError = adminData.error;
 
   // Oda zote za server (DB) — demo zimeondolewa.
@@ -389,7 +401,13 @@ function AdminDashboard() {
 
       <div className="mt-8">
         {tab === "muhtasari" ? (
-          <Muhtasari stats={stats} orders={allOrders} messages={messages} loading={loading} />
+          <Muhtasari
+            stats={stats}
+            orders={allOrders}
+            messages={messages}
+            loading={loading}
+            products={adminProducts}
+          />
         ) : null}
         {tab === "bidhaa" ? <ProductManager /> : null}
         {tab === "oda" ? <OdaTab orders={allOrders} loading={loading} onRefresh={refresh} /> : null}
@@ -411,7 +429,9 @@ function AdminDashboard() {
             onChanged={() => adminData.refresh()}
           />
         ) : null}
-        {tab === "ujumbe" ? <UjumbeTab messages={messages} /> : null}
+        {tab === "ujumbe" ? (
+          <UjumbeTab messages={messages} onChanged={() => adminData.refresh()} />
+        ) : null}
       </div>
     </div>
   );
@@ -423,11 +443,13 @@ function Muhtasari({
   orders,
   messages,
   loading,
+  products,
 }: {
   stats: Stats | null;
   orders: Order[];
   messages: MessageRecord[];
   loading: boolean;
+  products: AdminProductRow[];
 }) {
   const lowStock = (stats?.lowStock ?? []).map((entry) => {
     const product = products.find((p) => p.slug === entry.slug);
@@ -440,14 +462,14 @@ function Muhtasari({
 
   const revenue = stats?.orders.revenueTsh ?? 0;
 
-  // Bidhaa zilizouzwa vs zilizobaki.
+  // Bidhaa zilizouzwa vs zilizobaki (kutoka DB — bidhaa za admin zimejumuishwa).
   const soldBySlug = stats?.soldBySlug ?? {};
   const productSales = products
     .map((p) => ({
       slug: p.slug,
       name: p.name,
       sold: soldBySlug[p.slug] ?? 0,
-      stock: stats?.lowStock.find((l) => l.slug === p.slug)?.qty ?? p.stock,
+      stock: p.stock,
     }))
     .sort((a, b) => b.sold - a.sold);
 
@@ -458,7 +480,11 @@ function Muhtasari({
     { icon: BagIcon, label: "Oda zote", value: `${orders.length}` },
     { icon: TagIcon, label: "Mapato (jumla)", value: formatTsh(revenue) },
     { icon: ChatIcon, label: "Ujumbe wa fomu", value: `${messages.length}` },
-    { icon: TruckIcon, label: "Bidhaa zinazouzwa", value: `${products.length}` },
+    {
+      icon: TruckIcon,
+      label: "Bidhaa zinazouzwa",
+      value: `${stats?.catalog.productCount ?? products.length}`,
+    },
   ];
 
   if (loading && !stats) {
@@ -601,7 +627,7 @@ function Muhtasari({
           <ul className="mt-4 space-y-2">
             {orders.slice(0, 5).map((order) => {
               const status = liveStatus(order);
-              const label = statusSteps.find((s) => s.id === status)?.label;
+              const label = statusLabel(status);
               return (
                 <li
                   key={order.code}
@@ -843,7 +869,9 @@ function OdaTab({
     <div>
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm font-medium text-ink-700">Chuja:</span>
-        {(["zote", ...statusSteps.map((s) => s.id)] as const).map((id) => (
+        {(
+          ["zote", ...statusSteps.map((s) => s.id), "ghairiwa"] as const
+        ).map((id) => (
           <button
             key={id}
             type="button"
@@ -851,12 +879,14 @@ function OdaTab({
             className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
               filter === id
                 ? "bg-brand-700 text-white"
-                : "bg-cream-100 text-ink-500 hover:bg-cream-200"
+                : "bg-cream-100 text-ink-500 hover:bg-cream-200 disabled:opacity-60"
             }`}
           >
             {id === "zote"
               ? "Zote"
-              : statusSteps.find((s) => s.id === id)?.label}
+              : id === "ghairiwa"
+                ? "Imeghairiwa"
+                : statusSteps.find((s) => s.id === id)?.label}
           </button>
         ))}
         <button
@@ -961,7 +991,8 @@ function OdaTab({
         <ul className="mt-6 space-y-3">
           {filtered.map((order) => {
             const status = liveStatus(order);
-            const label = statusSteps.find((s) => s.id === status)?.label;
+            const label = statusLabel(status);
+            const isCancelled = status === "ghairiwa";
             return (
               <li key={order.code} className="card p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -969,7 +1000,13 @@ function OdaTab({
                     <span className="font-display text-lg text-ink-900">
                       {order.code}
                     </span>
-                    <span className="badge bg-brand-100 text-accent">
+                    <span
+                      className={`badge ${
+                        isCancelled
+                          ? "bg-danger-100 text-danger-600"
+                          : "bg-brand-100 text-accent"
+                      }`}
+                    >
                       {label}
                     </span>
                     {order.demo ? (
@@ -1068,6 +1105,27 @@ function OdaTab({
                           : step.label}
                       </button>
                     ))}
+
+                    {!order.demo &&
+                    status !== "imefika" &&
+                    status !== "ghairiwa" ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              `Ghairi oda ${order.code}? Stoo itarudishwa.`,
+                            )
+                          ) {
+                            void changeStatus(order.code, "ghairiwa");
+                          }
+                        }}
+                        disabled={savingCode === order.code}
+                        className="rounded-full bg-danger-100 px-3 py-1 text-xs font-semibold text-danger-600 transition-colors hover:bg-danger-200 disabled:opacity-60"
+                      >
+                        {savingCode === order.code ? "Inaghairi…" : "✕ Ghairi"}
+                      </button>
+                    ) : null}
 
                     {/* Tuma ujumbe kwa mteja */}
                     <button
@@ -1277,7 +1335,29 @@ const kindLabels: Record<MessageRecord["kind"], string> = {
   rfq: "RFQ — ombi la bei ya wingi",
 };
 
-function UjumbeTab({ messages }: { messages: MessageRecord[] }) {
+function UjumbeTab({
+  messages,
+  onChanged,
+}: {
+  messages: MessageRecord[];
+  onChanged: () => void;
+}) {
+  const [saving, setSaving] = useState("");
+  const [error, setError] = useState("");
+
+  async function markRead(id: string) {
+    setSaving(id);
+    setError("");
+    try {
+      await apiPatch("/api/messages", { id });
+      onChanged();
+    } catch (e) {
+      setError(errorMessage(e));
+    } finally {
+      setSaving("");
+    }
+  }
+
   if (messages.length === 0) {
     return (
       <div className="card p-10 text-center">
@@ -1293,64 +1373,87 @@ function UjumbeTab({ messages }: { messages: MessageRecord[] }) {
   }
 
   return (
-    <ul className="space-y-3">
-      {messages.map((message) => (
-        <li key={message.id} className="card p-5">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-display text-lg text-ink-900">
-                {message.name}
-              </span>
-              <span className="badge bg-brand-100 text-accent">
-                {kindLabels[message.kind]}
-              </span>
-              {message.status === "new" ? (
-                <span className="badge bg-warning-100 text-warning-600">
-                  Mpya
+    <>
+      {error ? (
+        <p className="mb-4 rounded-lg bg-danger-100 px-3 py-2 text-sm text-danger-600">
+          {error}
+        </p>
+      ) : null}
+      <ul className="space-y-3">
+        {messages.map((message) => (
+          <li key={message.id} className="card p-5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-display text-lg text-ink-900">
+                  {message.name}
                 </span>
-              ) : null}
+                <span className="badge bg-brand-100 text-accent">
+                  {kindLabels[message.kind]}
+                </span>
+                {message.status === "new" ? (
+                  <span className="badge bg-warning-100 text-warning-600">
+                    Mpya
+                  </span>
+                ) : (
+                  <span className="badge bg-ink-100 text-ink-600">
+                    Imesomwa
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-ink-400">
+                  {new Date(message.createdAt).toLocaleString("sw-TZ")}
+                </span>
+                {message.status === "new" ? (
+                  <button
+                    type="button"
+                    disabled={saving === message.id}
+                    onClick={() => markRead(message.id)}
+                    className="btn-outline px-3 py-1.5 text-xs"
+                  >
+                    {saving === message.id ? "Inasasisha…" : "Soma"}
+                  </button>
+                ) : null}
+              </div>
             </div>
-            <span className="text-xs text-ink-400">
-              {new Date(message.createdAt).toLocaleString("sw-TZ")}
-            </span>
-          </div>
 
-          <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
-            {message.phone ? (
+            <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
+              {message.phone ? (
+                <div>
+                  <p className="text-ink-400">Simu</p>
+                  <p className="font-medium text-ink-900">
+                    {formatPhone(message.phone)}
+                  </p>
+                </div>
+              ) : null}
+              {message.email ? (
+                <div>
+                  <p className="text-ink-400">Barua pepe</p>
+                  <p className="font-medium text-ink-900">{message.email}</p>
+                </div>
+              ) : null}
               <div>
-                <p className="text-ink-400">Simu</p>
+                <p className="text-ink-400">Aina</p>
                 <p className="font-medium text-ink-900">
-                  {formatPhone(message.phone)}
+                  {kindLabels[message.kind]}
                 </p>
               </div>
-            ) : null}
-            {message.email ? (
-              <div>
-                <p className="text-ink-400">Barua pepe</p>
-                <p className="font-medium text-ink-900">{message.email}</p>
-              </div>
-            ) : null}
-            <div>
-              <p className="text-ink-400">Aina</p>
-              <p className="font-medium text-ink-900">
-                {kindLabels[message.kind]}
-              </p>
             </div>
-          </div>
 
-          <dl className="mt-3 space-y-1 border-t border-cream-200 pt-3 text-sm">
-            {Object.entries(message.body)
-              .filter(([, value]) => String(value ?? "").trim().length > 0)
-              .map(([key, value]) => (
-                <div key={key} className="flex gap-2">
-                  <dt className="w-28 shrink-0 text-ink-400">{key}</dt>
-                  <dd className="text-ink-700">{value}</dd>
-                </div>
-              ))}
-          </dl>
-        </li>
-      ))}
-    </ul>
+            <dl className="mt-3 space-y-1 border-t border-cream-200 pt-3 text-sm">
+              {Object.entries(message.body)
+                .filter(([, value]) => String(value ?? "").trim().length > 0)
+                .map(([key, value]) => (
+                  <div key={key} className="flex gap-2">
+                    <dt className="w-28 shrink-0 text-ink-400">{key}</dt>
+                    <dd className="text-ink-700">{value}</dd>
+                  </div>
+                ))}
+            </dl>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 

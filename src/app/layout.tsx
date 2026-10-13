@@ -77,8 +77,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           }}
         />
         <StoreProvider>
+          <a
+            href="#main-content"
+            className="sr-only z-100 rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-cream-50 focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+          >
+            Ruka hadi maudhui
+          </a>
           <SiteHeader />
-          <main className="flex-1">{children}</main>
+          <main id="main-content" className="flex-1">
+            {children}
+          </main>
           <SiteFooter />
         </StoreProvider>
         <FloatingActions />

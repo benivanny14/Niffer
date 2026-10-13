@@ -172,6 +172,14 @@ CREATE TABLE IF NOT EXISTS customer_sessions (
   expires_at  TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  token       TEXT PRIMARY KEY,
+  customer_id TEXT NOT NULL,
+  expires_at  TEXT NOT NULL,
+  used        INTEGER NOT NULL DEFAULT 0,
+  created_at  TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS rfqs (
   code          TEXT PRIMARY KEY,
   business      TEXT NOT NULL DEFAULT '',
@@ -203,6 +211,7 @@ CREATE INDEX IF NOT EXISTS idx_cust_notif_phone ON customer_notifications(phone)
 CREATE INDEX IF NOT EXISTS idx_cust_notif_status ON customer_notifications(status, created_at);
 CREATE INDEX IF NOT EXISTS idx_customer_sessions_customer ON customer_sessions(customer_id);
 CREATE INDEX IF NOT EXISTS idx_customer_sessions_expires ON customer_sessions(expires_at);
+CREATE INDEX IF NOT EXISTS idx_reset_tokens_customer ON password_reset_tokens(customer_id, used);
 CREATE INDEX IF NOT EXISTS idx_admin_sessions_expires ON admin_sessions(expires_at);
 CREATE INDEX IF NOT EXISTS idx_rfqs_phone ON rfqs(phone);
 CREATE INDEX IF NOT EXISTS idx_stock_slug ON stock(slug);

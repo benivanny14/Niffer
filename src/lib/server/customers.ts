@@ -120,6 +120,105 @@ export function loginCustomer(input: {
   return toCustomer(row);
 }
 
+/* ============ Kusahau nywila (password reset) ============ */
+
+const RESET_TTL_MS = 1000 * 60 * 15; // dakika 15
+const RESET_CODE_ALPHABET = "23456789"; // bila 0/1/O/I — urahisi wa kuandika
+
+/** Msimbo wa tarakimu 6 usiolingana na nyingine (salama kwa kuandika). */
+function resetCode(): string {
+  let out = "";
+  for (let i = 0; i < 6; i += 1) {
+    out += RESET_CODE_ALPHABET[Math.floor(Math.random() * RESET_CODE_ALPHABET.length)];
+  }
+  return out;
+}
+
+/**
+ * Tengeneza msimbo wa kubadili nywila kwa simu.
+ * Rudisha { customer, code } ikiwa akaunti ipo; null ikiwa hakuna.
+ * (Mwombaji hajapata taarifa — route hujibu ujumbe wa jumla.)
+ */
+export function createPasswordReset(phoneRaw: string): {
+  customer: Customer;
+  code: string;
+} | null {
+  const phone = phoneRaw.trim();
+  if (!phone) return null;
+  const row = getDb()
+    .prepare("SELECT * FROM customers WHERE phone = ?")
+    .get(phone) as CustomerRow | undefined;
+  if (!row) return null;
+
+  const db = getDb();
+  // Ondoa msimbo wowote wa awali wa akaunti hii.
+  db.prepare(
+    "DELETE FROM password_reset_tokens WHERE customer_id = ? AND used = 0",
+  ).run(row.id);
+
+  const code = resetCode();
+  const createdAt = nowIso();
+  const expiresAt = new Date(Date.now() + RESET_TTL_MS).toISOString();
+  db.prepare(
+    `INSERT INTO password_reset_tokens (token, customer_id, expires_at, used, created_at)
+     VALUES (?, ?, ?, 0, ?)`,
+  ).run(code, row.id, expiresAt, createdAt);
+
+  return { customer: toCustomer(row), code };
+}
+
+/** Thibitisha msimbo na weka nywila mpya; invalidate sessions zote. */
+export function resetPasswordWithToken(
+  codeRaw: string,
+  newPassword: string,
+): Customer {
+  const code = codeRaw.trim();
+  if (!/^[0-9]{6}$/.test(code)) {
+    throw new InputError("Msimbo wa tarakimu 6 unahitajika.");
+  }
+  if (newPassword.length < 6) {
+    throw new InputError("Nywila lazima iwe na herufi 6 au zaidi.");
+  }
+
+  const db = getDb();
+  const row = db
+    .prepare(
+      "SELECT * FROM password_reset_tokens WHERE token = ? AND used = 0",
+    )
+    .get(code) as
+    | { token: string; customer_id: string; expires_at: string }
+    | undefined;
+  if (!row || Date.parse(row.expires_at) < Date.now()) {
+    throw new InputError("Msimbo si sahihi au umeisha muda wake.", 400);
+  }
+
+  const customerRow = db
+    .prepare("SELECT * FROM customers WHERE id = ?")
+    .get(row.customer_id) as CustomerRow | undefined;
+  if (!customerRow) throw new InputError("Akaunti haipatikani.", 404);
+
+  db.exec("BEGIN");
+  try {
+    db.prepare("UPDATE customers SET password_hash = ? WHERE id = ?").run(
+      hashPassword(newPassword),
+      customerRow.id,
+    );
+    db.prepare(
+      "UPDATE password_reset_tokens SET used = 1 WHERE token = ?",
+    ).run(code);
+    // Futa session zote — mteja aliyepo aingie upya na nywila mpya.
+    db.prepare(
+      "DELETE FROM customer_sessions WHERE customer_id = ?",
+    ).run(customerRow.id);
+    db.exec("COMMIT");
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
+
+  return toCustomer(customerRow);
+}
+
 /* ============ Sessions ============ */
 
 function purgeExpired(): void {

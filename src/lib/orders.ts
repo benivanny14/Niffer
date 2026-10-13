@@ -5,7 +5,12 @@ export type CartLine = {
   qty: number;
 };
 
-export type OrderStatus = "imapokelewa" | "inaendelea" | "imetumwa" | "imefika";
+export type OrderStatus =
+  | "imapokelewa"
+  | "inaendelea"
+  | "imetumwa"
+  | "imefika"
+  | "ghairiwa";
 
 export const statusSteps: { id: OrderStatus; label: string }[] = [
   { id: "imapokelewa", label: "Imepokelewa" },
@@ -13,6 +18,17 @@ export const statusSteps: { id: OrderStatus; label: string }[] = [
   { id: "imetumwa", label: "Imetumwa" },
   { id: "imefika", label: "Imefika" },
 ];
+
+/** Hatua ya kughairiwa — terminal, si sehemu ya mwendo wa kawaida. */
+export const cancelledStep = { id: "ghairiwa" as OrderStatus, label: "Imeghairiwa" };
+
+/** Lebo ya hali yoyote ya oda (pamoja na kughairiwa). */
+export function statusLabel(status: OrderStatus): string {
+  return (
+    statusSteps.find((s) => s.id === status)?.label ??
+    (status === "ghairiwa" ? cancelledStep.label : status)
+  );
+}
 
 /** Hatua moja kwa demo — kila hatua baada ya sekunde 45. */
 export const DEMO_STEP_MS = 45_000;
@@ -172,8 +188,20 @@ export function statusEvents(
     }));
   }
   const history = order.history ?? [];
-  return statusSteps.map((s) => {
+  const events = statusSteps.map((s) => {
     const event = history.find((e) => e.status === s.id);
     return { status: s.id, at: event ? new Date(event.at) : null };
   });
+  // Kughairiwa — terminal — huongezwa mwisho ikiwa oda imeghairiwa.
+  if (
+    order.status === "ghairiwa" ||
+    history.some((e) => e.status === "ghairiwa")
+  ) {
+    const event = history.find((e) => e.status === "ghairiwa");
+    events.push({
+      status: "ghairiwa" as OrderStatus,
+      at: event ? new Date(event.at) : null,
+    });
+  }
+  return events;
 }

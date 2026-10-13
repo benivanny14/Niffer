@@ -112,6 +112,16 @@ export function countUnreadMessages(): number {
   return Number(row?.n ?? 0);
 }
 
+/** Weka ujumbe kuwa umesomwa (admin). Rudisha true kama umebadilika. */
+export function markMessageRead(messageId: string): boolean {
+  const result = getDb()
+    .prepare(
+      "UPDATE messages SET status = 'read' WHERE id = ? AND status = 'new'",
+    )
+    .run(messageId);
+  return Number(result.changes) > 0;
+}
+
 /* ============ Jarida (newsletter) ============ */
 
 export function subscribeNewsletter(
@@ -395,17 +405,40 @@ export function listAllReviews(limit = 300): StoredReview[] {
   return mapReviewRows(rows);
 }
 
+/** Sukuma upya rating/jumla ya hakiki kwenye bidhaa (DB). */
+function recomputeProductRating(productSlug: string): void {
+  if (!productSlug) return;
+  const row = getDb()
+    .prepare(
+      `SELECT AVG(rating) AS avg_rating, COUNT(*) AS n FROM reviews
+       WHERE product_slug = ? AND status = 'approved'`,
+    )
+    .get(productSlug) as
+    | { avg_rating: number | null; n: number }
+    | undefined;
+  const count = Number(row?.n ?? 0);
+  const avg = count > 0 ? Math.round(((row?.avg_rating ?? 0) + Number.EPSILON) * 10) / 10 : 0;
+  getDb()
+    .prepare("UPDATE products SET rating = ?, review_count = ? WHERE slug = ?")
+    .run(avg, count, productSlug);
+}
+
 /** Idhisha/kataa hakiki (admin). */
 export function setReviewStatus(
   reviewId: string,
   status: "approved" | "rejected",
 ): StoredReview {
+  const existing = getDb()
+    .prepare("SELECT product_slug FROM reviews WHERE id = ?")
+    .get(reviewId) as { product_slug?: string } | undefined;
   const result = getDb()
     .prepare("UPDATE reviews SET status = ? WHERE id = ?")
     .run(status, reviewId);
   if (result.changes === 0) {
     throw new InputError("Hakiki haipatikani.", 404);
   }
+  // Sasisha rating ya bidhaa kutoka hakiki zilizoidhishwa.
+  recomputeProductRating(existing?.product_slug ?? "");
   const row = getDb()
     .prepare("SELECT * FROM reviews WHERE id = ?")
     .get(reviewId) as Parameters<typeof mapReviewRows>[0][number];
