@@ -16,9 +16,9 @@ export default function OpengraphImage() {
           alignItems: "center",
           justifyContent: "center",
           background:
-            "linear-gradient(135deg, #eecdd6 0%, #f5eee5 50%, #f6eedd 100%)",
+            "linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #172033 100%)",
           fontFamily: "Georgia, serif",
-          color: "#4a1225",
+          color: "#f8fafc",
           padding: 64,
         }}
       >
@@ -32,7 +32,7 @@ export default function OpengraphImage() {
         >
           <path
             d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8L12 2z"
-            fill="#a83a5e"
+            fill="#f43f5e"
           />
         </svg>
 
@@ -50,7 +50,7 @@ export default function OpengraphImage() {
           style={{
             fontSize: 26,
             letterSpacing: 16,
-            color: "#b08d4f",
+            color: "#fbbf24",
             marginTop: 8,
             display: "flex",
           }}
@@ -62,7 +62,7 @@ export default function OpengraphImage() {
           style={{
             fontSize: 30,
             marginTop: 40,
-            color: "#5f1731",
+            color: "#fda4af",
             display: "flex",
           }}
         >
@@ -74,7 +74,7 @@ export default function OpengraphImage() {
             position: "absolute",
             bottom: 40,
             fontSize: 22,
-            color: "#6b5c4e",
+            color: "#94a3b8",
             display: "flex",
           }}
         >

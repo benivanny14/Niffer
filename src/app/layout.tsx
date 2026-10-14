@@ -58,8 +58,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f2ece2" },
-    { media: "(prefers-color-scheme: dark)", color: "#131010" },
+    { color: "#0f172a" },
   ],
 };
 
@@ -75,7 +74,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script
           // Weka dark mode KABLA ya render pertama — hakuna flash ya mwanga.
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('niffer.theme');var d=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.classList.add('dark');}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('niffer.theme');var d=t?t==='dark':true;if(d)document.documentElement.classList.add('dark');}catch(e){document.documentElement.classList.add('dark');}})();`,
           }}
         />
         <script

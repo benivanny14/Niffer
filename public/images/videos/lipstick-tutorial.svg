@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" fill="none" role="img"><defs>
       <linearGradient id="bgv" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#fdf4f6"/>
-        <stop offset="1" stop-color="#ece2d4"/>
+        <stop offset="0" stop-color="#1e293b"/>
+        <stop offset="1" stop-color="#0f172a"/>
       </linearGradient>
     </defs>
     <rect width="640" height="360" fill="url(#bgv)"/>
@@ -12,8 +12,8 @@
       <path d="M455 210c30-24 70-24 100 0-30 26-70 26-100 0z" fill="#a83a5e"/>
       <path d="M455 210c30-10 70-10 100 0-30 8-70 8-100 0z" fill="#7a1f3f"/>
     </g>
-    <circle cx="320" cy="180" r="46" fill="#e7dccd" opacity="0.96"/>
-    <path d="M308 158v44l38-22-38-22z" fill="#7a1f3f"/>
+    <circle cx="320" cy="180" r="46" fill="#334155" opacity="0.98"/>
+    <path d="M308 158v44l38-22-38-22z" fill="#f8fafc"/>
     
   <g fill="#c9a86a" opacity="0.7">
     <path d="M64 60l3 9 9 3-9 3-3 9-3-9-9-3 9-3z"/>

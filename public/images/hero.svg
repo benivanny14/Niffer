@@ -1,15 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" fill="none" role="img">
   <defs>
     <linearGradient id="heroBg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#eecdd6"/>
-      <stop offset="1" stop-color="#f6eedd"/>
+      <stop offset="0" stop-color="#1e293b"/>
+      <stop offset="1" stop-color="#0f172a"/>
     </linearGradient>
   </defs>
   <rect width="400" height="500" fill="url(#heroBg)"/>
-    <circle cx="300" cy="240" r="150" fill="#eadfce" opacity="0.55"/>
+    <circle cx="300" cy="240" r="150" fill="#334155" opacity="0.72"/>
     <rect x="268" y="120" width="46" height="24" rx="6" fill="url(#goldHero)"/>
     <rect x="240" y="144" width="102" height="256" rx="24" fill="url(#goldHero)"/>
-    <rect x="258" y="266" width="66" height="82" rx="10" fill="#eadfce"/>
+    <rect x="258" y="266" width="66" height="82" rx="10" fill="#e5e7eb"/>
     <text x="291" y="300" text-anchor="middle" font-family="Georgia, serif" font-size="14" letter-spacing="1" fill="#5f1731">NIFFER</text>
     <text x="291" y="322" text-anchor="middle" font-family="Georgia, serif" font-size="9" letter-spacing="2.5" fill="#b08d4f">COSMETICS</text>
     <g fill="#a83a5e" opacity="0.5">

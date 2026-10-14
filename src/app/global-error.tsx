@@ -17,8 +17,8 @@ export default function GlobalError({
           alignItems: "center",
           justifyContent: "center",
           fontFamily: "system-ui, sans-serif",
-          background: "#f2ece2",
-          color: "#1c1917",
+          background: "#0f172a",
+          color: "#f8fafc",
           padding: "24px",
           textAlign: "center",
         }}
@@ -27,14 +27,14 @@ export default function GlobalError({
           <h1 style={{ fontSize: "28px", margin: "0 0 12px" }}>
             Kuna hitilafu kubwa imeotokea
           </h1>
-          <p style={{ color: "#78716c", margin: "0 0 24px" }}>
+          <p style={{ color: "#94a3b8", margin: "0 0 24px" }}>
             Samahani, tumeshindikana kupakia ukurasa huu. Jaribu tena.
           </p>
           <button
             type="button"
             onClick={reset}
             style={{
-              background: "#8f2749",
+              background: "#be123c",
               color: "#fff",
               border: 0,
               borderRadius: "9999px",

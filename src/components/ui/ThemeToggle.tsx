@@ -13,7 +13,7 @@ const THEME_KEY = "niffer.theme";
  * Kubonyeza hapa huhifadhi uchaguzi wa wazi (`dark`/`light`).
  */
 export function ThemeToggle() {
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(true);
 
   // Fuata hali halisi ya <html> (pamoja na mabadiliko kutoka kifaa kimoja).
   useEffect(() => {

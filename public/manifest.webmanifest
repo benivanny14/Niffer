@@ -4,8 +4,8 @@
   "description": "Bidhaa za urembo halisi: skincare, makeup na nywele — Tanzania.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f2ece2",
-  "theme_color": "#8f2749",
+  "background_color": "#0f172a",
+  "theme_color": "#be123c",
   "lang": "sw",
   "icons": [
     {
