@@ -3,6 +3,53 @@ import { v2 as cloudinary } from "cloudinary";
 
 type UploadedImage = { public_id: string; version: number };
 
+function configureCloudinary() {
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME?.trim();
+  const apiKey = process.env.CLOUDINARY_API_KEY?.trim();
+  const apiSecret = process.env.CLOUDINARY_API_SECRET?.trim();
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new Error("Cloudinary credentials hazijawekwa.");
+  }
+  cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret, secure: true });
+  return { cloudName, apiKey, apiSecret };
+}
+
+/** Issue a signed browser upload restricted to the single store profile asset. */
+export function signAdminProfileUpload() {
+  const { cloudName, apiKey, apiSecret } = configureCloudinary();
+  const timestamp = Math.floor(Date.now() / 1000);
+  const params = {
+    timestamp,
+    folder: "niffer/store",
+    public_id: "admin-profile",
+    overwrite: true,
+  };
+  return {
+    cloudName,
+    apiKey,
+    timestamp,
+    signature: cloudinary.utils.api_sign_request(params, apiSecret),
+    folder: params.folder,
+    publicId: params.public_id,
+    overwrite: params.overwrite,
+  };
+}
+
+/** Resolve the canonical, optimized delivery URL for the fixed profile asset. */
+export async function getAdminProfileImageUrl(): Promise<string> {
+  configureCloudinary();
+  const asset = await cloudinary.api.resource("niffer/store/admin-profile", {
+    resource_type: "image",
+    type: "upload",
+  }) as UploadedImage;
+  return cloudinary.url(asset.public_id, {
+    secure: true,
+    fetch_format: "auto",
+    quality: "auto",
+    version: asset.version,
+  });
+}
+
 /** Keep Cloudinary delivery URLs on automatic format and quality. */
 export function optimizeCloudinaryUrl(value: string): string {
   try {
@@ -40,20 +87,7 @@ export async function uploadAdminProfileImage(file: File): Promise<string> {
 }
 
 async function uploadImage(file: File, folder: string, publicId: string): Promise<string> {
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME?.trim();
-  const apiKey = process.env.CLOUDINARY_API_KEY?.trim();
-  const apiSecret = process.env.CLOUDINARY_API_SECRET?.trim();
-
-  if (!cloudName || !apiKey || !apiSecret) {
-    throw new Error("Cloudinary credentials hazijawekwa.");
-  }
-
-  cloudinary.config({
-    cloud_name: cloudName,
-    api_key: apiKey,
-    api_secret: apiSecret,
-    secure: true,
-  });
+  configureCloudinary();
 
   const buffer = Buffer.from(await file.arrayBuffer());
   const uploaded = await new Promise<UploadedImage>(

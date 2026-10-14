@@ -1,12 +1,9 @@
-import { connection, type NextRequest } from "next/server";
+import { connection } from "next/server";
 import { fail, json, toErrorResponse } from "@/lib/server/http";
 import { isAdminRequest } from "@/lib/server/auth";
 import { getDb, nowIso } from "@/lib/server/db";
-import { uploadAdminProfileImage } from "@/lib/server/cloudinary";
+import { getAdminProfileImageUrl, signAdminProfileUpload } from "@/lib/server/cloudinary";
 
-// Keep comfortably below Vercel Functions' 4.5 MB total request payload limit.
-const MAX_SIZE = 4 * 1024 * 1024;
-const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 const PROFILE_KEY = "store_admin_profile_image";
 
 /** Public store identity image; the URL is shared by every visitor. */
@@ -22,21 +19,23 @@ export async function GET() {
   }
 }
 
-/** Only an authenticated admin may change the public profile image. */
-export async function POST(req: NextRequest) {
+/** Sign a direct-to-Cloudinary upload; only admins can obtain a signature. */
+export async function POST() {
   await connection();
   try {
     if (!(await isAdminRequest())) return fail("Ingia kama admin kubadilisha picha ya duka.", 401);
+    return json({ ok: true, upload: signAdminProfileUpload() });
+  } catch (error) {
+    return toErrorResponse(error);
+  }
+}
 
-    const form = await req.formData();
-    const file = form.get("file");
-    if (!(file instanceof File)) return fail("Chagua picha kwanza.");
-    if (!ALLOWED_TYPES.has(file.type)) {
-      return fail("Tumia picha ya JPG, PNG, WebP au AVIF.");
-    }
-    if (file.size > MAX_SIZE) return fail("Picha isizidi 4MB.");
-
-    const image = await uploadAdminProfileImage(file);
+/** Verify the fixed Cloudinary asset exists, then publish its URL in Neon. */
+export async function PUT() {
+  await connection();
+  try {
+    if (!(await isAdminRequest())) return fail("Ingia kama admin kubadilisha picha ya duka.", 401);
+    const image = await getAdminProfileImageUrl();
     await getDb().prepare(
       `INSERT INTO meta (key, value) VALUES (?, ?)
        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,

@@ -2,7 +2,10 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { apiForm, apiGet, errorMessage } from "@/lib/api";
+import { apiGet, apiPost, apiPut, errorMessage } from "@/lib/api";
+
+const MAX_IMAGE_SIZE = 12 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 
 export function AdminProfileManager() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -21,11 +24,44 @@ export function AdminProfileManager() {
   async function upload(file?: File) {
     if (!file || busy) return;
     setMessage("");
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+      setMessage("Tumia picha ya JPG, PNG, WebP au AVIF.");
+      return;
+    }
+    if (file.size > MAX_IMAGE_SIZE) {
+      setMessage("Picha isizidi 12MB.");
+      return;
+    }
     setBusy(true);
     try {
+      const { upload } = await apiPost<{
+        upload: {
+          cloudName: string;
+          apiKey: string;
+          timestamp: number;
+          signature: string;
+          folder: string;
+          publicId: string;
+          overwrite: boolean;
+        };
+      }>("/api/store-profile");
       const form = new FormData();
       form.append("file", file);
-      const result = await apiForm<{ image: string }>("/api/store-profile", form);
+      form.append("api_key", upload.apiKey);
+      form.append("timestamp", String(upload.timestamp));
+      form.append("signature", upload.signature);
+      form.append("folder", upload.folder);
+      form.append("public_id", upload.publicId);
+      form.append("overwrite", String(upload.overwrite));
+
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${upload.cloudName}/image/upload`, {
+        method: "POST",
+        body: form,
+      });
+      const cloudinaryResult = await response.json() as { error?: { message?: string } };
+      if (!response.ok) throw new Error(cloudinaryResult.error?.message || "Cloudinary imeshindwa kupokea picha.");
+
+      const result = await apiPut<{ image: string }>("/api/store-profile");
       setImage(result.image);
       window.dispatchEvent(new CustomEvent("niffer:store-profile-updated", { detail: result.image }));
       setMessage("Picha mpya sasa inaonekana kwa wateja wote.");
@@ -57,7 +93,7 @@ export function AdminProfileManager() {
           <button type="button" onClick={() => inputRef.current?.click()} disabled={busy} className="btn-primary min-w-36 disabled:opacity-60">
             {busy ? "Inapakia picha…" : image ? "Badili picha" : "Weka picha"}
           </button>
-          <span className="text-xs text-ink-400">JPG, PNG, WebP au AVIF · hadi 4MB</span>
+          <span className="text-xs text-ink-400">JPG, PNG, WebP au AVIF · hadi 12MB</span>
         </div>
         {message ? <p role="status" className="mt-3 text-sm text-ink-500">{message}</p> : null}
       </div>
