@@ -5,7 +5,7 @@ import type { NextRequest } from "next/server";
  * moja (VPS/container). Kila endpoint ina kikomo chake cha majaribio
  * kwa IP ndani ya dirisha la muda.
  *
- * Kumbuka: kwa serverless (VPS zaidi ya moja) tumia rate limiter ya
+ * Kumbuka: kwa serverless (VPS morei ya moja) tumia rate limiter ya
  * nje (Upstash/Ratelimit) — interface hii ni rahisi kubadilisha.
  */
 
@@ -23,7 +23,7 @@ function pruneExpired(): void {
   for (const [key, bucket] of store) {
     if (bucket.resetAt <= now) store.delete(key);
   }
-  // Kikomo cha kumbuka — futa kale zaidi ikiwa zimezidi.
+  // Kikomo cha kumbuka — futa kale morei ikiwa zimezidi.
   if (store.size > MAX_BUCKETS) {
     const entries = [...store.entries()].sort(
       (a, b) => a[1].resetAt - b[1].resetAt,
@@ -75,7 +75,7 @@ export function rateLimit(
 
 /**
  * IP salama kutoka headers.
- * Tumia `x-real-ip` kwanza (inawekwa na proxy kama nginx/Caddy) —
+ * Use `x-real-ip` kwanza (inawekwa na proxy kama nginx/Caddy) —
  * `x-forwarded-for` ya kwanza inaweza kuwa spoofed na client.
  * Ikiwa hakuna proxy, tumia "unknown" (rate limit bado inafanya kazi
  * kwa mwendo wa jumla).
@@ -96,6 +96,6 @@ export function clientIp(req: NextRequest): string {
 /** Ujumbe wa kikomo (Kiswahili). */
 export function rateLimitMessage(retryAfterSec: number): string {
   const sec = Math.max(1, retryAfterSec);
-  if (sec < 60) return `Subiri sekunde ${sec} kabla ya kujaribu tena.`;
-  return `Subiri dakika ${Math.ceil(sec / 60)} kabla ya kujaribu tena.`;
+  if (sec < 60) return `Wait ${sec} seconds before trying again.`;
+  return `Wait ${Math.ceil(sec / 60)} minutes before trying again.`;
 }

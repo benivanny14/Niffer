@@ -18,7 +18,7 @@ const field =
   "w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
 
 /**
- * Kikokotoo cha bei ya jumla — chagua bidhaa na wingi, unapata bei ya unit,
+ * Wholesale price calculator — chagua bidhaa na wingi, unapata bei ya unit,
  * jumla na kiwango cha kuokolewa kwa daraja la jumla.
  */
 export function BulkCalculator({ products: items }: { products?: Product[] }) {
@@ -40,13 +40,13 @@ export function BulkCalculator({ products: items }: { products?: Product[] }) {
       <div className="flex items-center gap-2">
         <TagIcon className="h-4 w-4 text-accent" />
         <h3 className="font-display text-lg text-ink-900">
-          Kikokotoo cha bei ya jumla
+          Wholesale price calculator
         </h3>
       </div>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
-          <span className="mb-1.5 block font-medium text-ink-700">Bidhaa</span>
+          <span className="mb-1.5 block font-medium text-ink-700">Product</span>
           <select
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
@@ -62,7 +62,7 @@ export function BulkCalculator({ products: items }: { products?: Product[] }) {
 
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium text-ink-700">
-            Wingi (pcs)
+            Quantity (pcs)
           </span>
           <input
             type="number"
@@ -72,7 +72,7 @@ export function BulkCalculator({ products: items }: { products?: Product[] }) {
             onChange={(e) => setQtyInput(e.target.value)}
             className={field}
             inputMode="numeric"
-            placeholder="mfano 25"
+            placeholder="e.g. 25"
           />
         </label>
       </div>
@@ -80,7 +80,7 @@ export function BulkCalculator({ products: items }: { products?: Product[] }) {
       {product && qty > 0 ? (
         <dl className="mt-5 grid gap-3 rounded-xl bg-cream-100 p-4 text-sm sm:grid-cols-3">
           <div>
-            <dt className="text-ink-500">Daraja</dt>
+            <dt className="text-ink-500">Tier</dt>
             <dd className="mt-0.5 font-semibold text-ink-900">
               {tier ? (
                 <span className="badge bg-brand-100 text-accent">
@@ -88,24 +88,24 @@ export function BulkCalculator({ products: items }: { products?: Product[] }) {
                 </span>
               ) : (
                 <span className="text-ink-500">
-                  Rejareja (jiunge na jumla kuanzia 10)
+                  Retail price (wholesale starts at 10 units)
                 </span>
               )}
             </dd>
           </div>
           <div>
-            <dt className="text-ink-500">Bei ya unit</dt>
+            <dt className="text-ink-500">Unit price</dt>
             <dd className="mt-0.5 font-display text-lg text-ink-900">
               {formatTsh(unit)}
             </dd>
           </div>
           <div>
-            <dt className="text-ink-500">Jumla ({qty} pcs)</dt>
+            <dt className="text-ink-500">Total ({qty} pcs)</dt>
             <dd className="mt-0.5 font-display text-lg text-ink-900">
               {formatTsh(total)}
               {savings > 0 ? (
                 <span className="ml-2 text-xs font-semibold text-success-600">
-                  unaokea {formatTsh(savings)}
+                  You save {formatTsh(savings)}
                 </span>
               ) : null}
             </dd>
@@ -114,8 +114,8 @@ export function BulkCalculator({ products: items }: { products?: Product[] }) {
       ) : null}
 
       <p className="mt-3 text-xs text-ink-400">
-        Makadirio tu — bei ya mwisho inathibitishwa na timu ya jumla baada ya
-        RFQ yako kupitiwa.
+        Estimates only — our wholesale team will confirm the final price after
+        reviewing your request.
       </p>
     </div>
   );
@@ -145,7 +145,7 @@ export function RfqForm({ products: items }: { products?: Product[] }) {
     e.preventDefault();
     if (sending) return;
     if (!/^[0-9+\s]{9,15}$/.test(phone.trim())) {
-      setError("Weka namba sahihi ya simu (mfano 0754 000 000).");
+      setError("Enter a valid phone number (e.g. 0754 000 000).");
       return;
     }
     setError("");
@@ -174,10 +174,10 @@ export function RfqForm({ products: items }: { products?: Product[] }) {
   }
 
   const waText =
-    `Habari ${site.name}, naomba bei ya jumla (RFQ).\n` +
-    `Biashara: ${business}\nMtu: ${name}\nSimu: ${phone}\nMkoa: ${region}\n` +
-    `Bidhaa: ${product?.name ?? "—"}\nWingi: ${qty || "—"} pcs` +
-    (note ? `\nMaelezo: ${note}` : "");
+    `Hello ${site.name}, I would like a wholesale quote.\n` +
+    `Business: ${business}\nContact: ${name}\nPhone: ${phone}\nRegion: ${region}\n` +
+    `Product: ${product?.name ?? "?"}\nQuantity: ${qty || "—"} pcs` +
+    (note ? `\nDetails: ${note}` : "");
 
   if (doneCode) {
     return (
@@ -186,27 +186,27 @@ export function RfqForm({ products: items }: { products?: Product[] }) {
           <CheckIcon className="h-6 w-6" />
         </span>
         <h3 className="mt-4 font-display text-xl text-ink-900">
-          RFQ yako imepokelewa
+          Your quote request is in
         </h3>
         <p className="mt-2 text-sm text-ink-500">
-          Nambari ya ombi lako — hifadhi ili kufuatilia hatua na bei:
+          Save this request number to track its status and quote:
         </p>
         <p className="mt-3 font-mono text-2xl font-semibold tracking-wide text-accent">
           {doneCode}
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-3">
           <Link href="/jumla/ombi" className="btn-primary">
-            Fuatilia ombi langu
+            Track my request
           </Link>
           <a href={waLink(waText)} target="_blank" rel="noopener noreferrer" className="btn-outline">
-            Tuma kwa WhatsApp
+            Send on WhatsApp
           </a>
           <button
             type="button"
             onClick={() => setDoneCode("")}
             className="btn-outline"
           >
-            Tuma nyingine
+            Submit another
           </button>
         </div>
       </div>
@@ -217,41 +217,41 @@ export function RfqForm({ products: items }: { products?: Product[] }) {
     <form onSubmit={submit} className="card space-y-4 p-6">
       <div>
         <h3 className="font-display text-lg text-ink-900">
-          Ombi la bei ya wingi (RFQ)
+          Wholesale quote request
         </h3>
         <p className="mt-1 text-sm text-ink-500">
-          Eleza bidhaa na wingi unayohitaji — tutakupa bei maalum.
+          Tell us which products and quantities you need, and we will prepare a quote.
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium text-ink-700">
-            Jina la biashara *
+            Business name *
           </span>
           <input
             required
             value={business}
             onChange={(e) => setBusiness(e.target.value)}
             className={field}
-            placeholder="mfano: Glow Beauty Store"
+            placeholder="e.g. Glow Beauty Store"
           />
         </label>
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium text-ink-700">
-            Mtu wa kuwasiliana *
+            Contact person *
           </span>
           <input
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
             className={field}
-            placeholder="Jina lako"
+            placeholder="Your name"
           />
         </label>
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium text-ink-700">
-            Namba ya simu *
+            Phone number *
           </span>
           <input
             required
@@ -264,18 +264,18 @@ export function RfqForm({ products: items }: { products?: Product[] }) {
         </label>
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium text-ink-700">
-            Barua pepe (hiari)
+            Email address (optional)
           </span>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className={field}
-            placeholder="wewe@mfano.com"
+            placeholder="you@example.com"
           />
         </label>
         <label className="block text-sm">
-          <span className="mb-1.5 block font-medium text-ink-700">Mkoa</span>
+          <span className="mb-1.5 block font-medium text-ink-700">Region</span>
           <select
             value={region}
             onChange={(e) => setRegion(e.target.value)}
@@ -289,7 +289,7 @@ export function RfqForm({ products: items }: { products?: Product[] }) {
           </select>
         </label>
         <label className="block text-sm">
-          <span className="mb-1.5 block font-medium text-ink-700">Bidhaa</span>
+          <span className="mb-1.5 block font-medium text-ink-700">Product</span>
           <select
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
@@ -304,7 +304,7 @@ export function RfqForm({ products: items }: { products?: Product[] }) {
         </label>
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium text-ink-700">
-            Wingi unaohitaji (pcs) *
+            Quantity needed (pcs) *
           </span>
           <input
             required
@@ -313,7 +313,7 @@ export function RfqForm({ products: items }: { products?: Product[] }) {
             value={qty}
             onChange={(e) => setQty(e.target.value)}
             className={field}
-            placeholder="mfano 50"
+            placeholder="e.g. 50"
             inputMode="numeric"
           />
         </label>
@@ -321,14 +321,14 @@ export function RfqForm({ products: items }: { products?: Product[] }) {
 
       <label className="block text-sm">
         <span className="mb-1.5 block font-medium text-ink-700">
-          Maelezo ya ziada (hiari)
+          Additional details (optional)
         </span>
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
           rows={3}
           className={field}
-          placeholder="Aina ya bidhaa, muda wa kuhitaji, mahali pa kusafirisha…"
+          placeholder="Product type, required date or delivery location…"
         />
       </label>
 
@@ -343,7 +343,7 @@ export function RfqForm({ products: items }: { products?: Product[] }) {
         disabled={sending}
         className="btn-primary w-full disabled:opacity-60"
       >
-        {sending ? "Inatuma…" : "Tuma ombi la bei (RFQ)"}
+        {sending ? "Sending…" : "Request a quote (RFQ)"}
       </button>
     </form>
   );

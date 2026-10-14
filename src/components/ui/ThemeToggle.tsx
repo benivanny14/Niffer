@@ -42,7 +42,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      aria-label={dark ? "Badilisha hadi mwanga" : "Badilisha hadi giza"}
+      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
       aria-pressed={dark}
       title={dark ? "Mwanga" : "Giza"}
       className="rounded-full p-2 text-ink-700 transition-colors hover:bg-cream-200 hover:text-accent"

@@ -9,11 +9,11 @@ import type { Product } from "@/lib/data/catalog";
 export type SortKey = "maarufu" | "mpya" | "bei-chini" | "bei-juu" | "ukadiriaji";
 
 export const sortOptions: { value: SortKey; label: string }[] = [
-  { value: "maarufu", label: "Maarufu zaidi" },
-  { value: "mpya", label: "Mpya kwanza" },
-  { value: "bei-chini", label: "Bei ndogo kwanza" },
-  { value: "bei-juu", label: "Bei kubwa kwanza" },
-  { value: "ukadiriaji", label: "Ukadiriaji bora" },
+  { value: "maarufu", label: "Most popular" },
+  { value: "mpya", label: "New arrivals first" },
+  { value: "bei-chini", label: "Price: low to high" },
+  { value: "bei-juu", label: "Price: high to low" },
+  { value: "ukadiriaji", label: "Top rated" },
 ];
 
 export type ProductFilters = {
@@ -184,9 +184,9 @@ function tally(
 
 /** Tofauti ya bei (kwa vichujio vya bei vya haraka). */
 export const priceRanges: { value: string; label: string; min: number; max: number | null }[] = [
-  { value: "chini-20", label: "Chini ya TSh 20,000", min: 0, max: 19_999 },
+  { value: "chini-20", label: "Under TSh 20,000", min: 0, max: 19_999 },
   { value: "20-40", label: "TSh 20,000 – 40,000", min: 20_000, max: 40_000 },
-  { value: "juu-40", label: "Zaidi ya TSh 40,000", min: 40_001, max: null },
+  { value: "juu-40", label: "Over TSh 40,000", min: 40_001, max: null },
 ];
 
 /** Tafsiri thamani ya kipande cha bei kuwa min/max. */

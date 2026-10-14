@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     const wantAll = req.nextUrl.searchParams.get("all") === "1";
     if (wantAll) {
       if (!(await isAdminRequest())) {
-        return fail("Ingia kama admin.", 401);
+        return fail("Sign in as an administrator.", 401);
       }
       return json({ ok: true, reviews: await listAllReviews(limit) });
     }
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-/** Hifadhi hakiki mpya (huingia kama pending — admin huidhisha). */
+/** Save hakiki mpya (huingia kama pending — admin huidhisha). */
 export async function POST(req: NextRequest) {
   try {
     const limited = rateLimit(req, "review-create", 5, 600);
@@ -37,11 +37,11 @@ export async function POST(req: NextRequest) {
       comment?: string;
       productSlug?: string;
     }>(req);
-    if (!body) return fail("Hakiki haijajazwa vizuri.");
+if (!body) return fail("The review details are incomplete.");
     const review = await addReview(body);
     await notifyAdmin({
       kind: "hakiki",
-      title: "Hakiki mpya inasubiri",
+      title: "New review pending",
       body: `${review.customerName} (${review.rating}★): ${review.comment.slice(0, 120)}…`,
       ref: review.productSlug || undefined,
     });

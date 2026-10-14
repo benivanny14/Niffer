@@ -1,44 +1,44 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Masharti ya Matumizi",
-  description: "Masharti ya kutumia tovuti na kununua kwa Niffer Cosmetics.",
+  title: "Terms of Use",
+  description: "Terms for using the Niffer Cosmetics website and shopping with us.",
 };
 
 const sections = [
   {
-    h: "Kukubali masharti",
-    p: "Kwa kutumia tovuti hii unakubali masharti yote. Kama hukubali, tafadhali usitumie huduma zetu.",
+    h: "Acceptance of terms",
+    p: "By using this website, you agree to these terms. If you do not agree, please do not use our services.",
   },
   {
-    h: "Bei na bidhaa",
-    p: "Tunajitahidi kuhakikisha bei na maelezo ya bidhaa ni sahihi. Kama kuna makosa, tunaweza kukujulisha kabla ya kuthibitisha oda yako.",
+    h: "Prices and products",
+    p: "We do our best to keep prices and product details accurate. If we find an error, we may contact you before confirming your order.",
   },
   {
-    h: "Oda na malipo",
-    p: "Oda huhesabika pale unapopokea uthibitisho kutoka kwetu. Tunaweza kukataa oda kama bidhaa imeisha stoo.",
+    h: "Orders and payment",
+    p: "An order is confirmed once you receive confirmation from us. We may decline an order if an item is out of stock.",
   },
   {
-    h: "Usafirishaji",
-    p: "Muda wa usafirishaji ni makadirio. Hatuhesabiki kwa kuchelewa kwa sababu za nje (hali ya hewa, misafara ya ndege).",
+    h: "Delivery",
+    p: "Delivery times are estimates. We are not responsible for delays caused by events beyond our control, such as weather or transport disruptions.",
   },
   {
-    h: "Marejesho",
-    p: "Marejesho hufuata sera yetu ya marejesho. Tafadhali angalia ukurasa wa Marejesho kwa masharti kamili.",
+    h: "Returns",
+    p: "Returns are handled under our returns policy. See the Returns page for full details.",
   },
   {
-    h: "Mawasiliano",
-    p: "Kwa maswali yoyote kuhusu masharti haya, wasiliana nasi kupitia WhatsApp au barua pepe.",
+    h: "Contact",
+    p: "For questions about these terms, contact us by WhatsApp or email.",
   },
 ];
 
 export default function TermsPage() {
   return (
     <div className="container-x max-w-3xl py-12 lg:py-16">
-      <p className="eyebrow">Kisheria</p>
-      <h1 className="heading-display mt-2">Masharti ya Matumizi</h1>
+      <p className="eyebrow">Legal</p>
+      <h1 className="heading-display mt-2">Terms of Use</h1>
       <p className="mt-3 text-ink-500">
-        Haya ndio masharti ya kutumia tovuti na huduma za Niffer Cosmetics.
+        These terms apply to your use of the Niffer Cosmetics website and services.
       </p>
       <div className="mt-10 space-y-8">
         {sections.map((s) => (

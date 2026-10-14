@@ -42,7 +42,7 @@ export function SearchOverlay({ open, onClose }: Props) {
     if (!open) return;
     const previous = document.activeElement as HTMLElement | null;
     const dialog = document.querySelector<HTMLElement>(
-      '[aria-label="Tafuta bidhaa"]',
+      '[aria-label="Search products"]',
     );
     inputRef.current?.focus();
 
@@ -84,7 +84,7 @@ export function SearchOverlay({ open, onClose }: Props) {
     };
   }, [open, onClose]);
 
-  // Utafitaji wa backend (bidhaa + makala) kwa deboi ya milisekunde 200.
+  // Search wa backend (bidhaa + makala) kwa deboi ya milisekunde 200.
   const resource = useAsync<SearchResult[]>(`overlay:${query}`, async () => {
     const q = query.trim();
     if (!q) return [];
@@ -116,15 +116,15 @@ export function SearchOverlay({ open, onClose }: Props) {
       className="fixed inset-0 z-50 bg-cream-50/95 backdrop-blur"
       role="dialog"
       aria-modal="true"
-      aria-label="Tafuta bidhaa"
+      aria-label="Search products"
     >
       <div className="container-x py-6">
         <div className="flex items-center justify-between">
-          <span className="font-display text-xl text-ink-900">Tafuta</span>
+          <span className="font-display text-xl text-ink-900">Search</span>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Funga utafutaji"
+            aria-label="Close search"
             className="rounded-full p-2 text-ink-500 hover:bg-cream-200 hover:text-ink-900"
           >
             <CloseIcon className="h-5 w-5" />
@@ -139,9 +139,9 @@ export function SearchOverlay({ open, onClose }: Props) {
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Tafuta serum, lipstick, perfume…"
+              placeholder="Search serum, lipstick, perfume…"
               className="w-full bg-transparent text-base text-ink-900 outline-none placeholder:text-ink-400"
-              aria-label="Neno la utafutaji"
+              aria-label="Search query"
             />
           </div>
         </form>
@@ -149,7 +149,7 @@ export function SearchOverlay({ open, onClose }: Props) {
         <div className="mt-6">
           {query.trim() === "" ? (
             <p className="text-sm text-ink-500">
-              Andika jina la bidhaa au kategoria unayotafuta.
+              Enter a product name or category to search.
             </p>
           ) : results.length === 0 && searching ? (
             <ul className="space-y-2">
@@ -163,17 +163,17 @@ export function SearchOverlay({ open, onClose }: Props) {
           ) : results.length === 0 ? (
             <div className="rounded-2xl border border-cream-300 bg-surface p-8 text-center">
               <p className="font-display text-lg text-ink-900">
-                Hakuna matokeo ya “{query}”
+                No results for “{query}”
               </p>
               <p className="mt-1 text-sm text-ink-500">
-                Jaribu neno lingine, au vinjari bidhaa zote.
+                Try another search, or browse all products.
               </p>
               <Link
                 href="/bidhaa"
                 onClick={onClose}
                 className="btn-primary mt-4"
               >
-                Vinjari Bidhaa
+                Browse products
               </Link>
             </div>
           ) : (
@@ -212,7 +212,7 @@ export function SearchOverlay({ open, onClose }: Props) {
                             {product
                               ? formatTsh(product.priceTsh)
                               : result.type === "article"
-                                ? "Makala →"
+                                ? "Article →"
                                 : result.hint}
                           </span>
                         </span>
@@ -226,7 +226,7 @@ export function SearchOverlay({ open, onClose }: Props) {
                 onClick={onClose}
                 className="mt-4 inline-flex text-sm font-semibold text-accent hover:text-accent"
               >
-                Ona matokeo yote →
+                View all results →
               </Link>
             </>
           )}

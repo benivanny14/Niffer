@@ -20,7 +20,7 @@ export function RatingStars({
     <div className="flex items-center gap-1.5">
       <div
         className="flex items-center gap-0.5"
-        aria-label={`Ukadiriaji wa nyota ${rating} kati ya 5`}
+      aria-label={`${rating} out of 5 stars`}
       >
         {Array.from({ length: 5 }, (_, i) => (
           <StarIcon

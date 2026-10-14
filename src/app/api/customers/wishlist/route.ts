@@ -7,7 +7,7 @@ import { getDb, nowIso } from "@/lib/server/db";
 export async function GET() {
   try {
     const customer = await currentCustomer();
-    if (!customer) return fail("Ingia kwenye akaunti yako.", 401);
+    if (!customer) return fail("Sign in to your account.", 401);
 
     const rows = await getDb()
       .prepare(
@@ -20,14 +20,14 @@ export async function GET() {
   }
 }
 
-/** Weka upendwa wote (merge kutoka localStorage baada ya kuingia). */
+/** Enter upendwa wote (merge kutoka localStorage baada ya kuingia). */
 export async function PUT(req: NextRequest) {
   try {
     const customer = await currentCustomer();
-    if (!customer) return fail("Ingia kwenye akaunti yako.", 401);
+    if (!customer) return fail("Sign in to your account.", 401);
 
     const body = await readBody<{ slugs?: string[] }>(req);
-    if (!body) return fail("Taarifa hazisahihi.");
+    if (!body) return fail("The information is invalid.");
     const slugs = (Array.isArray(body.slugs) ? body.slugs : [])
       .map((s) => String(s).trim())
       .filter(Boolean)
@@ -55,10 +55,10 @@ export async function PUT(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     const customer = await currentCustomer();
-    if (!customer) return fail("Ingia kwenye akaunti yako.", 401);
+    if (!customer) return fail("Sign in to your account.", 401);
 
     const body = await readBody<{ slug?: string }>(req);
-    if (!body?.slug) return fail("Weka bidhaa ya kuondoa.");
+    if (!body?.slug) return fail("Choose a product to remove.");
     await getDb()
       .prepare(
         "DELETE FROM wishlists WHERE customer_id = ? AND slug = ?",

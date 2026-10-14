@@ -3,37 +3,37 @@ import Link from "next/link";
 import { RfqTracker } from "@/components/wholesale/RfqTracker";
 
 export const metadata: Metadata = {
-  title: "Fuatilia Ombi la Bei (RFQ)",
+    title: "Track your quote request (RFQ)",
   description:
-    "Ingia namba yako ya simu kuona hatua ya ombi lako la bei ya jumla, bei iliyowekwa na timu ya Niffer Cosmetics.",
+    "Enter your phone number to check the status of your wholesale quote and the price set by the Niffer Cosmetics team.",
 };
 
 export default function RfqTrackerPage() {
   return (
     <div className="container-x max-w-3xl py-12 lg:py-16">
-      <nav aria-label="Njia" className="text-sm text-ink-400">
+      <nav aria-label="Breadcrumb" className="text-sm text-ink-400">
         <ol className="flex flex-wrap items-center gap-1.5">
           <li>
             <Link href="/" className="hover:text-accent">
-              Nyumbani
+              Home
             </Link>
           </li>
           <li aria-hidden>›</li>
           <li>
             <Link href="/jumla" className="hover:text-accent">
-              Uuzaji wa Jumla
+              Wholesale
             </Link>
           </li>
           <li aria-hidden>›</li>
-          <li className="text-ink-700">Fuatilia ombi</li>
+          <li className="text-ink-700">Track request</li>
         </ol>
       </nav>
 
-      <p className="eyebrow mt-6">Portali ya jumla</p>
-      <h1 className="heading-display mt-2">Fuatilia ombi lako la bei</h1>
+      <p className="eyebrow mt-6">Wholesale portal</p>
+        <h1 className="heading-display mt-2">Track your quote request</h1>
       <p className="mt-3 max-w-2xl text-ink-500">
-        Weka namba ya simu uliyotumia kwenye ombi la RFQ ili kuona hatua yake
-        na bei ya wingi iliyowekwa na timu yetu.
+        Enter the phone number used for your quote request to check its status
+        and the bulk price set by our team.
       </p>
 
       <div className="mt-8">
@@ -41,9 +41,9 @@ export default function RfqTrackerPage() {
       </div>
 
       <p className="mt-6 text-sm text-ink-500">
-        Bado hujaweka ombi?{" "}
+        Haven&apos;t sent a request yet?{" "}
         <Link href="/jumla" className="font-semibold text-accent hover:underline">
-          Oomba bei ya jumla →
+          Request wholesale pricing →
         </Link>
       </p>
     </div>

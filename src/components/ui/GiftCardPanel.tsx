@@ -10,16 +10,16 @@ const amounts = [10000, 25000, 50000, 100000];
 
 const steps = [
   {
-    title: "Chagua thamani",
-    description: "Kadi ya zawadi kutoka TSh 10,000 hadi TSh 100,000.",
+    title: "Choose a value",
+    description: "Gift cards from TSh 10,000 to TSh 100,000.",
   },
   {
-    title: "Pokea msimbo wa pekee",
-    description: "Msimbo hutengenezwa mara moja na unaweza kutumwa kwa WhatsApp.",
+    title: "Send a unique gift code",
+    description: "A unique code is issued and can be sent via WhatsApp.",
   },
   {
-    title: "Apokee na anufaike",
-    description: "Mpokeaji hutumia msimbo kwenye oda yoyote ya Niffer.",
+    title: "They can redeem it",
+    description: "Recipients can redeem the code on any Niffer order.",
   },
 ];
 
@@ -56,18 +56,18 @@ export function GiftCardPanel() {
     }
   }
 
-  const waText = `Habari ${site.name}, nataka kadi ya zawadi ya ${formatTsh(
+  const waText = `Hello ${site.name}, I would like a gift card worth ${formatTsh(
     amount,
-  )}.${issued ? ` Msimbo: ${issued.code}.` : ""}${
-    recipient ? ` Mpokeaji: ${recipient}.` : ""
-  }${message ? ` Ujumbe: ${message}` : ""}`;
+)}.${issued ? ` Code: ${issued.code}.` : ""}${
+    recipient ? ` Recipient: ${recipient}.` : ""
+  }${message ? ` Message: ${message}` : ""}`;
 
   return (
     <div className="grid gap-10 lg:grid-cols-2">
-        {/* Chagua */}
+        {/* Choose */}
         <div className="card p-6">
           <h2 className="font-display text-xl text-ink-900">
-            1. Chagua thamani ya kadi
+            1. Choose a card value
           </h2>
           <div className="mt-4 grid grid-cols-2 gap-3">
             {amounts.map((value) => (
@@ -85,35 +85,35 @@ export function GiftCardPanel() {
                   {formatTsh(value)}
                 </span>
                 <span className="mt-1 block text-xs text-ink-500">
-                  {value >= 50000 ? "Bure usafirishaji" : "Inatumika popote"}
+                  {value >= 50000 ? "Free delivery" : "Use it anywhere"}
                 </span>
               </button>
             ))}
           </div>
 
           <h2 className="mt-8 font-display text-xl text-ink-900">
-            2. Maelezo ya ziada (hiari)
+            2. Optional details
           </h2>
           <label className="mt-4 block text-sm">
             <span className="mb-1.5 block font-medium text-ink-700">
-              Jina la mpokeaji
+              Recipient name
             </span>
             <input
               value={recipient}
               onChange={(e) => setRecipient(e.target.value)}
-              placeholder="Mfano: Neema"
+              placeholder="e.g. Neema"
               className="w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500"
             />
           </label>
           <label className="mt-4 block text-sm">
             <span className="mb-1.5 block font-medium text-ink-700">
-              Ujumbe wa zawadi
+              Gift message
             </span>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={3}
-              placeholder="Mfano: Hongera siku yako ya kuzaliwa!"
+              placeholder="For example: Happy birthday!"
               className="w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500"
             />
           </label>
@@ -124,15 +124,15 @@ export function GiftCardPanel() {
                 <CheckIcon className="h-5 w-5" />
               </span>
               <p className="mt-3 text-sm text-ink-500">
-                Msimbo wako wa kadi ({formatTsh(issued.amountTsh)}):
+                Your gift card code ({formatTsh(issued.amountTsh)}):
               </p>
               <p className="font-display mt-1 text-2xl tracking-wide text-ink-900">
                 {issued.code}
               </p>
               <p className="mt-2 text-xs text-ink-500">
-                Hifadhi msimbo huu — utautumia kwenye oda yoyote ya Niffer
+                Save this code; you can use it on any Niffer order
                 {issued.expiresAt
-                  ? ` kabla ya ${new Date(issued.expiresAt).toLocaleDateString("sw-TZ")}`
+                  ? ` before ${new Date(issued.expiresAt).toLocaleDateString("en-TZ")}`
                   : ""}
                 .
               </p>
@@ -153,10 +153,10 @@ export function GiftCardPanel() {
           >
             <ChatIcon className="h-4 w-4" />
             {sending
-              ? "Inatengeneza kadi…"
+              ? "Creating gift card…"
               : issued
-                ? "Agiza kadi nyingine"
-                : `Agiza kadi — ${formatTsh(amount)}`}
+                ? "Request another card"
+                : `Request gift card — ${formatTsh(amount)}`}
           </button>
 
           {issued ? (
@@ -166,15 +166,15 @@ export function GiftCardPanel() {
               rel="noopener noreferrer"
               className="btn-outline mt-3 w-full"
             >
-              Tuma msimbo kwa WhatsApp
+              Send the code via WhatsApp
             </a>
           ) : null}
           <p className="mt-3 text-center text-xs text-ink-400">
-            Kadi ya kipekee hutumika kwa oda yoyote na inaisha baada ya miaka 1.
+            This gift card can be used on any order and expires after one year.
           </p>
         </div>
 
-        {/* Maelezo */}
+        {/* Details */}
         <div>
           <div className="relative overflow-hidden rounded-2xl border border-cream-300 bg-cream-200 p-8 text-center">
             <SparkleIcon className="mx-auto h-10 w-10 text-brand-600" />
@@ -182,10 +182,10 @@ export function GiftCardPanel() {
               Niffer Gift Card
             </p>
             <p className="mt-1 text-sm text-ink-500">
-              Thamani: {formatTsh(amount)}
+              Value: {formatTsh(amount)}
             </p>
             <p className="mt-6 text-xs uppercase tracking-[0.3em] text-gold-700">
-              Urembo wa kweli
+              Beauty, thoughtfully chosen
             </p>
           </div>
 
@@ -207,10 +207,10 @@ export function GiftCardPanel() {
 
           <ul className="mt-8 space-y-2.5 rounded-2xl bg-cream-100 p-5 text-sm text-ink-500">
             {[
-              "Kadi inatumika kwa bidhaa zote za Niffer Cosmetics",
-              "Haiwezi kubadilishwa kuwa pesa taslimu",
-              "Msimbo wa kadi hutumika mara moja hadi thamani ipungue",
-              "Kadi inaisha miaka 1 baada ya kutolewa",
+              "Valid on all Niffer Cosmetics products",
+              "Cannot be exchanged for cash",
+              "The code can be redeemed once up to its full value",
+              "The card expires one year after issue",
             ].map((note) => (
               <li key={note} className="flex gap-2">
                 <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-success-600" />

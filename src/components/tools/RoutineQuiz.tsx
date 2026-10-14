@@ -16,41 +16,41 @@ type Question = {
 const QUESTIONS: Question[] = [
   {
     id: "skin",
-    title: "Aina ya ngozi yako?",
-    hint: "Chagua ile inayokufaa zaidi siku za asubuhi.",
+    title: "What is your skin type?",
+    hint: "Choose the option that best describes your skin.",
     options: [
-      { value: "kavu", label: "Kavu — inajisikia nyufa baada ya kusafisha" },
-      { value: "mafuta", label: "Mafuta — inawaka haraka, uso unang'aa" },
-      { value: "mchanganyiko", label: "Mchanganyiko — T-zone inawaka, nyingine kavu" },
-      { value: "kawaida", label: "Kawaida — sare, rahisi kutunza" },
+      { value: "kavu", label: "Dry — feels tight after cleansing" },
+      { value: "mafuta", label: "Oily — gets shiny quickly" },
+      { value: "mchanganyiko", label: "Combination — oily T-zone, drier elsewhere" },
+      { value: "kawaida", label: "Balanced — comfortable and easy to care for" },
     ],
   },
   {
     id: "goal",
-    title: "Lengo lako kuu la urembo?",
+    title: "What would you like your routine to focus on?",
     options: [
-      { value: "mwanga", label: "Urefu wa mwanga na ngozi safi" },
-      { value: "maumivu", label: "Kupunguza chunvi na madoa" },
-      { value: "unyevu", label: "Kudumisha unyevu muda wote" },
-      { value: "umri", label: "Kupunguza mistari ya umri" },
+      { value: "mwanga", label: "Brighter-looking, clearer skin" },
+      { value: "maumivu", label: "Reduce blemishes and uneven tone" },
+      { value: "unyevu", label: "Keep skin hydrated" },
+      { value: "umri", label: "Soften the look of fine lines" },
     ],
   },
   {
     id: "routine",
-    title: "Unapenda utunzaji wa aina gani?",
+    title: "How much time do you like to spend on skincare?",
     options: [
-      { value: "haraka", label: "Haraka — hatua 2–3 tu kila siku" },
-      { value: "kamili", label: "Kamili — napenda hatua zote za rutini" },
-      { value: "mchana", label: "Machweo — sehemu ya jioni zaidi" },
+      { value: "haraka", label: "Quick — just 2–3 steps a day" },
+      { value: "kamili", label: "A full routine — I enjoy several steps" },
+      { value: "mchana", label: "Mostly in the evening" },
     ],
   },
   {
     id: "budget",
-    title: "Bajeti yako kwa bidhaa moja?",
+    title: "What is your budget for one product?",
     options: [
-      { value: "chini", label: "Chini ya TSh 20,000" },
+      { value: "chini", label: "Under TSh 20,000" },
       { value: "kati", label: "TSh 20,000 – 40,000" },
-      { value: "juu", label: "Zaidi ya TSh 40,000" },
+      { value: "juu", label: "Over TSh 40,000" },
     ],
   },
 ];
@@ -133,15 +133,15 @@ export function RoutineQuiz({ products: items }: { products?: Product[] }) {
             </span>
             <div>
               <p className="font-semibold text-ink-900">
-                Mapendekezo yako kwa ngozi yako
+                Recommendations for your skin
               </p>
               <p className="text-sm text-ink-500">
-                Yamepangwa kwa majibu yako — anza na haya matatu.
+                Based on your answers — here are three products to explore.
               </p>
             </div>
           </div>
           <button type="button" onClick={restart} className="btn-outline px-4 py-2 text-xs">
-            Anza tena
+            Start again
           </button>
         </div>
 
@@ -154,7 +154,7 @@ export function RoutineQuiz({ products: items }: { products?: Product[] }) {
         </ul>
 
         <Link href="/bidhaa" className="btn-primary mt-8">
-          Vinjari bidhaa zote
+          Browse all products
         </Link>
       </div>
     );
@@ -167,7 +167,7 @@ export function RoutineQuiz({ products: items }: { products?: Product[] }) {
       {/* Maendeleo */}
       <div className="flex items-center justify-between text-xs text-ink-500">
         <span>
-          Swali {step + 1} kati ya {total}
+          Question {step + 1} of {total}
         </span>
         <span>{Math.round((step / total) * 100)}%</span>
       </div>
@@ -208,7 +208,7 @@ export function RoutineQuiz({ products: items }: { products?: Product[] }) {
           onClick={() => setStep((s) => Math.max(0, s - 1))}
           className="mt-6 text-sm text-ink-500 transition-colors hover:text-accent"
         >
-          ← Rudi nyuma
+          ← Go back
         </button>
       ) : null}
     </div>

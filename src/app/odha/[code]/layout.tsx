@@ -10,7 +10,7 @@ export async function generateMetadata({
 }: LayoutProps): Promise<Metadata> {
   const { code } = await params;
   return {
-    title: `Oda ${code}`,
+    title: `Order ${code}`,
     robots: { index: false, follow: false },
   };
 }

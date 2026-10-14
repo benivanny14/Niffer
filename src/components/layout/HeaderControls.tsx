@@ -22,16 +22,16 @@ export function HeaderControls() {
           type="button"
           onClick={() => setSearchOpen(true)}
           className="flex min-h-11 items-center gap-2 rounded-md border border-ink-200/70 px-3 text-ink-500 transition-colors duration-200 ease-in-out hover:border-brand-700/40 hover:text-brand-700"
-          aria-label="Tafuta bidhaa"
+          aria-label="Search products"
         >
           <SearchIcon className="h-4 w-4" />
-          <span className="hidden text-sm md:inline">Tafuta bidhaa</span>
+          <span className="hidden text-sm md:inline">Search products</span>
         </button>
 
         <Link
           href="/akaunti"
           className="hidden rounded-full p-2 text-ink-700 transition-colors hover:bg-cream-200 hover:text-accent sm:block"
-          aria-label="Akaunti yako"
+          aria-label="Your account"
         >
           <UserIcon className="h-5 w-5" />
         </Link>
@@ -39,7 +39,7 @@ export function HeaderControls() {
         <Link
           href="/upendwa"
           className="relative hidden rounded-full p-2 text-ink-700 transition-colors hover:bg-cream-200 hover:text-accent sm:block"
-          aria-label={`Bidhaa unazopenda (${wishlist.length})`}
+          aria-label={`Wishlist (${wishlist.length})`}
         >
           <HeartIcon className="h-5 w-5" />
           {ready && wishlist.length > 0 ? (
@@ -53,7 +53,7 @@ export function HeaderControls() {
           type="button"
           onClick={() => setCartOpen(true)}
           className="relative rounded-full p-2 text-ink-700 transition-colors hover:bg-cream-200 hover:text-accent"
-          aria-label={`Kikapu changu (${count})`}
+          aria-label={`Shopping bag (${count})`}
         >
           <BagIcon className="h-5 w-5" />
           {ready && count > 0 ? (

@@ -32,15 +32,15 @@ const AUTH_KEY = "niffer.admin.auth.v1";
 const authStore = createLocalStore<boolean>(AUTH_KEY, false);
 
 type Tab =
-  | "muhtasari"
-  | "bidhaa"
-  | "oda"
-  | "wateja"
-  | "jumla"
-  | "hakiki"
+  | "overview"
+  | "products"
+  | "orders"
+  | "customers"
+  | "wholesale"
+  | "reviews"
   | "promo"
-  | "hifadhi"
-  | "ujumbe";
+  | "storage"
+  | "messages";
 
 type Stats = {
   orders: { orderCount: number; revenueTsh: number; pendingCount: number };
@@ -202,19 +202,19 @@ function AdminLogin() {
       <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-100 text-accent">
         <ShieldIcon className="h-7 w-7" />
       </span>
-      <h1 className="heading-display mt-6 text-center">Ingia kwenye Admin</h1>
+      <h1 className="heading-display mt-6 text-center">Admin sign in</h1>
       <p className="mt-3 text-center text-ink-500">
-        Sehemu hii ni kwa wafanyakazi wa {site.name} pekee.
+        This area is for {site.name} staff only.
       </p>
       <form onSubmit={submit} className="card mt-8 space-y-4 p-6">
         <label className="block text-sm">
-          <span className="mb-1.5 block font-medium text-ink-700">Nywila</span>
+          <span className="mb-1.5 block font-medium text-ink-700">Password</span>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className={field}
-            placeholder="Weka nywila"
+            placeholder="Enter password"
             autoFocus
           />
         </label>
@@ -228,11 +228,11 @@ function AdminLogin() {
           disabled={sending}
           className="btn-primary w-full disabled:opacity-60"
         >
-          {sending ? "Inaingia…" : "Ingia"}
+          {sending ? "Signing in…" : "Sign in"}
         </button>
         {process.env.NODE_ENV !== "production" ? (
           <p className="text-center text-xs text-ink-400">
-            Demo nywila: <span className="font-mono">niffer2026</span>
+            Demo password: <span className="font-mono">niffer2026</span>
           </p>
         ) : null}
       </form>
@@ -242,11 +242,11 @@ function AdminLogin() {
 
 /* ============ Dashboard ============ */
 function AdminDashboard() {
-  const [tab, setTab] = useState<Tab>("muhtasari");
+  const [tab, setTab] = useState<Tab>("overview");
   const { orders: serverOrders, loading, error, refresh } = useAdminOrders();
 
-  // Takwimu + ujumbe + ombi za jumla + hakiki + promos + notifications
-  // + hifadhi (jarida/kadi) — zinasasishwa kila dakika.
+  // Takwimu + messages + ombi za wholesale + reviews + promos + notifications
+  // + storage (jarida/kadi) — zinasasishwa kila dakika.
   const adminData = useAsync<{
     stats: Stats;
     messages: MessageRecord[];
@@ -317,7 +317,7 @@ function AdminDashboard() {
   const adminProducts = adminData.data?.adminProducts ?? [];
   const dataError = adminData.error;
 
-  // Oda zote za server (DB) — demo zimeondolewa.
+  // All orders za server (DB) — demo zimeondolewa.
   const allOrders = useMemo<Order[]>(() => serverOrders, [serverOrders]);
 
   const unread = messages.filter((m) => m.status === "new").length;
@@ -331,21 +331,21 @@ function AdminDashboard() {
   ).length;
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: "muhtasari", label: "Muhtasari" },
-    { id: "bidhaa", label: "Bidhaa" },
-    { id: "oda", label: `Oda (${allOrders.length})` },
-    { id: "wateja", label: `Wateja (${customers.length})` },
-    { id: "jumla", label: `Jumla${newRfqs ? ` (${newRfqs})` : ""}` },
+    { id: "overview", label: "Overview" },
+    { id: "products", label: "Products" },
+    { id: "orders", label: `Orders (${allOrders.length})` },
+    { id: "customers", label: `Customers (${customers.length})` },
+    { id: "wholesale", label: `Wholesale${newRfqs ? ` (${newRfqs})` : ""}` },
     {
-      id: "hakiki",
-      label: `Hakiki${pendingReviews ? ` (${pendingReviews})` : ""}`,
+      id: "reviews",
+      label: `Reviews${pendingReviews ? ` (${pendingReviews})` : ""}`,
     },
     { id: "promo", label: "Promo" },
     {
-      id: "hifadhi",
-      label: `Hifadhi${unreadNotifications ? ` (${unreadNotifications})` : ""}`,
+      id: "storage",
+      label: `Updates${unreadNotifications ? ` (${unreadNotifications})` : ""}`,
     },
-    { id: "ujumbe", label: `Ujumbe${unread ? ` (${unread})` : ""}` },
+    { id: "messages", label: `Messages${unread ? ` (${unread})` : ""}` },
   ];
 
   async function logout() {
@@ -363,17 +363,17 @@ function AdminDashboard() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="eyebrow">Admin</p>
-          <h1 className="heading-display mt-1">Dashibodi ya Niffer</h1>
+          <h1 className="heading-display mt-1">Niffer dashboard</h1>
           <p className="mt-1 text-sm text-ink-500">
-            {site.name} · simu: {site.phoneDisplay}
+            {site.name} · Phone: {site.phoneDisplay}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={refresh} className="btn-outline">
-            Sasisha
+            Refresh
           </button>
           <button type="button" onClick={logout} className="btn-outline">
-            Toka
+            Sign out
           </button>
         </div>
       </div>
@@ -403,8 +403,8 @@ function AdminDashboard() {
       </nav>
 
       <div className="mt-8">
-        {tab === "muhtasari" ? (
-          <Muhtasari
+        {tab === "overview" ? (
+          <Overview
             stats={stats}
             orders={allOrders}
             messages={messages}
@@ -412,36 +412,36 @@ function AdminDashboard() {
             products={adminProducts}
           />
         ) : null}
-        {tab === "bidhaa" ? <ProductManager /> : null}
-        {tab === "oda" ? <OdaTab orders={allOrders} loading={loading} onRefresh={refresh} /> : null}
-        {tab === "wateja" ? <WatejaTab customers={customers} /> : null}
-        {tab === "jumla" ? (
-          <JumlaTab rfqs={rfqs} onChanged={() => adminData.refresh()} />
+        {tab === "products" ? <ProductManager /> : null}
+        {tab === "orders" ? <OrdersTab orders={allOrders} loading={loading} onRefresh={refresh} /> : null}
+        {tab === "customers" ? <CustomersTab customers={customers} /> : null}
+        {tab === "wholesale" ? (
+          <WholesaleTab rfqs={rfqs} onChanged={() => adminData.refresh()} />
         ) : null}
-        {tab === "hakiki" ? (
-          <HakikiTab reviews={reviews} onChanged={() => adminData.refresh()} />
+        {tab === "reviews" ? (
+          <ReviewsTab reviews={reviews} onChanged={() => adminData.refresh()} />
         ) : null}
         {tab === "promo" ? (
           <PromoTab promos={promos} onChanged={() => adminData.refresh()} />
         ) : null}
-        {tab === "hifadhi" ? (
-          <HifadhiTab
+        {tab === "storage" ? (
+          <UpdatesTab
             notifications={notifications}
             subscribers={subscribers}
             giftCards={giftCards}
             onChanged={() => adminData.refresh()}
           />
         ) : null}
-        {tab === "ujumbe" ? (
-          <UjumbeTab messages={messages} onChanged={() => adminData.refresh()} />
+        {tab === "messages" ? (
+          <MessagesTab messages={messages} onChanged={() => adminData.refresh()} />
         ) : null}
       </div>
     </div>
   );
 }
 
-/* ============ Muhtasari ============ */
-function Muhtasari({
+/* ============ Overview ============ */
+function Overview({
   stats,
   orders,
   messages,
@@ -465,7 +465,7 @@ function Muhtasari({
 
   const revenue = stats?.orders.revenueTsh ?? 0;
 
-  // Bidhaa zilizouzwa vs zilizobaki (kutoka DB — bidhaa za admin zimejumuishwa).
+  // Products zilizouzwa vs zilizobaki (kutoka DB — products za admin zimejumuishwa).
   const soldBySlug = stats?.soldBySlug ?? {};
   const productSales = products
     .map((p) => ({
@@ -480,12 +480,12 @@ function Muhtasari({
   const totalStock = productSales.reduce((sum, p) => sum + p.stock, 0);
 
   const cards = [
-    { icon: BagIcon, label: "Oda zote", value: `${orders.length}` },
-    { icon: TagIcon, label: "Mapato (jumla)", value: formatTsh(revenue) },
-    { icon: ChatIcon, label: "Ujumbe wa fomu", value: `${messages.length}` },
+    { icon: BagIcon, label: "All orders", value: `${orders.length}` },
+    { icon: TagIcon, label: "Total revenue", value: formatTsh(revenue) },
+    { icon: ChatIcon, label: "Form messages", value: `${messages.length}` },
     {
       icon: TruckIcon,
-      label: "Bidhaa zinazouzwa",
+      label: "Products for sale",
       value: `${stats?.catalog.productCount ?? products.length}`,
     },
   ];
@@ -523,7 +523,7 @@ function Muhtasari({
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
         <div className="card p-5">
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">
-            Oda bado hazijafika
+            Pending orders
           </p>
           <p className="font-display text-xl text-ink-900">
             {stats?.orders.pendingCount ?? 0}
@@ -531,7 +531,7 @@ function Muhtasari({
         </div>
         <div className="card p-5">
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">
-            Waasisi wa jarida
+            Newsletter subscribers
           </p>
           <p className="font-display text-xl text-ink-900">
             {stats?.subscribers ?? 0}
@@ -539,7 +539,7 @@ function Muhtasari({
         </div>
         <div className="card p-5">
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">
-            Kadi za zawadi
+            Gift cards
           </p>
           <p className="font-display text-xl text-ink-900">
             {stats?.giftCards ?? 0}
@@ -547,29 +547,29 @@ function Muhtasari({
         </div>
       </div>
 
-      {/* Bidhaa zilizouzwa vs zilizobaki */}
+      {/* Products zilizouzwa vs zilizobaki */}
       <section className="mt-10">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-display text-xl text-ink-900">
-            Muuzaji wa bidhaa
+            Product sales
           </h2>
           <p className="text-sm text-ink-500">
-            Zilizouzwa: <span className="font-semibold text-ink-900">{totalSold}</span>
+            Sold: <span className="font-semibold text-ink-900">{totalSold}</span>
             {" · "}
-            Zilizobaki: <span className="font-semibold text-ink-900">{totalStock}</span>
+            In stock: <span className="font-semibold text-ink-900">{totalStock}</span>
           </p>
         </div>
         {productSales.length === 0 ? (
-          <p className="mt-3 text-sm text-ink-500">Hakuna bidhaa bado.</p>
+          <p className="mt-3 text-sm text-ink-500">No products yet.</p>
         ) : (
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-cream-300 text-left text-xs uppercase tracking-wide text-ink-400">
-                  <th className="pb-2 pr-4">Bidhaa</th>
-                  <th className="pb-2 pr-4 text-right">Zilizouzwa</th>
-                  <th className="pb-2 pr-4 text-right">Zilizobaki</th>
-                  <th className="pb-2 text-right">Hali</th>
+                  <th className="pb-2 pr-4">Products</th>
+                  <th className="pb-2 pr-4 text-right">Sold</th>
+                  <th className="pb-2 pr-4 text-right">In stock</th>
+                  <th className="pb-2 text-right">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -597,15 +597,15 @@ function Muhtasari({
                     <td className="py-2 text-right">
                       {p.stock === 0 ? (
                         <span className="badge bg-danger-100 text-danger-600">
-                          Imeisha
+                          Out of stock
                         </span>
                       ) : p.stock <= 10 ? (
                         <span className="badge bg-warning-100 text-warning-600">
-                          Kidogo
+                          Low stock
                         </span>
                       ) : (
                         <span className="badge bg-success-100 text-success-600">
-                          Sawa
+                          In stock
                         </span>
                       )}
                     </td>
@@ -617,14 +617,14 @@ function Muhtasari({
         )}
       </section>
 
-      {/* Oda za hivi karibuni */}
+      {/* Recent orders */}
       <section className="mt-10">
         <h2 className="font-display text-xl text-ink-900">
-          Oda za hivi karibuni
+          Recent orders
         </h2>
         {orders.length === 0 ? (
           <p className="mt-3 text-sm text-ink-500">
-            Hakuna oda bado. Zitaonekana hapa unapopokea oda mpya.
+            No orders yet. New orders will appear here.
           </p>
         ) : (
           <ul className="mt-4 space-y-2">
@@ -655,14 +655,14 @@ function Muhtasari({
         )}
       </section>
 
-      {/* Ujumbe wa hivi karibuni */}
+      {/* Recent messages */}
       <section className="mt-10">
         <h2 className="font-display text-xl text-ink-900">
-          Ujumbe wa hivi karibuni
+          Recent messages
         </h2>
         {messages.length === 0 ? (
           <p className="mt-3 text-sm text-ink-500">
-            Hakuna ujumbe bado kutoka fomu za tovuti.
+            No website messages yet.
           </p>
         ) : (
           <ul className="mt-4 space-y-2">
@@ -672,12 +672,12 @@ function Muhtasari({
                 <span className="font-medium text-ink-900">{message.name}</span>
                 <span className="badge bg-cream-100 text-ink-500">
                   {message.kind === "wholesale"
-                    ? "Jumla"
+                    ? "Wholesale"
                     : message.kind === "rfq"
                       ? "RFQ"
                       : message.kind === "giftcard"
-                        ? "Kadi"
-                        : "Wasiliana"}
+                        ? "Gift card"
+                        : "Contact"}
                 </span>
                 <span className="min-w-0 flex-1 truncate text-sm text-ink-500">
                   {message.body.message ??
@@ -686,7 +686,7 @@ function Muhtasari({
                     ""}
                 </span>
                 <span className="text-xs text-ink-400">
-                  {new Date(message.createdAt).toLocaleString("sw-TZ")}
+                  {new Date(message.createdAt).toLocaleString("en-TZ")}
                 </span>
               </li>
             ))}
@@ -698,7 +698,7 @@ function Muhtasari({
       {lowStock.length > 0 ? (
         <section className="mt-10">
           <h2 className="font-display text-xl text-ink-900">
-            Bidhaa zenye stoo ndogo (≤10)
+            Low-stock products (≤10)
           </h2>
           <ul className="mt-4 space-y-2">
             {lowStock.map((p) => (
@@ -708,7 +708,7 @@ function Muhtasari({
               >
                 <span className="font-medium text-ink-900">{p.name}</span>
                 <span className="font-semibold text-warning-600">
-                  Zimebaki: {p.stock}
+                  Remaining: {p.stock}
                 </span>
               </li>
             ))}
@@ -719,12 +719,12 @@ function Muhtasari({
   );
 }
 
-/* ============ Wateja ============ */
-function WatejaTab({ customers }: { customers: CustomerRecord[] }) {
+/* ============ Customers ============ */
+function CustomersTab({ customers }: { customers: CustomerRecord[] }) {
   if (customers.length === 0) {
     return (
       <div className="card p-6 text-sm text-ink-500">
-        Bado hakuna akaunti za wateja zilizosajiliwa.
+        No customer accounts yet.
       </div>
     );
   }
@@ -734,10 +734,10 @@ function WatejaTab({ customers }: { customers: CustomerRecord[] }) {
       <table className="w-full min-w-[560px] text-left text-sm">
         <thead>
           <tr className="border-b border-cream-300 text-xs uppercase tracking-wide text-ink-400">
-            <th className="px-5 py-3 font-semibold">Jina</th>
-            <th className="px-5 py-3 font-semibold">Simu</th>
-            <th className="px-5 py-3 font-semibold">Barua pepe</th>
-            <th className="px-5 py-3 font-semibold">Alijiunga</th>
+            <th className="px-5 py-3 font-semibold">Name</th>
+            <th className="px-5 py-3 font-semibold">Phone</th>
+            <th className="px-5 py-3 font-semibold">Email</th>
+            <th className="px-5 py-3 font-semibold">Joined</th>
           </tr>
         </thead>
         <tbody>
@@ -751,7 +751,7 @@ function WatejaTab({ customers }: { customers: CustomerRecord[] }) {
                 {c.email || "—"}
               </td>
               <td className="px-5 py-3 text-ink-400">
-                {new Date(c.createdAt).toLocaleDateString("sw-TZ")}
+                {new Date(c.createdAt).toLocaleDateString("en-TZ")}
               </td>
             </tr>
           ))}
@@ -761,8 +761,8 @@ function WatejaTab({ customers }: { customers: CustomerRecord[] }) {
   );
 }
 
-/* ============ Oda ============ */
-function OdaTab({
+/* ============ Orders ============ */
+function OrdersTab({
   orders,
   loading,
   onRefresh,
@@ -771,7 +771,7 @@ function OdaTab({
   loading: boolean;
   onRefresh: () => void;
 }) {
-  const [filter, setFilter] = useState<"zote" | OrderStatus>("zote");
+  const [filter, setFilter] = useState<"all" | OrderStatus>("all");
   const [search, setSearch] = useState("");
   const [savingCode, setSavingCode] = useState("");
   const [actionError, setActionError] = useState("");
@@ -787,7 +787,7 @@ function OdaTab({
   const queryDigits = digits(query);
 
   const filtered = orders.filter((o) => {
-    if (filter !== "zote" && liveStatus(o) !== filter) return false;
+    if (filter !== "all" && liveStatus(o) !== filter) return false;
     if (!query) return true;
     if (o.code.toLowerCase().includes(query)) return true;
     if (o.customer.name.toLowerCase().includes(query)) return true;
@@ -823,7 +823,7 @@ function OdaTab({
         title: notifyTitle,
         body: notifyBody,
       });
-      setNotifyOk(`Ujumbe umetumwa kwa mteja wa ${code}.`);
+      setNotifyOk(`Message sent to customer for ${code}.`);
       setNotifyCode("");
       setNotifyTitle("");
       setNotifyBody("");
@@ -834,23 +834,23 @@ function OdaTab({
     }
   }
 
-  /** Pakua oda zilizochujwa kama CSV (Excel / Google Sheets). */
+  /** Pakua orders zilizochujwa kama CSV (Excel / Google Sheets). */
   function exportCsv() {
     const header = [
-      "Nambari",
-      "Tarehe",
-      "Hali",
-      "Jina",
-      "Simu",
-      "Mkoa",
-      "Mji",
-      "Mtaa",
-      "Bidhaa",
-      "Jumla ndogo",
-      "Usafirishaji",
-      "Punguzo",
-      "Jumla",
-      "Malipo",
+      "Order number",
+      "Date",
+      "Status",
+      "Name",
+      "Phone",
+      "Region",
+      "City",
+      "Street",
+      "Products",
+      "Subtotal",
+      "Delivery",
+      "Discount",
+      "Total",
+      "Payment",
     ];
     const rows = filtered.map((o) => [
       o.code,
@@ -877,7 +877,7 @@ function OdaTab({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `oda-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `orders-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -885,9 +885,9 @@ function OdaTab({
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm font-medium text-ink-700">Chuja:</span>
+        <span className="text-sm font-medium text-ink-700">Filter:</span>
         {(
-          ["zote", ...statusSteps.map((s) => s.id), "ghairiwa"] as const
+          ["all", ...statusSteps.map((s) => s.id), "ghairiwa"] as const
         ).map((id) => (
           <button
             key={id}
@@ -899,10 +899,10 @@ function OdaTab({
                 : "bg-cream-100 text-ink-500 hover:bg-cream-200 disabled:opacity-60"
             }`}
           >
-            {id === "zote"
-              ? "Zote"
+            {id === "all"
+              ? "All"
               : id === "ghairiwa"
-                ? "Imeghairiwa"
+                ? "Cancelled"
                 : statusSteps.find((s) => s.id === id)?.label}
           </button>
         ))}
@@ -911,8 +911,8 @@ function OdaTab({
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tafuta nambari, jina au simu…"
-            aria-label="Tafuta oda"
+            placeholder="Search order number, name or phone…"
+            aria-label="Search orders"
             className="w-56 rounded-full border border-cream-300 bg-surface px-4 py-1.5 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500"
           />
           <button
@@ -921,7 +921,7 @@ function OdaTab({
             disabled={filtered.length === 0}
             className="btn-outline px-4 py-2 text-xs disabled:opacity-50"
           >
-            Pakua CSV ({filtered.length})
+            Download CSV ({filtered.length})
           </button>
         </div>
       </div>
@@ -937,35 +937,35 @@ function OdaTab({
         </p>
       ) : null}
 
-      {/* Fomu ya kutuma ujumbe kwa mteja */}
+      {/* Send a message to customer */}
       {notifyCode ? (
         <div className="card mt-4 border-brand-200 bg-brand-50 p-5">
           <h3 className="font-display text-lg text-ink-900">
-            Tuma ujumbe kwa {notifyCode}
+            Send a message to {notifyCode}
           </h3>
           <div className="mt-3 space-y-3">
             <label className="block text-sm">
               <span className="mb-1 block font-medium text-ink-700">
-                Kichwa *
+                Subject *
               </span>
               <input
                 required
                 value={notifyTitle}
                 onChange={(e) => setNotifyTitle(e.target.value)}
                 className={field}
-                placeholder="Mfano: Mzigo wako umetumwa"
+                placeholder="e.g. Your order has shipped"
               />
             </label>
             <label className="block text-sm">
               <span className="mb-1 block font-medium text-ink-700">
-                Ujumbe
+                Messages
               </span>
               <textarea
                 value={notifyBody}
                 onChange={(e) => setNotifyBody(e.target.value)}
                 rows={3}
                 className={field}
-                placeholder="Maelezo ya ziada kwa mteja…"
+                placeholder="Add a note for the customer…"
               />
             </label>
             {notifyError ? (
@@ -980,7 +980,7 @@ function OdaTab({
                 onClick={() => void sendNotification(notifyCode)}
                 className="btn-primary px-4 py-2 text-sm disabled:opacity-60"
               >
-                {notifySending ? "Inatuma…" : "Tuma Ujumbe"}
+                {notifySending ? "Sending…" : "Send message"}
               </button>
               <button
                 type="button"
@@ -991,7 +991,7 @@ function OdaTab({
                 }}
                 className="btn-outline px-4 py-2 text-sm"
               >
-                Ghairi
+                Cancel
               </button>
             </div>
           </div>
@@ -1008,10 +1008,10 @@ function OdaTab({
         <div className="card mt-6 p-10 text-center">
           <BagIcon className="mx-auto h-12 w-12 text-ink-300" />
           <p className="font-display mt-4 text-lg text-ink-900">
-            Hakuna oda kwenye kichujio hiki
+            No orders match this filter
           </p>
           <p className="mt-2 text-sm text-ink-500">
-            Badilisha kichujio au subiri oda mpya.
+            Change the filter or wait for new orders.
           </p>
         </div>
       ) : (
@@ -1043,7 +1043,7 @@ function OdaTab({
                     ) : (
                       <span className="badge bg-success-100 text-success-600">
                         <CheckIcon className="h-3 w-3" />
-                        halisi
+                        Live
                       </span>
                     )}
                   </div>
@@ -1054,7 +1054,7 @@ function OdaTab({
 
                 <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
                   <div>
-                    <p className="text-ink-400">Mteja</p>
+                    <p className="text-ink-400">Customer</p>
                     <p className="font-medium text-ink-900">
                       {order.customer.name}
                     </p>
@@ -1063,7 +1063,7 @@ function OdaTab({
                     </p>
                   </div>
                   <div>
-                    <p className="text-ink-400">Eneo la kuwasilisha</p>
+                    <p className="text-ink-400">Delivery address</p>
                     <p className="font-medium text-ink-900">
                       {[order.customer.city, order.customer.region]
                         .filter(Boolean)
@@ -1077,10 +1077,10 @@ function OdaTab({
                     </p>
                   </div>
                   <div>
-                    <p className="text-ink-400">Malipo</p>
+                    <p className="text-ink-400">Payment</p>
                     <p className="font-medium text-ink-900">{order.payment}</p>
                     <p className="text-ink-500">
-                      {new Date(order.createdAt).toLocaleString("sw-TZ")}
+                      {new Date(order.createdAt).toLocaleString("en-TZ")}
                     </p>
                   </div>
                 </div>
@@ -1095,10 +1095,10 @@ function OdaTab({
                   ))}
                 </ul>
 
-                {/* Sasisha hatua (oda halisi pekee) */}
+                {/* Update status (orders Live pekee) */}
                 {!order.demo ? (
                   <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-cream-200 pt-3">
-                    {/* Thibitisha haraka (mpokelewa → inaendelea) */}
+                    {/* Quick confirm (mpokelewa → inaendelea) */}
                     {status === "imapokelewa" ? (
                       <button
                         type="button"
@@ -1107,13 +1107,13 @@ function OdaTab({
                         className="rounded-full bg-success-100 px-3 py-1 text-xs font-semibold text-success-600 transition-colors hover:bg-success-200 disabled:opacity-60"
                       >
                         {savingCode === order.code
-                          ? "Inathibitisha…"
-                          : "✓ Thibitisha Oda"}
+                          ? "Confirming…"
+                          : "✓ Confirm order"}
                       </button>
                     ) : null}
 
                     <span className="text-xs font-medium text-ink-500">
-                      Hatua:
+                      Status:
                     </span>
                     {statusSteps.map((step) => (
                       <button
@@ -1128,7 +1128,7 @@ function OdaTab({
                         }`}
                       >
                         {savingCode === order.code && status !== step.id
-                          ? "Inasasisha…"
+                          ? "Updating…"
                           : step.label}
                       </button>
                     ))}
@@ -1141,7 +1141,7 @@ function OdaTab({
                         onClick={() => {
                           if (
                             window.confirm(
-                              `Ghairi oda ${order.code}? Stoo itarudishwa.`,
+                            `Cancel order ${order.code}? Stock will be restored.`,
                             )
                           ) {
                             void changeStatus(order.code, "ghairiwa");
@@ -1150,11 +1150,11 @@ function OdaTab({
                         disabled={savingCode === order.code}
                         className="rounded-full bg-danger-100 px-3 py-1 text-xs font-semibold text-danger-600 transition-colors hover:bg-danger-200 disabled:opacity-60"
                       >
-                        {savingCode === order.code ? "Inaghairi…" : "✕ Ghairi"}
+                        {savingCode === order.code ? "Cancelling…" : "✕ Cancel"}
                       </button>
                     ) : null}
 
-                    {/* Tuma ujumbe kwa mteja */}
+                    {/* Send a message to mteja */}
                     <button
                       type="button"
                       onClick={() => {
@@ -1167,12 +1167,12 @@ function OdaTab({
                       className="ml-auto rounded-full bg-brand-100 px-3 py-1 text-xs font-medium text-accent transition-colors hover:bg-brand-200"
                     >
                       <ChatIcon className="mr-1 inline h-3 w-3" />
-                      Tuma ujumbe
+                      Send message
                     </button>
                   </div>
                 ) : (
                   <p className="mt-3 border-t border-cream-200 pt-3 text-xs text-ink-400">
-                    Oda ya demo — hatua inasonga yenyewe.
+                    Orders ya demo — hatua inasonga yenyewe.
                   </p>
                 )}
               </li>
@@ -1184,16 +1184,16 @@ function OdaTab({
   );
 }
 
-/* ============ Jumla (RFQ) ============ */
+/* ============ Wholesale (RFQ) ============ */
 const rfqStatusLabels: Record<RfqRecord["status"], string> = {
-  new: "Imepokelewa",
-  reviewed: "Inapitiwa",
-  quoted: "Bei yamewekwa",
-  accepted: "Imekubalika",
-  declined: "Imekataliwa",
+  new: "Received",
+  reviewed: "Under review",
+  quoted: "Quoted",
+  accepted: "Accepted",
+  declined: "Declined",
 };
 
-function JumlaTab({
+function WholesaleTab({
   rfqs,
   onChanged,
 }: {
@@ -1225,10 +1225,10 @@ function JumlaTab({
       <div className="card p-10 text-center">
         <TagIcon className="mx-auto h-12 w-12 text-ink-300" />
         <p className="font-display mt-4 text-lg text-ink-900">
-          Hakuna ombi la bei ya jumla bado
+          No wholesale requests yet
         </p>
         <p className="mt-2 text-sm text-ink-500">
-          Ombi za RFQ kutoka kwenye ukurasa wa /jumla zitaonekana hapa.
+          Quote requests from /jumla will appear here.
         </p>
       </div>
     );
@@ -1254,23 +1254,23 @@ function JumlaTab({
                 </span>
                 {rfq.quoteTsh != null ? (
                   <span className="badge bg-success-100 text-success-600">
-                    bei: {formatTsh(rfq.quoteTsh)}
+                    Quote: {formatTsh(rfq.quoteTsh)}
                   </span>
                 ) : null}
               </div>
               <span className="text-xs text-ink-400">
-                {new Date(rfq.createdAt).toLocaleString("sw-TZ")}
+                {new Date(rfq.createdAt).toLocaleString("en-TZ")}
               </span>
             </div>
 
             <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
               <div>
-                <p className="text-ink-400">Biashara</p>
+                <p className="text-ink-400">Business</p>
                 <p className="font-medium text-ink-900">{rfq.business}</p>
                 <p className="text-ink-500">{rfq.name}</p>
               </div>
               <div>
-                <p className="text-ink-400">Kwasiliana</p>
+                <p className="text-ink-400">Contact</p>
                 <p className="font-medium text-ink-900">
                   {formatPhone(rfq.phone)}
                 </p>
@@ -1279,7 +1279,7 @@ function JumlaTab({
                 </p>
               </div>
               <div>
-                <p className="text-ink-400">Ombi</p>
+                <p className="text-ink-400">Request</p>
                 <p className="font-medium text-ink-900">
                   {rfq.productName || "—"} × {rfq.qty} pcs
                 </p>
@@ -1290,7 +1290,7 @@ function JumlaTab({
             {/* Vitendo: bei + hali */}
             <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-cream-200 pt-3">
               <label className="flex items-center gap-2 text-xs font-medium text-ink-500">
-                Bei ya unit (TSh):
+                Unit price (TSh):
                 <input
                   type="number"
                   min={0}
@@ -1298,9 +1298,9 @@ function JumlaTab({
                   onChange={(e) =>
                     setQuotes({ ...quotes, [rfq.code]: e.target.value })
                   }
-                  placeholder="mfano 15000"
+                  placeholder="e.g. 15000"
                   className="w-28 rounded-lg border border-cream-300 px-2 py-1 text-sm"
-                  aria-label={`Bei ya unit kwa ${rfq.code}`}
+                  aria-label={`Unit price for ${rfq.code}`}
                 />
                 <button
                   type="button"
@@ -1316,7 +1316,7 @@ function JumlaTab({
                   }
                   className="rounded-lg border border-cream-300 px-3 py-1 text-xs font-medium text-ink-700 transition-colors hover:border-brand-300 hover:text-accent disabled:opacity-50"
                 >
-                  {saving === rfq.code ? "Inahifadhi…" : "Weka bei"}
+                  {saving === rfq.code ? "Saving…" : "Save quote"}
                 </button>
               </label>
 
@@ -1342,7 +1342,7 @@ function JumlaTab({
                   }`}
                 >
                   {saving === rfq.code && rfq.status !== status
-                    ? "Inasasisha…"
+                    ? "Updating…"
                     : rfqStatusLabels[status]}
                 </button>
               ))}
@@ -1354,15 +1354,15 @@ function JumlaTab({
   );
 }
 
-/* ============ Ujumbe ============ */
+/* ============ Messages ============ */
 const kindLabels: Record<MessageRecord["kind"], string> = {
-  contact: "Wasiliana",
-  wholesale: "Ombi la jumla",
-  giftcard: "Kadi ya zawadi",
-  rfq: "RFQ — ombi la bei ya wingi",
+  contact: "Contact",
+  wholesale: "Wholesale request",
+  giftcard: "Gift card",
+    rfq: "Quote request (RFQ)",
 };
 
-function UjumbeTab({
+function MessagesTab({
   messages,
   onChanged,
 }: {
@@ -1403,10 +1403,10 @@ function UjumbeTab({
       <div className="card p-10 text-center">
         <MailIcon className="mx-auto h-12 w-12 text-ink-300" />
         <p className="font-display mt-4 text-lg text-ink-900">
-          Hakuna ujumbe bado
+          No messages yet
         </p>
         <p className="mt-2 text-sm text-ink-500">
-          Ujumbe kutoka fomu za wasiliana, jumla na kadi utaonekana hapa.
+          Messages from contact, wholesale and gift card forms will appear here.
         </p>
       </div>
     );
@@ -1429,7 +1429,7 @@ function UjumbeTab({
             onClick={() => markAll()}
             className="btn-outline px-4 py-2 text-xs"
           >
-            {saving === "all" ? "Inasasisha…" : "Soma zote"}
+            {saving === "all" ? "Updating…" : "Mark all as read"}
           </button>
         ) : null}
       </div>
@@ -1446,17 +1446,17 @@ function UjumbeTab({
                 </span>
                 {message.status === "new" ? (
                   <span className="badge bg-warning-100 text-warning-600">
-                    Mpya
+                    New
                   </span>
                 ) : (
                   <span className="badge bg-ink-100 text-ink-600">
-                    Imesomwa
+                    Read
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-ink-400">
-                  {new Date(message.createdAt).toLocaleString("sw-TZ")}
+                  {new Date(message.createdAt).toLocaleString("en-TZ")}
                 </span>
                 {message.status === "new" ? (
                   <button
@@ -1465,7 +1465,7 @@ function UjumbeTab({
                     onClick={() => markRead(message.id)}
                     className="btn-outline px-3 py-1.5 text-xs"
                   >
-                    {saving === message.id ? "Inasasisha…" : "Soma"}
+                    {saving === message.id ? "Updating…" : "Mark as read"}
                   </button>
                 ) : null}
               </div>
@@ -1474,7 +1474,7 @@ function UjumbeTab({
             <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
               {message.phone ? (
                 <div>
-                  <p className="text-ink-400">Simu</p>
+                  <p className="text-ink-400">Phone</p>
                   <p className="font-medium text-ink-900">
                     {formatPhone(message.phone)}
                   </p>
@@ -1482,12 +1482,12 @@ function UjumbeTab({
               ) : null}
               {message.email ? (
                 <div>
-                  <p className="text-ink-400">Barua pepe</p>
+                  <p className="text-ink-400">Email</p>
                   <p className="font-medium text-ink-900">{message.email}</p>
                 </div>
               ) : null}
               <div>
-                <p className="text-ink-400">Aina</p>
+                <p className="text-ink-400">Type</p>
                 <p className="font-medium text-ink-900">
                   {kindLabels[message.kind]}
                 </p>
@@ -1511,14 +1511,14 @@ function UjumbeTab({
   );
 }
 
-/* ============ Hakiki (moderation) ============ */
+/* ============ Reviews (moderation) ============ */
 const reviewStatusLabels: Record<ReviewRecord["status"], string> = {
-  pending: "Inasubiri",
-  approved: "Imeidhinishwa",
-  rejected: "Imekataliwa",
+  pending: "Pending",
+  approved: "Approved",
+  rejected: "Declined",
 };
 
-function HakikiTab({
+function ReviewsTab({
   reviews,
   onChanged,
 }: {
@@ -1527,10 +1527,10 @@ function HakikiTab({
 }) {
   const [saving, setSaving] = useState("");
   const [error, setError] = useState("");
-  const [filter, setFilter] = useState<"zote" | ReviewRecord["status"]>("zote");
+  const [filter, setFilter] = useState<"all" | ReviewRecord["status"]>("all");
 
   const filtered = reviews.filter((r) =>
-    filter === "zote" ? true : r.status === filter,
+    filter === "all" ? true : r.status === filter,
   );
 
   async function setStatus(id: string, status: "approved" | "rejected") {
@@ -1551,10 +1551,10 @@ function HakikiTab({
       <div className="card p-10 text-center">
         <StarIcon className="mx-auto h-12 w-12 text-ink-300" />
         <p className="font-display mt-4 text-lg text-ink-900">
-          Hakuna hakiki bado
+          No reviews yet
         </p>
         <p className="mt-2 text-sm text-ink-500">
-          Hakiki mpya kutoka wateja zitaonekana hapa kwa uidhinishaji.
+          New customer reviews will appear here for approval.
         </p>
       </div>
     );
@@ -1563,8 +1563,8 @@ function HakikiTab({
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm font-medium text-ink-700">Chuja:</span>
-        {(["zote", "pending", "approved", "rejected"] as const).map((id) => (
+        <span className="text-sm font-medium text-ink-700">Filter:</span>
+        {(["all", "pending", "approved", "rejected"] as const).map((id) => (
           <button
             key={id}
             type="button"
@@ -1575,8 +1575,8 @@ function HakikiTab({
                 : "bg-cream-100 text-ink-500 hover:bg-cream-200"
             }`}
           >
-            {id === "zote"
-              ? "Zote"
+            {id === "all"
+              ? "All"
               : reviewStatusLabels[id as ReviewRecord["status"]]}
           </button>
         ))}
@@ -1614,7 +1614,7 @@ function HakikiTab({
               </div>
               <span className="text-xs text-ink-400">
                 {review.createdAt
-                  ? new Date(review.createdAt).toLocaleString("sw-TZ")
+                  ? new Date(review.createdAt).toLocaleString("en-TZ")
                   : "—"}
               </span>
             </div>
@@ -1622,8 +1622,8 @@ function HakikiTab({
             <p className="mt-3 text-sm text-ink-700">{review.comment}</p>
 
             <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-cream-200 pt-3 text-xs text-ink-500">
-              <span>Bidhaa: {review.productSlug || "—"}</span>
-              <span>Mji: {review.location || "—"}</span>
+              <span>Product: {review.productSlug || "—"}</span>
+              <span>City: {review.location || "—"}</span>
             </div>
 
             {review.status === "pending" ? (
@@ -1634,7 +1634,7 @@ function HakikiTab({
                   onClick={() => void setStatus(review.id, "approved")}
                   className="rounded-full bg-success-100 px-3 py-1 text-xs font-medium text-success-600 transition-colors hover:bg-success-200 disabled:opacity-60"
                 >
-                  {saving === review.id ? "Inahifadhi…" : "Idhinisha"}
+                  {saving === review.id ? "Saving…" : "Approve"}
                 </button>
                 <button
                   type="button"
@@ -1642,7 +1642,7 @@ function HakikiTab({
                   onClick={() => void setStatus(review.id, "rejected")}
                   className="rounded-full bg-danger-100 px-3 py-1 text-xs font-medium text-danger-600 transition-colors hover:bg-danger-200 disabled:opacity-60"
                 >
-                  Kataa
+                  Reject
                 </button>
               </div>
             ) : null}
@@ -1713,12 +1713,12 @@ function PromoTab({
     <div>
       <form onSubmit={create} className="card space-y-4 p-6">
         <h2 className="font-display text-xl text-ink-900">
-          Ongeza msimbo wa punguzo
+          Add discount code
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block text-sm">
             <span className="mb-1.5 block font-medium text-ink-700">
-              Msimbo *
+              Code *
             </span>
             <input
               required
@@ -1730,19 +1730,19 @@ function PromoTab({
           </label>
           <label className="block text-sm">
             <span className="mb-1.5 block font-medium text-ink-700">
-              Maelezo *
+              Description *
             </span>
             <input
               required
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               className={field}
-              placeholder="Punguzo la 10%"
+              placeholder="10% discount"
             />
           </label>
           <label className="block text-sm">
             <span className="mb-1.5 block font-medium text-ink-700">
-              Asilimia ya punguzo
+              Discount percentage
             </span>
             <input
               type="number"
@@ -1756,7 +1756,7 @@ function PromoTab({
           </label>
           <label className="block text-sm">
             <span className="mb-1.5 block font-medium text-ink-700">
-              Jumla ndogo ya chini (TSh)
+              Minimum subtotal (TSh)
             </span>
             <input
               type="number"
@@ -1775,7 +1775,7 @@ function PromoTab({
             onChange={(e) => setFreeShipping(e.target.checked)}
             className="accent-brand-700"
           />
-          Usafirishaji bure
+          Free delivery
         </label>
         {error ? (
           <p className="rounded-lg bg-danger-100 px-3 py-2 text-sm text-danger-600">
@@ -1787,15 +1787,15 @@ function PromoTab({
           disabled={saving}
           className="btn-primary disabled:opacity-60"
         >
-          {saving ? "Inahifadhi…" : "Ongeza Msimbo"}
+          {saving ? "Saving…" : "Add code"}
         </button>
       </form>
 
       <section className="mt-8">
-        <h2 className="font-display text-xl text-ink-900">Promo zote</h2>
+        <h2 className="font-display text-xl text-ink-900">All codes</h2>
         {promos.length === 0 ? (
           <p className="mt-3 text-sm text-ink-500">
-            Hakuna msimbo bado. Ongeza wa kwanza hapo juu.
+            No codes yet. Add the first one above.
           </p>
         ) : (
           <ul className="mt-4 space-y-2">
@@ -1815,7 +1815,7 @@ function PromoTab({
                 ) : null}
                 {promo.freeShipping ? (
                   <span className="badge bg-success-100 text-success-600">
-                    usafirishaji bure
+                    Free delivery
                   </span>
                 ) : null}
                 {promo.minSubtotalTsh ? (
@@ -1830,7 +1830,7 @@ function PromoTab({
                       : "bg-cream-100 text-ink-400"
                   }`}
                 >
-                  {promo.active ? "Inatumika" : "Imezimwa"}
+                  {promo.active ? "Active" : "Inactive"}
                 </span>
                 <button
                   type="button"
@@ -1839,10 +1839,10 @@ function PromoTab({
                   className="btn-outline ml-auto px-3 py-1 text-xs disabled:opacity-60"
                 >
                   {toggling === promo.code
-                    ? "Inasasisha…"
+                    ? "Updating…"
                     : promo.active
-                      ? "Zima"
-                      : "Washa"}
+                      ? "Disable"
+                      : "Enable"}
                 </button>
               </li>
             ))}
@@ -1853,8 +1853,8 @@ function PromoTab({
   );
 }
 
-/* ============ Hifadhi (notifications + jarida + kadi) ============ */
-function HifadhiTab({
+/* ============ Updates (notifications + jarida + kadi) ============ */
+function UpdatesTab({
   notifications,
   subscribers,
   giftCards,
@@ -1884,11 +1884,11 @@ function HifadhiTab({
       {/* Arifa */}
       <section>
         <h2 className="font-display text-xl text-ink-900">
-          Arifa za hivi karibuni
+          Recent notifications
         </h2>
         {notifications.length === 0 ? (
           <p className="mt-3 text-sm text-ink-500">
-            Hakuna arifa bado. Oda mpya, hakiki na ombi zitaonekana hapa.
+            No notifications yet. New orders, reviews, and requests will appear here.
           </p>
         ) : (
           <ul className="mt-4 space-y-2">
@@ -1906,7 +1906,7 @@ function HifadhiTab({
                       : "bg-cream-100 text-ink-400"
                   }`}
                 >
-                  {n.kind}
+                  {({ oda: "Order", hakiki: "Review", rfq: "Quote request", malipo: "Payment", status: "Order update", info: "Update" } as Record<string, string>)[n.kind] ?? n.kind}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block font-medium text-ink-900">
@@ -1919,7 +1919,7 @@ function HifadhiTab({
                   ) : null}
                 </span>
                 <span className="text-xs text-ink-400">
-                  {new Date(n.createdAt).toLocaleString("sw-TZ")}
+                  {new Date(n.createdAt).toLocaleString("en-TZ")}
                 </span>
                 {n.status === "new" ? (
                   <button
@@ -1928,7 +1928,7 @@ function HifadhiTab({
                     onClick={() => void markRead(n.id)}
                     className="btn-outline px-3 py-1 text-xs disabled:opacity-60"
                   >
-                    {saving === n.id ? "…" : "Soma"}
+                    {saving === n.id ? "…" : "Mark as read"}
                   </button>
                 ) : null}
               </li>
@@ -1940,11 +1940,11 @@ function HifadhiTab({
       {/* Jarida */}
       <section>
         <h2 className="font-display text-xl text-ink-900">
-          Waasisi wa jarida ({subscribers.length})
+          Newsletter subscribers ({subscribers.length})
         </h2>
         {subscribers.length === 0 ? (
           <p className="mt-3 text-sm text-ink-500">
-            Hakuna aliyejiunga na jarida bado.
+            No newsletter subscribers yet.
           </p>
         ) : (
           <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -1955,7 +1955,7 @@ function HifadhiTab({
               >
                 <span className="truncate text-ink-700">{s.email}</span>
                 <span className="ml-2 shrink-0 text-xs text-ink-400">
-                  {new Date(s.createdAt).toLocaleDateString("sw-TZ")}
+                  {new Date(s.createdAt).toLocaleDateString("en-TZ")}
                 </span>
               </li>
             ))}
@@ -1963,14 +1963,14 @@ function HifadhiTab({
         )}
       </section>
 
-      {/* Kadi za zawadi */}
+      {/* Gift cards */}
       <section>
         <h2 className="font-display text-xl text-ink-900">
-          Kadi za zawadi ({giftCards.length})
+          Gift cards ({giftCards.length})
         </h2>
         {giftCards.length === 0 ? (
           <p className="mt-3 text-sm text-ink-500">
-            Hakuna kadi bado. Zilizotolewa kwenye /zawadi zitaonekana hapa.
+            No gift cards yet. Cards issued from /zawadi will appear here.
           </p>
         ) : (
           <ul className="mt-4 space-y-2">
@@ -1998,15 +1998,15 @@ function HifadhiTab({
                   }`}
                 >
                   {gc.status === "issued"
-                    ? "Imetolewa"
+                    ? "Issued"
                     : gc.status === "redeemed"
-                      ? "Imetumika"
-                      : "Imeisha"}
+                      ? "Redeemed"
+                      : "Out of stock"}
                 </span>
                 <span className="ml-auto text-xs text-ink-400">
                   {gc.expiresAt
-                    ? `Inaisha: ${new Date(gc.expiresAt).toLocaleDateString("sw-TZ")}`
-                    : `Imetolewa: ${new Date(gc.createdAt).toLocaleDateString("sw-TZ")}`}
+                    ? `Expires: ${new Date(gc.expiresAt).toLocaleDateString("en-TZ")}`
+                    : `Issued: ${new Date(gc.createdAt).toLocaleDateString("en-TZ")}`}
                 </span>
               </li>
             ))}

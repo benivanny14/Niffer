@@ -20,7 +20,7 @@ export type Branch = {
   services: string[];
 };
 
-const ALL = "zote";
+const ALL = "all";
 
 /**
  * Uchujaji wa eneo kama jiji.com: chip za mji zinarekebishwa kwenye URL
@@ -49,7 +49,7 @@ export function BranchExplorer({ branches }: { branches: Branch[] }) {
       {/* Chip za mji */}
       <div
         role="group"
-        aria-label="Chuja kwa mji"
+        aria-label="Filter by city"
         className="flex flex-wrap gap-2"
       >
         {[ALL, ...cities].map((city) => {
@@ -70,7 +70,7 @@ export function BranchExplorer({ branches }: { branches: Branch[] }) {
                   : "border-cream-300 bg-surface text-ink-700 hover:border-brand-300 hover:text-accent"
               }`}
             >
-              {city === ALL ? "Mji wote" : city}
+              {city === ALL ? "All cities" : city}
               <span
                 className={`ml-1.5 text-xs ${isActive ? "text-white/70" : "text-ink-400"}`}
               >
@@ -83,8 +83,8 @@ export function BranchExplorer({ branches }: { branches: Branch[] }) {
 
       {shown.length === 0 ? (
         <p className="card mt-6 p-6 text-sm text-ink-500">
-          Hakuna tawi kwenye mji huu bado. Jaribu mji mwingine au wasiliana nasi
-          kwa WhatsApp.
+          No locations found in this city. Try another city or contact us
+          on WhatsApp.
         </p>
       ) : (
         <ul className="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -97,7 +97,7 @@ export function BranchExplorer({ branches }: { branches: Branch[] }) {
             >
               {branch.flagship ? (
                 <span className="badge mb-3 self-start bg-gold-100 text-gold-700">
-                  Tawi kuu
+                  Flagship location
                 </span>
               ) : null}
               <h2 className="font-display text-xl text-ink-900">
@@ -134,7 +134,7 @@ export function BranchExplorer({ branches }: { branches: Branch[] }) {
               </ul>
               <a
                 href={waLink(
-                  `Habari ${site.name}, nina swali kuhusu tawi la ${branch.city}.`,
+                  `Hello ${site.name}, I have a question about your ${branch.city} location.`,
                 )}
                 target="_blank"
                 rel="noopener noreferrer"

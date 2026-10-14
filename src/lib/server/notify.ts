@@ -3,7 +3,7 @@ import { getDb, nowIso } from "@/lib/server/db";
 /**
  * Arifa ndani ya dashibodi (admin) + hook nyepesi ya barua pepe.
  *
- * Barua pepe: ikiwa `RESEND_API_KEY` imewekwa, tunatuma barua kwa
+ * Email address: ikiwa `RESEND_API_KEY` imewekwa, tunatuma barua kwa
  * `ADMIN_EMAIL` kupitia Resend API (bila dependency ya ziada). Ikiwa
  * hakuna kitu kimejazwa, arifa hubaki kwenye DB pekee — hakuna hitilafu.
  */
@@ -23,7 +23,7 @@ export type Notification = {
 const id = (prefix: string) =>
   `${prefix}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
-/** Hifadhi arifa (dashboard) — hairudishi hitilafu kwa msikilizaji. */
+/** Save arifa (dashboard) — hairudishi hitilafu kwa msikilizaji. */
 export async function notify(input: {
   kind?: NotificationKind;
   title: string;
@@ -79,7 +79,7 @@ export async function countUnreadNotifications(): Promise<number> {
   return Number(row?.n ?? 0);
 }
 
-/** Weka arifa kuwa imesomwa (admin). */
+/** Enter arifa kuwa imesomwa (admin). */
 export async function markNotificationRead(notificationId: string): Promise<boolean> {
   const result = await getDb()
     .prepare("UPDATE notifications SET status = 'read' WHERE id = ?")
@@ -87,7 +87,7 @@ export async function markNotificationRead(notificationId: string): Promise<bool
   return (await result).changes > 0;
 }
 
-/* ============ Barua pepe (Resend — nyepesi, hiari) ============ */
+/* ============ Email address (Resend — nyepesi, hiari) ============ */
 
 async function sendAdminEmail(title: string, body: string): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY?.trim();
@@ -109,7 +109,7 @@ async function sendAdminEmail(title: string, body: string): Promise<void> {
       }),
     });
   } catch (error) {
-    // Barua pepe si hitilafu ya kuzuia — DB ndio mwanzo wa ukweli.
+    // Email address si hitilafu ya kuzuia — DB ndio mwanzo wa ukweli.
     console.error("[notify] barua pepe haijatumwa:", error);
   }
 }

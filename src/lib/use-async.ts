@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
- * Resource ya backend inayopakuliwa kwa `key` (mfano: nambari ya oda).
+ * Resource ya backend inayopakuliwa kwa `key` (mfano: order number).
  *
  * `setState` hufanyika ndani ya callbacks za promise pekee (si moja kwa moja
  * ndani ya effect) — kanuni ya React 19 na lint ya mradi huu.
@@ -30,7 +30,7 @@ export function useAsync<T>(
   const { delayMs = 0, intervalMs } = options;
   const fetcherRef = useRef(fetcher);
 
-  // Sasisha ref baada ya kila render (si wakati wa render).
+  // Refresh ref baada ya kila render (si wakati wa render).
   useEffect(() => {
     fetcherRef.current = fetcher;
   });

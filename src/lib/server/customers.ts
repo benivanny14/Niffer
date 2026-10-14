@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { getDb, nowIso } from "@/lib/server/db";
 import { InputError } from "@/lib/server/errors";
 import type { Order } from "@/lib/orders";
@@ -67,18 +67,18 @@ export async function registerCustomer(input: {
 }): Promise<Customer> {
   const name = (input.name ?? "").trim();
   const phone = (input.phone ?? "").trim();
-  const email = (input.email ?? "").trim();
+  const email = (input.email ?? "").trim().toLowerCase();
   const password = input.password ?? "";
 
-  if (name.length < 2) throw new InputError("Jina halisi linahitajika.");
+  if (name.length < 2) throw new InputError("Please enter your name.");
   if (!/^[0-9+\s]{9,15}$/.test(phone)) {
-    throw new InputError("Weka namba sahihi ya simu (mfano 0754 000 000).");
+    throw new InputError("Enter a valid phone number (for example, 0754 000 000).");
   }
   if (password.length < 6) {
-    throw new InputError("Nywila lazima iwe na herufi 6 au zaidi.");
+    throw new InputError("Password must be at least 6 characters long.");
   }
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new InputError("Barua pepe si sahihi.");
+    throw new InputError("Invalid email address.");
   }
 
   const db = getDb();
@@ -87,7 +87,7 @@ export async function registerCustomer(input: {
     .get(phone) as { id?: string } | undefined;
   if (exists) {
     throw new InputError(
-      "Namba hii tayari ina akaunti. Ingia badala ya kujiandikishe.",
+      "This phone number already has an account. Sign in instead.",
       409,
     );
   }
@@ -115,105 +115,93 @@ export async function loginCustomer(input: {
 
   // Ujumbe mmoja kwa kila hali (usambaze taarifa za akaunti).
   if (!row || !verifyPassword(password, row.password_hash)) {
-    throw new InputError("Simu au nywila si sahihi.", 401);
+    throw new InputError("Incorrect phone number or password.", 401);
   }
   return toCustomer(row);
 }
 
 /* ============ Kusahau nywila (password reset) ============ */
 
-const RESET_TTL_MS = 1000 * 60 * 15; // dakika 15
-const RESET_CODE_ALPHABET = "23456789"; // bila 0/1/O/I — urahisi wa kuandika
+const RESET_TTL_MS = 1000 * 60 * 60;
 
-/** Msimbo wa tarakimu 6 usiolingana na nyingine (salama kwa kuandika). */
-function resetCode(): string {
-  let out = "";
-  for (let i = 0; i < 6; i += 1) {
-    out += RESET_CODE_ALPHABET[Math.floor(Math.random() * RESET_CODE_ALPHABET.length)];
-  }
-  return out;
+function passwordResetDigest(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
 }
 
-/**
- * Tengeneza msimbo wa kubadili nywila kwa simu.
- * Rudisha { customer, code } ikiwa akaunti ipo; null ikiwa hakuna.
- * (Mwombaji hajapata taarifa — route hujibu ujumbe wa jumla.)
- */
-export async function createPasswordReset(phoneRaw: string): Promise<{
+/** Create a random, single-use reset link token for an account email. */
+export async function createPasswordReset(emailRaw: string): Promise<{
   customer: Customer;
-  code: string;
+  token: string;
 } | null> {
-  const phone = phoneRaw.trim();
-  if (!phone) return null;
-  const row = await getDb()
-    .prepare("SELECT * FROM customers WHERE phone = ?")
-    .get(phone) as CustomerRow | undefined;
-  if (!row) return null;
+  const email = emailRaw.trim().toLowerCase();
+  if (!email) return null;
+  const matchingRows = await getDb()
+    .prepare("SELECT * FROM customers WHERE LOWER(email) = ? LIMIT 2")
+    .all(email) as CustomerRow[];
+  if (matchingRows.length !== 1 || !matchingRows[0]?.email) return null;
+  const row = matchingRows[0];
 
-  const db = getDb();
-  // Ondoa msimbo wowote wa awali wa akaunti hii.
-  await db.prepare(
-    "DELETE FROM password_reset_tokens WHERE customer_id = ? AND used = 0",
-  ).run(row.id);
-
-  const code = resetCode();
+  const token = randomBytes(32).toString("base64url");
   const createdAt = nowIso();
   const expiresAt = new Date(Date.now() + RESET_TTL_MS).toISOString();
-  await db.prepare(
-    `INSERT INTO password_reset_tokens (token, customer_id, expires_at, used, created_at)
-     VALUES (?, ?, ?, 0, ?)`,
-  ).run(code, row.id, expiresAt, createdAt);
+  const db = getDb();
+  await db.transaction(async (tx) => {
+    await tx.prepare(
+      "DELETE FROM password_reset_tokens WHERE customer_id = ? AND used = 0",
+    ).run(row.id);
+    await tx.prepare(
+      `INSERT INTO password_reset_tokens (token, customer_id, expires_at, used, created_at)
+       VALUES (?, ?, ?, 0, ?)`,
+    ).run(passwordResetDigest(token), row.id, expiresAt, createdAt);
+  });
 
-  return { customer: toCustomer(row), code };
+  return { customer: toCustomer(row), token };
 }
 
-/** Thibitisha msimbo na weka nywila mpya; invalidate sessions zote. */
+/** Verify a one-time reset token, hash the new password, and revoke sessions. */
 export async function resetPasswordWithToken(
-  codeRaw: string,
+  tokenRaw: string,
   newPassword: string,
 ): Promise<Customer> {
-  const code = codeRaw.trim();
-  if (!/^[0-9]{6}$/.test(code)) {
-    throw new InputError("Msimbo wa tarakimu 6 unahitajika.");
+  const token = tokenRaw.trim();
+  if (!/^[A-Za-z0-9_-]{43}$/.test(token)) {
+    throw new InputError("This reset link is invalid or has expired.");
   }
-  if (newPassword.length < 6) {
-    throw new InputError("Nywila lazima iwe na herufi 6 au zaidi.");
+  if (newPassword.length < 8) {
+    throw new InputError("Password must be at least 8 characters long.");
   }
 
   const db = getDb();
-  const row = await db
-    .prepare(
-      "SELECT * FROM password_reset_tokens WHERE token = ? AND used = 0",
-    )
-    .get(code) as
-    | { token: string; customer_id: string; expires_at: string }
-    | undefined;
-  if (!row || Date.parse(row.expires_at) < Date.now()) {
-    throw new InputError("Msimbo si sahihi au umeisha muda wake.", 400);
-  }
+  const customerRow = await db.transaction(async (tx) => {
+    const tokenDigest = passwordResetDigest(token);
+    const resetRow = await tx
+      .prepare("SELECT customer_id, expires_at FROM password_reset_tokens WHERE token = ? AND used = 0")
+      .get(tokenDigest) as { customer_id: string; expires_at: string } | undefined;
+    if (!resetRow || Date.parse(resetRow.expires_at) <= Date.now()) {
+      throw new InputError("This reset link is invalid or has expired.");
+    }
 
-  const customerRow = await db
-    .prepare("SELECT * FROM customers WHERE id = ?")
-    .get(row.customer_id) as CustomerRow | undefined;
-  if (!customerRow) throw new InputError("Akaunti haipatikani.", 404);
+    const customerRow = await tx
+      .prepare("SELECT * FROM customers WHERE id = ?")
+      .get(resetRow.customer_id) as CustomerRow | undefined;
+    if (!customerRow) throw new InputError("Account not found.", 404);
 
-  try {
-    await db.transaction(async (tx) => {
+    const claimed = await tx.prepare(
+      "UPDATE password_reset_tokens SET used = 1 WHERE token = ? AND used = 0 AND expires_at > ?",
+    ).run(tokenDigest, nowIso());
+    if (claimed.changes !== 1) {
+      throw new InputError("This reset link is invalid or has expired.");
+    }
+
     await tx.prepare("UPDATE customers SET password_hash = ? WHERE id = ?").run(
       hashPassword(newPassword),
       customerRow.id,
     );
     await tx.prepare(
-      "UPDATE password_reset_tokens SET used = 1 WHERE token = ?",
-    ).run(code);
-    // Futa session zote — mteja aliyepo aingie upya na nywila mpya.
-    await tx.prepare(
       "DELETE FROM customer_sessions WHERE customer_id = ?",
     ).run(customerRow.id);
-    });
-  } catch (error) {
-    throw error;
-  }
+    return customerRow;
+  });
 
   return toCustomer(customerRow);
 }
@@ -279,7 +267,7 @@ export async function listAllCustomers(limit = 500): Promise<Customer[]> {
   return rows.map(toCustomer);
 }
 
-/* ============ Oda zangu ============ */
+/* ============ My orders ============ */
 
 /**
  * Oda za mteja — zile alizoweka akiwa ameingia pamoja na zile za namba

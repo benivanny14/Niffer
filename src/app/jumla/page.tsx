@@ -7,26 +7,26 @@ import { bulkTiers as tiers } from "@/lib/wholesale";
 import { ShieldIcon, TruckIcon, TagIcon } from "@/components/ui/icons";
 
 export const metadata: Metadata = {
-  title: "Uuzaji wa Jumla",
+  title: "Wholesale",
   description:
-    "Portali ya jumla ya Niffer Cosmetics — bei za wingi kwa wauzaji, saluni na maduka ya urembo Tanzania. Ombi la bei (RFQ) na kufuatilia ombi lako.",
+    "Wholesale pricing, bulk discounts, and quote requests for retailers, salons, and beauty shops across Tanzania.",
 };
 
 const benefits = [
   {
     icon: TagIcon,
-    title: "Bei za jumla",
-    description: "Punguzo hadi 22% kulingana na wingi wa oda yako.",
+    title: "Wholesale pricing",
+    description: "Save up to 22% depending on your order quantity.",
   },
   {
     icon: TruckIcon,
-    title: "Usafirishaji maalum",
-    description: "Usafirishaji bure Dar es Salaam kwa oda ya jumla.",
+    title: "Delivery benefits",
+    description: "Free delivery in Dar es Salaam on wholesale orders.",
   },
   {
     icon: ShieldIcon,
-    title: "Bidhaa halisi",
-    description: "Kila bidhaa ina cheti cha ubora kutoka kwa wasambazaji.",
+    title: "Authentic products",
+    description: "Every product is sourced from trusted suppliers.",
   },
 ];
 
@@ -37,27 +37,20 @@ export default async function WholesalePage() {
 
   return (
     <div className="container-x py-12 lg:py-16">
-      <p className="eyebrow">Biashara · Portali ya jumla</p>
-      <h1 className="heading-display mt-2">Uuzaji wa jumla</h1>
-      <p className="mt-3 max-w-2xl text-ink-500">
-        Uza bidhaa za Niffer Cosmetics kwenye saluni, maduka yako au mtandaoni.
-        Tunatoa bei za jumla kwa wauzaji wote Tanzania, na msaada wa kuanza
-        biashara.
-      </p>
+      <p className="eyebrow">Wholesale portal</p>
+      <h1 className="heading-display mt-2">Wholesale</h1>
+      <p className="mt-3 max-w-2xl text-ink-500">Sell Niffer Cosmetics products in your salon, shop, or online. We offer wholesale pricing and support to retailers across Tanzania.</p>
 
       {/* Portali: fuatilia ombi */}
       <div className="card mt-8 flex flex-wrap items-center justify-between gap-4 border-brand-300 p-6">
         <div>
           <h2 className="font-display text-xl text-ink-900">
-            Tayari umeweka ombi la bei?
+            Already submitted a quote request?
           </h2>
-          <p className="mt-1 text-sm text-ink-500">
-            Fuatilia hatua ya RFQ yako na bei iliyowekwa na timu — kwa namba ya
-            simu uliyotumia.
-          </p>
+          <p className="mt-1 text-sm text-ink-500">Track your quote request and the price set by our team using the phone number you submitted.</p>
         </div>
         <Link href="/jumla/ombi" className="btn-primary">
-          Fuatilia ombi langu
+          Track my request
         </Link>
       </div>
 
@@ -79,16 +72,16 @@ export default async function WholesalePage() {
       {/* Tier table */}
       <section className="mt-12">
         <h2 className="font-display text-2xl text-ink-900">
-          Bei za jumla kwa wingi
+          Wholesale pricing for bulk orders
         </h2>
         <div className="card mt-6 overflow-x-auto">
           <table className="w-full min-w-[480px] text-left text-sm">
             <thead>
               <tr className="border-b border-cream-300 text-xs uppercase tracking-wide text-ink-400">
-                <th className="px-5 py-3 font-semibold">Daraja</th>
-                <th className="px-5 py-3 font-semibold">Wingi</th>
-                <th className="px-5 py-3 font-semibold">Punguzo</th>
-                <th className="px-5 py-3 font-semibold">Maelezo</th>
+                <th className="px-5 py-3 font-semibold">Tier</th>
+                <th className="px-5 py-3 font-semibold">Quantity</th>
+                <th className="px-5 py-3 font-semibold">Discount</th>
+                <th className="px-5 py-3 font-semibold">Details</th>
               </tr>
             </thead>
             <tbody>
@@ -101,7 +94,7 @@ export default async function WholesalePage() {
                     {tier.label}
                   </td>
                   <td className="px-5 py-4 text-ink-700">
-                    {tier.min}+ {tier.max ? `– ${tier.max}` : " bidhaa"}
+                    {tier.min}+ {tier.max ? `– ${tier.max}` : " products"}
                   </td>
                   <td className="px-5 py-4">
                     <span className="badge bg-brand-100 text-accent">
@@ -110,8 +103,8 @@ export default async function WholesalePage() {
                   </td>
                   <td className="px-5 py-4 text-ink-500">
                     {tier.max
-                      ? "Inafaa kwa wauzaji wanaoanza"
-                      : "Kwa maagizo makubwa na maduka makubwa"}
+                      ? "Great for new retailers"
+                      : "For large orders and established stores"}
                   </td>
                 </tr>
               ))}
@@ -119,15 +112,15 @@ export default async function WholesalePage() {
           </table>
         </div>
         <p className="mt-3 text-xs text-ink-400">
-          Bei za jumla hutumika kwa bidhaa zote isipokuwa tayari ziko kwenye
-          punguzo. Mshawaho unahesabiwa kwa kila bidhaa kwa wakati mmoja.
+          Wholesale prices apply to all products unless they are already on
+          discount. Discounts are calculated for each product in your order.
         </p>
       </section>
 
       {/* Kikokotoo cha bei ya jumla */}
       <section className="mt-12">
         <h2 className="font-display text-2xl text-ink-900">
-          Kokotoa bei yako mara moja
+          Calculate your price instantly
         </h2>
         <div className="mt-6">
           <BulkCalculator products={products} />
@@ -138,26 +131,23 @@ export default async function WholesalePage() {
       <section className="mt-12 grid gap-10 lg:grid-cols-2">
         <div>
           <h2 className="font-display text-2xl text-ink-900">
-            Omba bei ya jumla
+            Request wholesale pricing
           </h2>
-          <p className="mt-3 text-ink-500">
-            Jaza fomu hii na tutakupigia simu ndani ya saa 24 (Jumatatu–Jumamosi)
-            na bei zilizoborezwa kwa oda yako.
-          </p>
+          <p className="mt-3 text-ink-500">Complete this form and we will call you within 24 hours, Monday through Saturday, with a tailored quote.</p>
           <ul className="mt-6 space-y-3 text-sm text-ink-500">
-            <li>• Tunakubali malipo kwa M-Pesa, Mixx by Yas, Airtel Money</li>
-            <li>• Usafirishaji bure Dar es Salaam kwa oda ya jumla</li>
-            <li>• Malipo ya awali 50% kwa maagizo makubwa zaidi ya TSh 1,000,000</li>
+            <li>• We accept M-Pesa, Mixx by Yas, and Airtel Money</li>
+            <li>• Free delivery in Dar es Salaam on wholesale orders</li>
+            <li>• A 50% deposit is required for orders over TSh 1,000,000</li>
           </ul>
           <p className="mt-6 text-sm text-ink-500">
-            Je, unahitaji ushauri?{" "}
+            Need advice?{" "}
             <Link
               href="/wasiliana"
               className="font-medium text-accent hover:underline"
             >
-              Wasiliana nasi
+              Contact us
             </Link>{" "}
-            au piga simu.
+            or call us.
           </p>
         </div>
         <RfqForm products={products} />

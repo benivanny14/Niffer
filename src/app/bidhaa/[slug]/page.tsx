@@ -48,7 +48,7 @@ export async function generateMetadata({
   await connection();
   const { slug } = await params;
   const product = await findProduct(slug);
-  if (!product) return { title: "Bidhaa haipo" };
+  if (!product) return { title: "Product not found" };
 
   return {
     title: product.name,
@@ -67,10 +67,10 @@ export async function generateMetadata({
 }
 
 const badgeLabels: Record<Product["badges"][number], string> = {
-  new: "Mpya",
-  bestseller: "Kinachouzwa zaidi",
-  sale: "Punguzo",
-  "low-stock": "Zimebaki kidogo",
+  new: "New arrivals",
+  bestseller: "Best seller",
+  sale: "Discount",
+  "low-stock": "Low stock",
 };
 
 export default async function ProductPage({ params }: PageProps) {
@@ -109,7 +109,7 @@ async function ProductDetail({ params }: PageProps) {
   const discount = discountPercent(product.priceTsh, product.compareAtTsh);
   // Hakiki za bidhaa hii tu.
   const productReviews = rawReviews.filter((r) => r.productSlug === product.slug);
-  // Bidhaa zinazohusiana (kategoria ile ile).
+  // Related products (kategoria ile ile).
   const related = all
     .filter((p) => p.slug !== product.slug && p.category === product.category)
     .slice(0, 4);
@@ -127,25 +127,25 @@ async function ProductDetail({ params }: PageProps) {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(
             breadcrumbJsonLd([
-              { name: "Nyumbani", path: "/" },
-              { name: "Bidhaa", path: "/bidhaa" },
+              { name: "Home", path: "/" },
+              { name: "Products", path: "/bidhaa" },
               { name: product.name, path: `/bidhaa/${product.slug}` },
             ]),
           ),
         }}
       />
       {/* Breadcrumb */}
-      <nav aria-label="Njia" className="text-sm text-ink-400">
+      <nav aria-label="Breadcrumb" className="text-sm text-ink-400">
         <ol className="flex flex-wrap items-center gap-1.5">
           <li>
             <Link href="/" className="hover:text-accent">
-              Nyumbani
+              Home
             </Link>
           </li>
           <li aria-hidden>›</li>
           <li>
             <Link href="/bidhaa" className="hover:text-accent">
-              Bidhaa
+              Products
             </Link>
           </li>
           <li aria-hidden>›</li>
@@ -190,8 +190,8 @@ async function ProductDetail({ params }: PageProps) {
             />
             <span className="text-sm text-ink-400">
               {productReviews.length > 0
-                ? `${productReviews.length} maoni kwenye duka letu`
-                : "Hakuna maoni bado"}
+                ? `${productReviews.length} reviews in our store`
+                : "No reviews yet"}
             </span>
           </div>
 
@@ -218,11 +218,11 @@ async function ProductDetail({ params }: PageProps) {
           <ul className="mt-6 space-y-2.5 border-y border-cream-300 py-5 text-sm text-ink-500">
             <li className="flex items-center gap-2.5">
               <TruckIcon className="h-4 w-4 shrink-0 text-brand-600" />
-              Usafirishaji Dar es Salaam ndani ya siku 1–2
+              Delivery in Dar es Salaam within 1–2 days
             </li>
             <li className="flex items-center gap-2.5">
               <ShieldIcon className="h-4 w-4 shrink-0 text-brand-600" />
-              Lipa ukipokea
+              Pay on delivery
             </li>
           </ul>
 
@@ -234,8 +234,8 @@ async function ProductDetail({ params }: PageProps) {
       <section className="mt-16">
         <h2 className="heading-display">
           {productReviews.length > 0
-            ? "Maoni ya bidhaa hii"
-            : "Acha hakiki yako"}
+            ? "Reviews for this product"
+            : "Leave a review"}
         </h2>
         {productReviews.length > 0 ? (
           <ul className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -258,8 +258,8 @@ async function ProductDetail({ params }: PageProps) {
           </ul>
         ) : (
           <p className="mt-4 text-sm text-ink-500">
-            Kuwa wa kwanza kustaafisha bidhaa hii — hakiki yako inasaidia
-            wateja wengine kuchagua vizuri.
+            Be the first to review this product — your feedback helps others.
+            other customers make informed choices.
           </p>
         )}
         <div className="mt-8 max-w-2xl">
@@ -267,19 +267,19 @@ async function ProductDetail({ params }: PageProps) {
         </div>
       </section>
 
-      {/* Bidhaa zinazohusiana */}
+      {/* Related products */}
       {related.length > 0 ? (
         <section className="mt-16">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="eyebrow">Endelea kuvinjari</p>
-              <h2 className="heading-display mt-2">Bidhaa zinazohusiana</h2>
+              <p className="eyebrow">Keep browsing</p>
+              <h2 className="heading-display mt-2">Related products</h2>
             </div>
             <Link
               href="/bidhaa"
               className="group inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent"
             >
-              Zote
+              All products
               <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>

@@ -10,11 +10,11 @@ export async function PATCH(
 ) {
   try {
     if (!(await isAdminRequest())) {
-      return fail("Ingia kama admin.", 401);
+      return fail("Sign in as an administrator.", 401);
     }
     const { id } = await ctx.params;
     const body = await readBody<{ status?: string }>(req);
-    if (!body) return fail("Hakiki haijajazwa vizuri.");
+if (!body) return fail("The review details are incomplete.");
     const status = body.status === "approved" ? "approved" : "rejected";
     const review = await setReviewStatus(id, status);
     return json({ ok: true, review });

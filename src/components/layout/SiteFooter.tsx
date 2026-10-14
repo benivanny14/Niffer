@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { categories } from "@/lib/data/catalog";
 import { site } from "@/lib/site";
 import {
@@ -11,24 +11,24 @@ import {
 } from "@/components/ui/icons";
 
 const serviceLinks = [
-  { href: "/kuhusu", label: "Kuhusu Niffer" },
-  { href: "/usafirishaji", label: "Usafirishaji na Malipo" },
-  { href: "/marejesho", label: "Marejesho" },
-  { href: "/maswali", label: "Maswali Yanayoulizwa" },
-  { href: "/fuatilia", label: "Kufuatilia Oda Yako" },
-  { href: "/hakiki", label: "Hakiki za Wateja" },
-  { href: "/upendwa", label: "Bidhaa Unazopenda" },
+  { href: "/kuhusu", label: "About Niffer" },
+  { href: "/usafirishaji", label: "Shipping & Payments" },
+  { href: "/marejesho", label: "Returns" },
+  { href: "/maswali", label: "FAQs" },
+  { href: "/fuatilia", label: "Track Your Order" },
+  { href: "/hakiki", label: "Customer Reviews" },
+  { href: "/upendwa", label: "Your Wishlist" },
 ];
 
 const exploreLinks = [
-  { href: "/makala", label: "Makala za Urembo" },
-  { href: "/ofa", label: "Ofa na Punguzo" },
-  { href: "/zawadi", label: "Kadi za Zawadi" },
-  { href: "/jumla", label: "Uuzaji wa Jumla" },
-  { href: "/jumla/ombi", label: "Fuatilia Ombi la Bei" },
-  { href: "/matawi", label: "Matawi Yetu" },
-  { href: "/swali", label: "Swali la Utunzaji" },
-  { href: "/harufu", label: "Tafuta Harufu" },
+  { href: "/makala", label: "Beauty Journal" },
+  { href: "/ofa", label: "Offers & Discounts" },
+  { href: "/zawadi", label: "Gift Cards" },
+  { href: "/jumla", label: "Wholesale" },
+  { href: "/jumla/ombi", label: "Track a Quote" },
+  { href: "/matawi", label: "Our Locations" },
+  { href: "/swali", label: "Routine Quiz" },
+  { href: "/harufu", label: "Find a Fragrance" },
 ];
 
 export function SiteFooter() {
@@ -48,13 +48,13 @@ export function SiteFooter() {
             </span>
           </Link>
           <p className="mt-4 text-sm leading-relaxed text-ink-500">
-            Bidhaa za urembo za ubora wa juu — skincare, makeup, nywele na zaidi.
-            Tunaletea Tanzania kwa bei nafuu na huduma ya wateja inayojali.
+            Thoughtfully selected skincare, makeup, haircare and more.
+            We deliver across Tanzania with friendly, attentive service.
           </p>
         </div>
 
-        <nav aria-label="Kategoria">
-          <p className="eyebrow">Kategoria</p>
+        <nav aria-label="Categories">
+          <p className="eyebrow">Categories</p>
           <ul className="mt-4 space-y-2.5">
             {categories.map((category) => (
               <li key={category.slug}>
@@ -69,8 +69,8 @@ export function SiteFooter() {
           </ul>
         </nav>
 
-        <nav aria-label="Huduma">
-          <p className="eyebrow">Huduma</p>
+        <nav aria-label="Customer service">
+          <p className="eyebrow">Customer service</p>
           <ul className="mt-4 space-y-2.5">
             {serviceLinks.map((link) => (
               <li key={link.href}>
@@ -85,8 +85,8 @@ export function SiteFooter() {
           </ul>
         </nav>
 
-        <nav aria-label="Vinjari">
-          <p className="eyebrow">Vinjari</p>
+        <nav aria-label="Explore">
+          <p className="eyebrow">Explore</p>
           <ul className="mt-4 space-y-2.5">
             {exploreLinks.map((link) => (
               <li key={link.href}>
@@ -102,7 +102,7 @@ export function SiteFooter() {
         </nav>
 
         <div>
-          <p className="eyebrow">Wasiliana Nasi</p>
+          <p className="eyebrow">Contact us</p>
           <ul className="mt-4 space-y-3">
             <li className="flex items-start gap-2.5 text-sm text-ink-500">
               <PhoneIcon className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
@@ -118,7 +118,7 @@ export function SiteFooter() {
                 rel="noopener noreferrer"
                 className="transition-colors hover:text-accent"
               >
-                WhatsApp: oda za haraka
+                Order on WhatsApp
               </a>
             </li>
             <li className="text-sm text-ink-500">
@@ -128,7 +128,7 @@ export function SiteFooter() {
             </li>
           </ul>
           <div className="mt-5 flex flex-wrap gap-2">
-            {['M-Pesa', 'Mixx by Yas', 'Airtel Money', 'Lipa ukipokea'].map((method) => (
+            {['M-Pesa', 'Mixx by Yas', 'Airtel Money', 'Pay on delivery'].map((method) => (
               <span
                 key={method}
                 className="rounded-full border border-cream-300 bg-surface px-3 py-1 text-xs font-medium text-ink-500"
@@ -171,11 +171,11 @@ export function SiteFooter() {
 
       <div className="site-footer__bottom border-t border-cream-300">
         <div className="container-x flex flex-col items-center justify-between gap-2 py-5 text-xs text-ink-400 sm:flex-row">
-          <p>© 2026 Niffer Cosmetics. Haki zote zimehifadhiwa.</p>
+          <p>© 2026 Niffer Cosmetics. All rights reserved.</p>
           <div className="flex items-center gap-4">
-            <Link href="/akaunti" className="hover:text-accent">Akaunti</Link>
+            <Link href="/akaunti" className="hover:text-accent">Account</Link>
             <Link href="/admin" className="hover:text-accent">Admin</Link>
-            <span>Bei zote ni kwa Shilingi ya Tanzania (TSh)</span>
+            <span>All prices are in Tanzanian Shillings (TSh)</span>
           </div>
         </div>
       </div>

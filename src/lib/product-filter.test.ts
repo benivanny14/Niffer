@@ -11,7 +11,7 @@ function make(overrides: Partial<Product>): Product {
   return {
     id: "p-x",
     slug: "x",
-    name: "Bidhaa",
+    name: "Products",
     category: "skincare",
     priceTsh: 10000,
     shortDescription: "",
@@ -108,7 +108,7 @@ describe("filterProducts", () => {
     ).toEqual(["body"]);
   });
 
-  it("huchuja kwa kipengele (mpya / punguzo / inayoisha)", () => {
+  it("huchuja kwa result (mpya / punguzo / inayoisha)", () => {
     expect(filterProducts(items, { feature: "mpya" }).map((p) => p.slug)).toEqual([
       "body",
       "mist",

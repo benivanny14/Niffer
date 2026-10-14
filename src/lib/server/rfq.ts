@@ -11,11 +11,11 @@ import { bulkUnitPrice, tierFor } from "@/lib/wholesale";
 export type RfqStatus = "new" | "reviewed" | "quoted" | "accepted" | "declined";
 
 export const rfqStatusSteps: { id: RfqStatus; label: string }[] = [
-  { id: "new", label: "Imepokelewa" },
+  { id: "new", label: "Received" },
   { id: "reviewed", label: "Inapitiwa" },
-  { id: "quoted", label: "Bei yamewekwa" },
-  { id: "accepted", label: "Imekubalika" },
-  { id: "declined", label: "Imekataliwa" },
+  { id: "quoted", label: "Quoted" },
+  { id: "accepted", label: "Accepted" },
+  { id: "declined", label: "Declined" },
 ];
 
 export type Rfq = {
@@ -102,7 +102,7 @@ export type CreateRfqInput = {
   retailPriceTsh?: number;
 };
 
-/** Hifadhi ombi la bei ya jumla na urudishe nambari ya kufuatilia. */
+/** Save ombi la bei ya jumla na urudishe nambari ya kufuatilia. */
 export async function createRfq(input: CreateRfqInput): Promise<Rfq> {
   const business = (input.business ?? "").trim();
   const name = (input.name ?? "").trim();
@@ -114,13 +114,13 @@ export async function createRfq(input: CreateRfqInput): Promise<Rfq> {
   const note = (input.note ?? "").trim().slice(0, 600);
   const qty = Math.floor(Number(input.qty));
 
-  if (business.length < 2) throw new InputError("Jina la biashara linahitajika.");
-  if (name.length < 2) throw new InputError("Jina la mtu wa kuwasiliana linahitajika.");
+  if (business.length < 2) throw new InputError("Please enter your business name.");
+  if (name.length < 2) throw new InputError("Please enter a contact name.");
   if (!/^[0-9+\s]{9,15}$/.test(phone)) {
-    throw new InputError("Weka namba sahihi ya simu (mfano 0754 000 000).");
+    throw new InputError("Enter a valid phone number (for example, 0754 000 000).");
   }
   if (!Number.isFinite(qty) || qty < 1 || qty > 1_000_000) {
-    throw new InputError("Wingi sahihi unahitajika (mfano 50).");
+    throw new InputError("Enter a valid quantity (for example, 50).");
   }
 
   const db = getDb();
@@ -128,7 +128,7 @@ export async function createRfq(input: CreateRfqInput): Promise<Rfq> {
   let code = makeRfqCode();
   for (let i = 0; i < 10 && await exists.get(code); i += 1) code = makeRfqCode();
   if (await exists.get(code)) {
-    throw new InputError("Jaribu tena (msisitizo wa nambari ya RFQ).", 500);
+    throw new InputError("Please try again.", 500);
   }
 
   const at = nowIso();
@@ -178,7 +178,7 @@ export async function createRfq(input: CreateRfqInput): Promise<Rfq> {
   }
 
   const created = await getRfq(code);
-  if (!created) throw new InputError("Imeshindikana kuhifadhi ombi. Jaribu tena.", 500);
+  if (!created) throw new InputError("Could not save your request. Please try again.", 500);
   return created;
 }
 
@@ -204,7 +204,7 @@ export async function getRfq(code: string): Promise<Rfq | undefined> {
 export async function listRfqsByPhone(phone: string, limit = 50): Promise<Rfq[]> {
   const digits = normalizePhone(phone);
   if (digits.length < 9) return [];
-  // Tafuta kwa nambari zilizoandikwa (0754… / 255754… ni sawa).
+  // Search kwa nambari zilizoandikwa (0754… / 255754… ni sawa).
   const rows = await getDb()
     .prepare("SELECT * FROM rfqs ORDER BY created_at DESC LIMIT 500")
     .all() as unknown as RfqRow[];
@@ -227,21 +227,21 @@ function normalizePhone(value: string): string {
 
 const VALID_STATUS = rfqStatusSteps.map((s) => s.id);
 
-/** Sasisha hali na bei ya wito (admin). */
+/** Refresh hali na bei ya wito (admin). */
 export async function updateRfq(
   code: string,
   patch: { status?: string; quoteTsh?: number | null; unitQuoteTsh?: number | null },
 ): Promise<Rfq> {
   const key = code.trim().toUpperCase();
   const existing = await getRfq(key);
-  if (!existing) throw new InputError("Ombi la RFQ halipatikani.", 404);
+  if (!existing) throw new InputError("Quote request not found.", 404);
 
   const cols: string[] = [];
   const vals: (string | number | null)[] = [];
 
   if (patch.status !== undefined) {
     if (!VALID_STATUS.includes(patch.status as RfqStatus)) {
-      throw new InputError("Hali ya RFQ si sahihi.");
+      throw new InputError("Invalid quote request status.");
     }
     cols.push("status = ?");
     vals.push(patch.status);
@@ -260,7 +260,7 @@ export async function updateRfq(
     cols.push("unit_quote_tsh = ?");
     vals.push(value);
   }
-  if (cols.length === 0) throw new InputError("Hakuna mabadiliko yaliyotumwa.");
+  if (cols.length === 0) throw new InputError("No changes were submitted.");
 
   // Bei ya unit pekee imejazwa — hesabu jumla.
   if (patch.unitQuoteTsh != null && patch.quoteTsh === undefined) {
@@ -276,7 +276,7 @@ export async function updateRfq(
     .run(...vals, key);
 
   const updated = await getRfq(key);
-  if (!updated) throw new InputError("Imeshindikana kusasisha ombi.", 500);
+  if (!updated) throw new InputError("Could not update the request.", 500);
   return updated;
 }
 

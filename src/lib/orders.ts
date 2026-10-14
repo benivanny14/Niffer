@@ -13,14 +13,14 @@ export type OrderStatus =
   | "ghairiwa";
 
 export const statusSteps: { id: OrderStatus; label: string }[] = [
-  { id: "imapokelewa", label: "Imepokelewa" },
-  { id: "inaendelea", label: "Inaendelea" },
-  { id: "imetumwa", label: "Imetumwa" },
-  { id: "imefika", label: "Imefika" },
+  { id: "imapokelewa", label: "Received" },
+  { id: "inaendelea", label: "Processing" },
+  { id: "imetumwa", label: "Shipped" },
+  { id: "imefika", label: "Delivered" },
 ];
 
 /** Hatua ya kughairiwa — terminal, si sehemu ya mwendo wa kawaida. */
-export const cancelledStep = { id: "ghairiwa" as OrderStatus, label: "Imeghairiwa" };
+export const cancelledStep = { id: "ghairiwa" as OrderStatus, label: "Cancelled" };
 
 /** Lebo ya hali yoyote ya oda (pamoja na kughairiwa). */
 export function statusLabel(status: OrderStatus): string {

@@ -13,15 +13,15 @@ export async function GET() {
   }
 }
 
-/** Weka stoo (admin pekee). */
+/** Enter stoo (admin pekee). */
 export async function PATCH(req: NextRequest) {
   try {
     if (!(await isAdminRequest())) {
-      return fail("Ingia kama admin kubadilisha stoo.", 401);
+      return fail("Sign in as an administrator to update stock.", 401);
     }
     const body = await readBody<{ slug?: string; qty?: number }>(req);
     if (!body?.slug || typeof body.qty !== "number") {
-      return fail("Taarifa za stoo hazisahihi.");
+      return fail("The stock details are invalid.");
     }
     const qty = await setStockValue(String(body.slug), Number(body.qty));
     return json({ ok: true, slug: body.slug, qty, stock: await getStockMap() });

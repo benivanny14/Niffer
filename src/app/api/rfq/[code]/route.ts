@@ -17,7 +17,7 @@ export async function GET(
     }
     const { code } = await ctx.params;
     const rfq = await getRfq(code);
-    if (!rfq) return fail("Ombi la RFQ halipatikani.", 404);
+    if (!rfq) return fail("Quote request not found.", 404);
     // Rudisha tu taarifa za msingi + bei (si PII kamili).
     return json({
       ok: true,
@@ -36,7 +36,7 @@ export async function GET(
   }
 }
 
-/** Sasisha hali / bei ya wito (admin pekee). */
+/** Refresh hali / bei ya wito (admin pekee). */
 export async function PATCH(
   req: NextRequest,
   ctx: { params: Promise<{ code: string }> },
@@ -44,7 +44,7 @@ export async function PATCH(
   await connection();
   try {
     if (!(await isAdminRequest())) {
-      return fail("Ingia kama admin kusasisha RFQ.", 401);
+      return fail("Sign in as an administrator to update the quote request.", 401);
     }
     const { code } = await ctx.params;
     const body = await readBody<{
@@ -52,7 +52,7 @@ export async function PATCH(
       quoteTsh?: number | null;
       unitQuoteTsh?: number | null;
     }>(req);
-    if (!body) return fail("Taarifa za mabadiliko hazisahihi.");
+    if (!body) return fail("The update details are invalid.");
     const rfq = await updateRfq(code, body);
     return json({ ok: true, rfq });
   } catch (error) {

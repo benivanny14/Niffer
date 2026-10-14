@@ -18,7 +18,7 @@ export function AdminProfileManager() {
     let active = true;
     apiGet<{ image: string }>("/api/store-profile")
       .then((data) => { if (active) setImage(data.image); })
-      .catch(() => { if (active) setMessage("Picha ya sasa haikuweza kupakiwa."); });
+      .catch(() => { if (active) setMessage("Could not load the current image."); });
     return () => { active = false; };
   }, []);
 
@@ -26,11 +26,11 @@ export function AdminProfileManager() {
     if (!file || busy) return;
     setMessage("");
     if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
-      setMessage("Tumia picha ya JPG, PNG, WebP au AVIF.");
+      setMessage("Choose a JPG, PNG, WebP or AVIF image.");
       return;
     }
     if (file.size > MAX_IMAGE_SIZE) {
-      setMessage("Picha isizidi 12MB.");
+      setMessage("Image must be 12MB or smaller.");
       return;
     }
     setBusy(true);
@@ -60,12 +60,12 @@ export function AdminProfileManager() {
         body: form,
       });
       const cloudinaryResult = await response.json() as { error?: { message?: string } };
-      if (!response.ok) throw new Error(cloudinaryResult.error?.message || "Cloudinary imeshindwa kupokea picha.");
+      if (!response.ok) throw new Error(cloudinaryResult.error?.message || "Cloudinary could not upload the image.");
 
       const result = await apiPut<{ image: string }>("/api/store-profile");
       setImage(result.image);
       window.dispatchEvent(new CustomEvent("niffer:store-profile-updated", { detail: result.image }));
-      setMessage("Picha mpya sasa inaonekana kwa wateja wote.");
+      setMessage("Your new image is now visible to all customers.");
     } catch (error) {
       setMessage(errorMessage(error));
     } finally {
@@ -82,9 +82,9 @@ export function AdminProfileManager() {
           <span className="flex h-full w-full items-center justify-center rounded-full bg-surface p-[4px] dark:bg-[var(--surface-raised)]">
             <span className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-cream-100 text-accent">
               {image ? (
-                <Image src={image} alt="Picha ya profile ya duka" fill unoptimized sizes="(max-width: 640px) 176px, 224px" className="object-cover" />
+                <Image src={image} alt="Store profile image" fill unoptimized sizes="(max-width: 640px) 176px, 224px" className="object-cover" />
               ) : (
-                <span className="flex flex-col items-center gap-1.5" aria-label="Hakuna picha ya profile iliyowekwa">
+                <span className="flex flex-col items-center gap-1.5" aria-label="No store profile image set">
                   <SparkleIcon className="h-10 w-10 sm:h-12 sm:w-12" />
                   <span className="text-6xl font-display font-semibold sm:text-7xl">N</span>
                 </span>
@@ -97,15 +97,15 @@ export function AdminProfileManager() {
         </span>
       </div>
       <div className="min-w-0 flex-1">
-        <p className="eyebrow">Utambulisho wa duka</p>
-        <h2 id="store-profile-title" className="mt-1 font-display text-xl font-semibold text-ink-900">Picha ya profile inayoonekana kwa wote</h2>
-        <p className="mt-1 max-w-2xl text-sm leading-6 text-ink-500">Picha hii itawekwa kubwa upande wa juu kushoto kwenye header ya tovuti, na itaonekana kwa wateja wote.</p>
+        <p className="eyebrow">Store identity</p>
+        <h2 id="store-profile-title" className="mt-1 font-display text-xl font-semibold text-ink-900">Store profile photo</h2>
+        <p className="mt-1 max-w-2xl text-sm leading-6 text-ink-500">This photo appears prominently in the top-left corner of the website header for all customers.</p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" aria-label="Chagua picha ya profile ya duka" onChange={(event) => void upload(event.target.files?.[0])} />
+          <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" aria-label="Choose store profile photo" onChange={(event) => void upload(event.target.files?.[0])} />
           <button type="button" onClick={() => inputRef.current?.click()} disabled={busy} className="btn-primary min-w-36 disabled:opacity-60">
-            {busy ? "Inapakia picha…" : image ? "Badili picha" : "Weka picha"}
+            {busy ? "Uploading image…" : image ? "Change photo" : "Upload photo"}
           </button>
-          <span className="text-xs text-ink-400">JPG, PNG, WebP au AVIF · hadi 12MB</span>
+          <span className="text-xs text-ink-400">JPG, PNG, WebP au AVIF · up to 12MB</span>
         </div>
         {message ? <p role="status" className="mt-3 text-sm text-ink-500">{message}</p> : null}
       </div>

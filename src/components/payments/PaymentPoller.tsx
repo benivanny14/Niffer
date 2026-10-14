@@ -70,36 +70,29 @@ export function PaymentPoller({ reference }: { reference: string }) {
     <div className="card p-8 text-center">
       <span className="mx-auto block h-12 w-12 animate-spin rounded-full border-4 border-cream-300 border-t-brand-700" />
       <h2 className="mt-5 font-display text-2xl text-ink-900">
-        Tunasubiri uthibitisho wa malipo…
+        Waiting for payment confirmation...
       </h2>
-      <p className="mt-2 text-sm text-ink-500">
-        Nambari ya oda:{" "}
-        <span className="font-semibold text-ink-900">{reference}</span>
-        {order ? ` · ${formatTsh(order.totalTsh)}` : ""} — usifunge ukurasa huu.
-      </p>
+      <p className="mt-2 text-sm text-ink-500">Order number: <span className="font-semibold text-ink-900">{reference}</span>{order ? ` (${formatTsh(order.totalTsh)})` : ""}. Please keep this page open.</p>
 
       {givingUp ? (
         <div className="mt-6 space-y-3">
-          <p className="text-sm text-ink-500">
-            Bado hatujapata uthibitisho. Oda yako imehifadhiwa — unaweza
-            kufuatilia hali yake kwenye ukurasa wa oda au kupiga simu kwetu.
-          </p>
+            We have not received confirmation yet. Your order is saved. Check its status on the order page or call us for help.
           <div className="flex flex-wrap justify-center gap-3">
             <button
               type="button"
               onClick={() => window.location.reload()}
               className="btn-outline"
             >
-              Jaribu tena
+              Try again
             </button>
             <a href={`/odha/${reference}`} className="btn-primary">
-              Angalia oda yako
+              View your order
             </a>
           </div>
         </div>
       ) : (
         <p className="mt-4 text-xs text-ink-400">
-          Inathibitisha kila baada ya sekunde 3…
+          Checking again every 3 seconds...
         </p>
       )}
     </div>

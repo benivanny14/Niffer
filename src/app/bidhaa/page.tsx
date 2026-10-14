@@ -13,15 +13,15 @@ import {
 } from "@/lib/product-filter";
 
 export const metadata: Metadata = {
-  title: "Bidhaa zote",
+  title: "All Products",
   description:
-    "Vinjari bidhaa za Niffer Cosmetics: skincare, makeup, nywele, perfume na zaidi — chuja kwa mkoa, mji, bei na kategoria. Bei za Tanzania kwa Shilingi ya Tanzania.",
+    "Shop skincare, makeup, haircare, fragrance and more at Niffer Cosmetics. Filter by region, city, price and category. Prices are shown in Tanzanian shillings.",
 };
 
 type PageProps = {
   searchParams: Promise<{
     kategoria?: string;
-    kipengele?: string;
+    result?: string;
     mkoa?: string;
     mji?: string;
     bei?: string;
@@ -33,13 +33,13 @@ type PageProps = {
 export default function AllProductsPage({ searchParams }: PageProps) {
   return (
     <div className="container-x py-10 lg:py-14">
-      <nav aria-label="Njia" className="text-sm text-ink-400">
+      <nav aria-label="Breadcrumb" className="text-sm text-ink-400">
         <ol className="flex flex-wrap items-center gap-1.5">
           <li>
-            <Link href="/" className="hover:text-accent">Nyumbani</Link>
+            <Link href="/" className="hover:text-accent">Home</Link>
           </li>
           <li aria-hidden>›</li>
-          <li className="text-ink-700">Bidhaa</li>
+          <li className="text-ink-700">Products</li>
         </ol>
       </nav>
 
@@ -52,7 +52,7 @@ export default function AllProductsPage({ searchParams }: PageProps) {
 
 function CatalogSkeleton() {
   return (
-    <div aria-label="Bidhaa zinapakia" aria-busy="true" className="mt-8">
+    <div aria-label="Loading products" aria-busy="true" className="mt-8">
       <div className="h-32 animate-pulse border-y border-cream-300 bg-cream-100" />
       <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 2xl:grid-cols-5">
         {Array.from({ length: 10 }, (_, index) => (
@@ -72,7 +72,7 @@ function CatalogSkeleton() {
 }
 
 function parseFilters(params: Awaited<PageProps["searchParams"]>): ProductFilters {
-  const { kategoria, kipengele, mkoa, mji, bei, q, sort } = params;
+  const { kategoria, result, mkoa, mji, bei, q, sort } = params;
   let minPrice: number | null = null;
   let maxPrice: number | null = null;
   if (bei === "chini-20") maxPrice = 19_999;
@@ -83,7 +83,7 @@ function parseFilters(params: Awaited<PageProps["searchParams"]>): ProductFilter
 
   return {
     category: kategoria || null,
-    feature: kipengele || null,
+    feature: result || null,
     region: mkoa || null,
     city: mji || null,
     minPrice,
@@ -106,32 +106,32 @@ async function ProductGrid({ searchParams }: PageProps) {
     : undefined;
   const heading =
     filters.feature === "mpya"
-      ? "Bidhaa mpya"
+      ? "New arrivals"
       : filters.feature === "punguzo"
-        ? "Punguzo"
+      ? "On sale"
         : filters.query
-          ? `Matokeo ya "${filters.query}"`
+          ? `Results for "${filters.query}"`
           : filters.city
-            ? `Bidhaa — ${filters.city}`
+            ? `Products — ${filters.city}`
             : filters.region
-              ? `Bidhaa — ${filters.region}`
-              : "Bidhaa zote";
+              ? `Products — ${filters.region}`
+              : "All products";
 
   return (
     <>
       <div className="store-hero mt-6 border-y border-cream-300 p-5 sm:p-7">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="eyebrow">Duka letu</p>
+            <p className="eyebrow">Our store</p>
             <h1 className="heading-display mt-2">{activeCategory ? activeCategory.name : heading}</h1>
             <p className="mt-3 max-w-2xl text-ink-500">
               {activeCategory
                 ? activeCategory.description
-                : "Chuja kwa mkoa, mji, bei au kategoria ili kupata bidhaa inayokufaa."}
+                : "Filter by region, city, price or category to find what you need."}
             </p>
           </div>
           <p className="border border-brand-200 bg-surface px-3 py-1.5 text-sm font-medium text-accent">
-            {filtered.length} bidhaa zimepatikana
+            {filtered.length} products found
           </p>
         </div>
       </div>
@@ -150,9 +150,9 @@ async function ProductGrid({ searchParams }: PageProps) {
         </ul>
       ) : (
         <div className="card mt-10 p-10 text-center">
-          <p className="font-display text-xl text-ink-900">Hakuna bidhaa zinazolingana na vichujio vyako</p>
-          <p className="mt-2 text-sm text-ink-500">Jaribu kuondoa kichujio kimoja au vinjari bidhaa zote.</p>
-          <Link href="/bidhaa" className="btn-primary mt-6">Ona bidhaa zote</Link>
+          <p className="font-display text-xl text-ink-900">No products match your filters</p>
+          <p className="mt-2 text-sm text-ink-500">Try removing a filter or browse all products.</p>
+          <Link href="/bidhaa" className="btn-primary mt-6">View all products</Link>
         </div>
       )}
     </>

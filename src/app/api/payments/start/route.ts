@@ -12,12 +12,12 @@ export async function POST(req: NextRequest) {
   try {
     const body = await readBody<{ reference?: string }>(req);
     const reference = (body?.reference ?? "").trim().toUpperCase();
-    if (!reference) return fail("Nambari ya oda inahitajika.");
+if (!reference) return fail("An order number is required.");
 
     const order = await getOrder(reference);
-    if (!order) return fail("Oda haipatikani.", 404);
+    if (!order) return fail("Order not found.", 404);
     if (await getPaymentStatus(reference) === "paid") {
-      return fail("Malipo tayari yamefanikiwa kwa oda hii.", 409);
+      return fail("Payment has already been completed for this order.", 409);
     }
 
     const payment = await startPayment(order);

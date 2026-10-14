@@ -15,14 +15,14 @@ export async function GET(
   try {
     const { slug } = await ctx.params;
     const product = await findProduct(slug);
-    if (!product) return fail("Bidhaa haipatikani.", 404);
+    if (!product) return fail("Product not found.", 404);
     return json({ ok: true, product });
   } catch (error) {
     return toErrorResponse(error);
   }
 }
 
-/** Hariri bidhaa (admin pekee) — bei, jina, maelezo, picha, stoo n.k. */
+/** Edit bidhaa (admin pekee) — bei, jina, maelezo, picha, stoo n.k. */
 export async function PATCH(
   req: NextRequest,
   ctx: { params: Promise<{ slug: string }> },
@@ -30,16 +30,16 @@ export async function PATCH(
   await connection();
   try {
     if (!(await isAdminRequest())) {
-      return fail("Ingia kama admin kuhariri bidhaa.", 401);
+      return fail("Sign in as an administrator to edit products.", 401);
     }
     const { slug } = await ctx.params;
     const db = getDb();
     if (!await db.prepare("SELECT 1 FROM products WHERE slug = ?").get(slug)) {
-      return fail("Bidhaa haipatikani.", 404);
+      return fail("Product not found.", 404);
     }
 
     const body = await readBody<Record<string, unknown>>(req);
-    if (!body) return fail("Taarifa za mabadiliko hazisahihi.");
+    if (!body) return fail("The update details are invalid.");
 
     const cols: string[] = [];
     const vals: (string | number | null)[] = [];
@@ -71,7 +71,7 @@ export async function PATCH(
     if (typeof body.category === "string" && body.category.trim()) {
       const category = body.category.trim();
       if (!await db.prepare("SELECT 1 FROM categories WHERE slug = ?").get(category)) {
-        return fail("Kategoria si sahihi.");
+        return fail("Invalid category.");
       }
       push("category", category);
     }
@@ -84,7 +84,7 @@ export async function PATCH(
     if (typeof body.city === "string") push("city", body.city.trim());
 
     if (cols.length === 0 && typeof body.stock !== "number") {
-      return fail("Hakuna mabadiliko yaliyotumwa.");
+      return fail("No changes were submitted.");
     }
 
     if (cols.length > 0) {
@@ -110,12 +110,12 @@ export async function DELETE(
   await connection();
   try {
     if (!(await isAdminRequest())) {
-      return fail("Ingia kama admin kufuta bidhaa.", 401);
+      return fail("Sign in as an administrator to delete products.", 401);
     }
     const { slug } = await ctx.params;
     const db = getDb();
     const exists = await db.prepare("SELECT 1 FROM products WHERE slug = ?").get(slug);
-    if (!exists) return fail("Bidhaa haipatikani.", 404);
+    if (!exists) return fail("Product not found.", 404);
 
     await db.transaction(async (tx) => {
       await tx.prepare("DELETE FROM products WHERE slug = ?").run(slug);

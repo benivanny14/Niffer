@@ -23,7 +23,7 @@ export async function GET() {
 export async function POST() {
   await connection();
   try {
-    if (!(await isAdminRequest())) return fail("Ingia kama admin kubadilisha picha ya duka.", 401);
+    if (!(await isAdminRequest())) return fail("Sign in as an administrator to change the store image.", 401);
     return json({ ok: true, upload: signAdminProfileUpload() });
   } catch (error) {
     return toErrorResponse(error);
@@ -34,7 +34,7 @@ export async function POST() {
 export async function PUT() {
   await connection();
   try {
-    if (!(await isAdminRequest())) return fail("Ingia kama admin kubadilisha picha ya duka.", 401);
+    if (!(await isAdminRequest())) return fail("Sign in as an administrator to change the store image.", 401);
     const image = await getAdminProfileImageUrl();
     await getDb().prepare(
       `INSERT INTO meta (key, value) VALUES (?, ?)

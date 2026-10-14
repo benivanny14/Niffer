@@ -65,7 +65,7 @@ export default function AccountPage() {
   if (checking) {
     return (
       <div className="container-x max-w-md py-16 text-center">
-        <p className="text-sm text-ink-500">Inathibitisha akaunti yako…</p>
+        <p className="text-sm text-ink-500">Checking your account…</p>
       </div>
     );
   }
@@ -75,10 +75,10 @@ export default function AccountPage() {
   return <Dashboard customer={customer} onLogout={() => setCustomer(null)} />;
 }
 
-/* ============ Ingia / Jiandikishe ============ */
+/* ============ Ingia / Create account ============ */
 
 function AuthSection({ onLogin }: { onLogin: (c: Customer) => void }) {
-  const [mode, setMode] = useState<"login" | "register" | "forgot">("login");
+  const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -86,20 +86,11 @@ function AuthSection({ onLogin }: { onLogin: (c: Customer) => void }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // Kusahau nywila — hatua mbili (ombi la msimbo → weka nywila mpya).
-  const [resetPhone, setResetPhone] = useState("");
-  const [resetCode, setResetCode] = useState("");
-  const [resetPassword, setResetPassword] = useState("");
-  const [resetStep, setResetStep] = useState<"phone" | "code">("phone");
-  const [resetMessage, setResetMessage] = useState("");
-  const [resetError, setResetError] = useState("");
-  const [resetBusy, setResetBusy] = useState(false);
-
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (busy) return;
     if (!/^[0-9+\s]{9,15}$/.test(phone.trim())) {
-      setError("Weka namba sahihi ya simu (mfano 0754 000 000).");
+      setError("Enter a valid phone number (for example, 0754 000 000).");
       return;
     }
     setError("");
@@ -123,152 +114,16 @@ function AuthSection({ onLogin }: { onLogin: (c: Customer) => void }) {
     }
   }
 
-  async function submitForgot(e: React.FormEvent) {
-    e.preventDefault();
-    if (resetBusy) return;
-    setResetBusy(true);
-    setResetError("");
-    try {
-      if (resetStep === "phone") {
-        const data = await apiPost<{ ok: boolean; message: string }>(
-          "/api/customers/forgot",
-          { phone: resetPhone },
-        );
-        setResetMessage(data.message);
-        setResetStep("code");
-      } else {
-        const data = await apiPost<{ ok: boolean; message: string }>(
-          "/api/customers/reset",
-          { token: resetCode, password: resetPassword },
-        );
-        // Imefanikwa — rudi kwenye fomu ya kuingia.
-        setMode("login");
-        setPhone(resetPhone);
-        setPassword("");
-        setResetMessage(data.message);
-        setResetStep("phone");
-        setResetCode("");
-        setResetPassword("");
-      }
-    } catch (err) {
-      setResetError(errorMessage(err));
-    } finally {
-      setResetBusy(false);
-    }
-  }
-
-  if (mode === "forgot") {
-    return (
-      <div className="container-x max-w-md py-16">
-        <p className="eyebrow">Akaunti yako</p>
-        <h1 className="heading-display mt-2">Kusahau nywila</h1>
-        <p className="mt-3 text-ink-500">
-          {resetStep === "phone"
-            ? "Weka namba yako ya simu — tutakutumia msimbo wa kubadili nywila kwa barua pepe (ikiwa imewekwa kwenye akaunti yako)."
-            : "Weka msimbo uliopokea na nywila mpya."}
-        </p>
-
-        <form onSubmit={submitForgot} className="card mt-8 space-y-4 p-6">
-          {resetStep === "phone" ? (
-            <label className="block text-sm">
-              <span className="mb-1.5 block font-medium text-ink-700">
-                Namba ya simu *
-              </span>
-              <input
-                required
-                value={resetPhone}
-                onChange={(e) => setResetPhone(e.target.value)}
-                className={field}
-                placeholder="0754 000 000"
-                inputMode="tel"
-                autoComplete="tel"
-              />
-            </label>
-          ) : (
-            <>
-              <label className="block text-sm">
-                <span className="mb-1.5 block font-medium text-ink-700">
-                  Msimbo wa tarakimu 6 *
-                </span>
-                <input
-                  required
-                  value={resetCode}
-                  onChange={(e) => setResetCode(e.target.value)}
-                  className={field}
-                  placeholder="mfano 482913"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  maxLength={6}
-                />
-              </label>
-              <label className="block text-sm">
-                <span className="mb-1.5 block font-medium text-ink-700">
-                  Nywila mpya * (herufi 6+)
-                </span>
-                <input
-                  required
-                  type="password"
-                  value={resetPassword}
-                  onChange={(e) => setResetPassword(e.target.value)}
-                  className={field}
-                  placeholder="••••••"
-                  minLength={6}
-                  autoComplete="new-password"
-                />
-              </label>
-            </>
-          )}
-
-          {resetMessage ? (
-            <p className="rounded-lg bg-success-100 px-3 py-2 text-sm text-success-600">
-              {resetMessage}
-            </p>
-          ) : null}
-          {resetError ? (
-            <p className="rounded-lg bg-danger-100 px-3 py-2 text-sm text-danger-600">
-              {resetError}
-            </p>
-          ) : null}
-
-          <button
-            type="submit"
-            disabled={resetBusy}
-            className="btn-primary w-full disabled:opacity-60"
-          >
-            {resetBusy
-              ? "Inasubiri…"
-              : resetStep === "phone"
-                ? "Tuma msimbo"
-                : "Badilisha nywila"}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setMode("login");
-              setResetError("");
-              setResetMessage("");
-              setResetStep("phone");
-            }}
-            className="w-full text-center text-sm text-ink-500 transition-colors hover:text-accent"
-          >
-            ← Rudi kwenye kuingia
-          </button>
-        </form>
-      </div>
-    );
-  }
-
   return (
     <div className="container-x max-w-md py-16">
-      <p className="eyebrow">Akaunti yako</p>
+      <p className="eyebrow">Your account</p>
       <h1 className="heading-display mt-2">
-        {mode === "login" ? "Ingia" : "Jiandikishe"}
+        {mode === "login" ? "Sign in" : "Create account"}
       </h1>
       <p className="mt-3 text-ink-500">
         {mode === "login"
-          ? "Ingia kwa simu na nywila yako ili kuona oda zako na kuharakisha malipo."
-          : "Fungua akaunti ya bure — oda zako, upendwa na historia yote sehemu moja."}
+          ? "Sign in with your phone and password to view your orders and check out faster."
+          : "Create a free account — to keep your orders, wishlist and history in one place."}
       </p>
 
       <form onSubmit={submit} className="card mt-8 space-y-4 p-6">
@@ -276,27 +131,27 @@ function AuthSection({ onLogin }: { onLogin: (c: Customer) => void }) {
           <>
             <label className="block text-sm">
               <span className="mb-1.5 block font-medium text-ink-700">
-                Jina lako *
+                Your name *
               </span>
               <input
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className={field}
-                placeholder="Jina lako"
+                placeholder="Your name"
                 autoComplete="name"
               />
             </label>
             <label className="block text-sm">
               <span className="mb-1.5 block font-medium text-ink-700">
-                Barua pepe (hiari)
+                Email address (optional)
               </span>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={field}
-                placeholder="wewe@mfano.com"
+                placeholder="you@example.com"
                 autoComplete="email"
               />
             </label>
@@ -305,7 +160,7 @@ function AuthSection({ onLogin }: { onLogin: (c: Customer) => void }) {
 
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium text-ink-700">
-            Namba ya simu *
+            Phone number *
           </span>
           <input
             required
@@ -320,7 +175,7 @@ function AuthSection({ onLogin }: { onLogin: (c: Customer) => void }) {
 
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium text-ink-700">
-            Nywila *{mode === "register" ? " (herufi 6+)" : ""}
+            Password *{mode === "register" ? " (6+ characters)" : ""}
           </span>
           <input
             required
@@ -335,22 +190,9 @@ function AuthSection({ onLogin }: { onLogin: (c: Customer) => void }) {
         </label>
 
         {mode === "login" ? (
-          <button
-            type="button"
-            onClick={() => {
-              setMode("forgot");
-              setError("");
-            }}
-            className="text-sm text-accent transition-colors hover:underline"
-          >
-            Umesahau nywila?
-          </button>
-        ) : null}
-
-        {resetMessage ? (
-          <p className="rounded-lg bg-success-100 px-3 py-2 text-sm text-success-600">
-            {resetMessage}
-          </p>
+          <Link href="/forgot-password" className="text-sm text-accent transition-colors hover:underline">
+            Forgot password?
+          </Link>
         ) : null}
 
         {error ? (
@@ -365,10 +207,10 @@ function AuthSection({ onLogin }: { onLogin: (c: Customer) => void }) {
           className="btn-primary w-full disabled:opacity-60"
         >
           {busy
-            ? "Inasubiri…"
+            ? "Please wait..."
             : mode === "login"
-              ? "Ingia"
-              : "Fungua akaunti"}
+              ? "Sign in"
+              : "Create account"}
         </button>
 
         <button
@@ -381,23 +223,23 @@ function AuthSection({ onLogin }: { onLogin: (c: Customer) => void }) {
         >
           {mode === "login" ? (
             <>
-              Huna akaunti? <span className="font-semibold text-accent">Jiandikishe</span>
+              No account yet? <span className="font-semibold text-accent">Create account</span>
             </>
           ) : (
             <>
-              Una akaunti? <span className="font-semibold text-accent">Ingia</span>
+              Already have an account? <span className="font-semibold text-accent">Sign in</span>
             </>
           )}
         </button>
 
         <p className="text-center text-xs text-ink-400">
-          Kwa kuingia, unakubali{" "}
+          By signing in, you agree to our{" "}
           <Link href="/masharti" className="text-accent hover:underline">
-            Masharti
+            Terms
           </Link>{" "}
           na{" "}
           <Link href="/faragha" className="text-accent hover:underline">
-            Sera ya Faragha
+            Privacy policy
           </Link>
           .
         </p>
@@ -406,7 +248,7 @@ function AuthSection({ onLogin }: { onLogin: (c: Customer) => void }) {
   );
 }
 
-/* ============ Dashibodi ============ */
+/* ============ Dashboard ============ */
 
 function Dashboard({
   customer,
@@ -419,8 +261,8 @@ function Dashboard({
   const { wishlist, ready } = useStore();
   const [loggingOut, setLoggingOut] = useState(false);
 
-  // Sync upendwa: ongeza za kifaa hiki kwenye akaunti (merge) mara moja,
-  // kisha pakia zilizokuwepo kwenye akaunti kurudi kwenye kifaa hiki.
+  // Sync upendwa: ongeza za kifaa hiki in your account (merge) mara moja,
+  // kisha pakia zilizokuwepo in your account kurudi kwenye kifaa hiki.
   useEffect(() => {
     if (!ready) return;
     let alive = true;
@@ -465,7 +307,7 @@ function Dashboard({
     },
   );
 
-  // Arifa za mteja (ujumbe wa admin).
+  // Notifications za mteja (ujumbe wa admin).
   const notifData = useAsync<{
     notifications: CustomerNotification[];
     unread: number;
@@ -503,9 +345,9 @@ function Dashboard({
             <UserIcon className="h-7 w-7" />
           </span>
           <div>
-            <p className="eyebrow">Akaunti yako</p>
+            <p className="eyebrow">Your account</p>
             <h1 className="heading-display mt-1 text-3xl">
-              Habari, {customer.name}
+              Hello, {customer.name}
             </h1>
             <p className="mt-1 text-sm text-ink-500">
               {formatPhone(customer.phone)}
@@ -519,16 +361,16 @@ function Dashboard({
           disabled={loggingOut}
           className="btn-outline disabled:opacity-60"
         >
-          {loggingOut ? "Inatoka…" : "Toka"}
+          {loggingOut ? "Signing out…" : "Sign out"}
         </button>
       </div>
 
-      {/* Muhtasari */}
+      {/* Overview */}
       <dl className="mt-10 grid gap-4 sm:grid-cols-3">
         {[
-          ["Oda zako", loading ? "…" : `${myOrders.length}`],
-          ["Manunuzi yote", loading ? "…" : formatTsh(spentTsh)],
-          [ready ? "Bidhaa unazopenda" : "Inasubiri…", `${wishlist.length}`],
+          ["Your orders", loading ? "…" : `${myOrders.length}`],
+          ["Total spent", loading ? "…" : formatTsh(spentTsh)],
+          [ready ? "Wishlist" : "Please wait...", `${wishlist.length}`],
         ].map(([label, value]) => (
           <div key={label} className="card p-5">
             <dt className="text-xs font-semibold uppercase tracking-wide text-ink-400">
@@ -543,24 +385,24 @@ function Dashboard({
       <div className="mt-6 flex flex-wrap gap-3">
         <Link href="/upendwa" className="btn-outline">
           <HeartIcon className="h-4 w-4" />
-          Bidhaa unazopenda
+          Wishlist
         </Link>
         <Link href="/fuatilia" className="btn-outline">
           <TruckIcon className="h-4 w-4" />
-          Fuatilia oda
+          Track orders
         </Link>
         <Link href="/bidhaa" className="btn-primary">
           <BagIcon className="h-4 w-4" />
-          Nunua tena
+          Shop again
         </Link>
       </div>
 
-      {/* Arifa kutoka kwa admin */}
+      {/* Notifications from the store */}
       {notifications.length > 0 ? (
         <section className="mt-10">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-2xl text-ink-900">
-              Arifa
+              Notifications
               {unreadNotifs > 0 ? (
                 <span className="ml-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-700 text-xs font-bold text-white">
                   {unreadNotifs}
@@ -582,7 +424,7 @@ function Dashboard({
                 }}
                 className="text-sm text-accent hover:underline"
               >
-                Zisome zote
+                Mark all as read
               </button>
             ) : null}
           </div>
@@ -610,11 +452,11 @@ function Dashboard({
                       </Link>
                     ) : null}
                     <span>
-                      {new Date(n.createdAt).toLocaleString("sw-TZ")}
+                      {new Date(n.createdAt).toLocaleString("en-TZ")}
                     </span>
                     {n.status === "new" ? (
                       <span className="badge bg-brand-100 text-accent">
-                        Mpya
+                        New
                       </span>
                     ) : null}
                   </div>
@@ -625,9 +467,9 @@ function Dashboard({
         </section>
       ) : null}
 
-      {/* Oda zangu */}
+      {/* My orders */}
       <section className="mt-12">
-        <h2 className="font-display text-2xl text-ink-900">Oda zangu</h2>
+        <h2 className="font-display text-2xl text-ink-900">My orders</h2>
 
         {error ? (
           <p className="card mt-6 p-6 text-sm text-danger-600">{error}</p>
@@ -641,13 +483,13 @@ function Dashboard({
           <div className="card mt-6 p-10 text-center">
             <BagIcon className="mx-auto h-12 w-12 text-ink-300" />
             <p className="font-display mt-4 text-lg text-ink-900">
-              Bado hujaweka oda yoyote
+              No orders yet
             </p>
             <p className="mt-2 text-sm text-ink-500">
-              Ukiweka oda, itaonekana hapa pamoja na hali yake.
+              Your orders and their status will appear here.
             </p>
             <Link href="/bidhaa" className="btn-primary mt-5">
-              Anza Kununua
+              Start shopping
             </Link>
           </div>
         ) : (
@@ -672,8 +514,8 @@ function Dashboard({
                         </span>
                       </div>
                       <p className="mt-1 text-sm text-ink-500">
-                        {new Date(order.createdAt).toLocaleDateString("sw-TZ")} ·{" "}
-                        {order.lines.length} bidhaa ·{" "}
+                        {new Date(order.createdAt).toLocaleDateString("en-TZ")} ·{" "}
+                        {order.lines.length} products ·{" "}
                         {[order.customer.city, order.customer.region]
                           .filter(Boolean)
                           .join(", ")}
@@ -698,29 +540,29 @@ function Dashboard({
         )}
       </section>
 
-      {/* Faragha */}
+      {/* Privacy */}
       <section className="card mt-12 flex flex-wrap items-center gap-4 p-6">
         <ShieldIcon className="h-8 w-8 shrink-0 text-brand-600" />
         <div className="min-w-0 flex-1">
           <p className="font-medium text-ink-900">
-            Taarifa zako zinabaki salama
+            Your information is secure
           </p>
           <p className="mt-0.5 text-sm text-ink-500">
-            Nywila yako imehifadhiwa ikiwa imefichwa (hash) kwenye database —
-            hata watu wa Niffer hawawezi kuiona.
+            Your password is securely hashed in our database —
+            and cannot be seen by Niffer staff.
           </p>
         </div>
         <Link
           href="/faragha"
           className="text-sm font-semibold text-accent hover:underline"
         >
-          Sera ya Faragha →
+          Privacy policy →
         </Link>
       </section>
 
       <p className="mt-8 flex items-center gap-2 text-sm text-ink-400">
         <MapPinIcon className="h-4 w-4 text-brand-600" />
-        Unapendelea kuagiza kwa simu? Piga{" "}
+        Prefer to order by phone? Call{" "}
         <a
           href={`tel:${site.phoneTel}`}
           className="font-medium text-accent hover:underline"

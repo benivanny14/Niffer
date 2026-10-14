@@ -11,33 +11,33 @@ import {
 } from "@/components/ui/icons";
 
 export const metadata: Metadata = {
-  title: "Wasiliana Nasi",
+  title: "Contact us",
   description:
-    "Wasiliana na Niffer Cosmetics kupitia simu, WhatsApp, barua pepe au tembelea duka letu Dar es Salaam.",
+    "Contact Niffer Cosmetics by phone, WhatsApp or email, or visit our store in Dar es Salaam.",
 };
 
 const channels = [
   {
     icon: PhoneIcon,
-    label: "Simu",
+    label: "Phone",
     value: site.phoneDisplay,
     href: `tel:${site.phoneTel}`,
   },
   {
     icon: ChatIcon,
     label: "WhatsApp",
-    value: "Oda za haraka",
+    value: "Quick orders",
     href: `https://wa.me/${site.whatsapp}`,
   },
   {
     icon: MailIcon,
-    label: "Barua pepe",
+    label: "Email",
     value: site.email,
     href: `mailto:${site.email}`,
   },
   {
     icon: MapPinIcon,
-    label: "Ofisi",
+    label: "Address",
     value: site.address,
     href: undefined,
   },
@@ -46,11 +46,11 @@ const channels = [
 export default function ContactPage() {
   return (
     <div className="container-x py-12 lg:py-16">
-      <p className="eyebrow">Huduma kwa wateja</p>
-      <h1 className="heading-display mt-2">Wasiliana Nasi</h1>
+      <p className="eyebrow">Customer service</p>
+      <h1 className="heading-display mt-2">Contact us</h1>
       <p className="mt-3 max-w-2xl text-ink-500">
-        Uko na swali kuhusu bidhaa, oda, au unahitaji ushauri wa urembo? Tupo
-        hapa kukusaidia.
+        Questions about a product or order? Need help choosing? We are
+        here to help.
       </p>
 
       <div className="mt-10 grid gap-10 lg:grid-cols-5">
@@ -100,7 +100,7 @@ export default function ContactPage() {
             </span>
             <span>
               <span className="block text-xs uppercase tracking-wide text-ink-400">
-                Siku za kazi
+                Opening hours
               </span>
               <span className="block font-medium text-ink-900">
                 {site.hours}
@@ -109,7 +109,7 @@ export default function ContactPage() {
           </div>
 
           <Link href="/maswali" className="btn-outline w-full">
-            Angalia Maswali Yanayoulizwa
+            Read our FAQs
           </Link>
         </aside>
       </div>

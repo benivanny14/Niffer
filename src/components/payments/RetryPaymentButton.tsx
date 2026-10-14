@@ -39,7 +39,7 @@ export function RetryPaymentButton({ reference }: { reference: string }) {
         disabled={busy}
         className="btn-outline disabled:opacity-60"
       >
-        {busy ? "Inafungua…" : "Jaribu malipo tena"}
+        {busy ? "Inafungua…" : "Try payment again"}
       </button>
       {error ? <span className="text-xs text-danger-600">{error}</span> : null}
     </span>

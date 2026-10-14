@@ -14,12 +14,12 @@ export async function POST(req: NextRequest) {
       return fail(rateLimitMessage(limited.retryAfterSec), 429);
     }
     const body = await readBody<{ code?: string }>(req);
-    if (!body?.code) return fail("Weka msimbo wa kadi.");
+    if (!body?.code) return fail("Enter a gift card code.");
     const card = await getGiftCard(String(body.code));
-    if (!card) return json({ ok: false, error: "Kadi haipatikani." }, 404);
+    if (!card) return json({ ok: false, error: "Gift card not found." }, 404);
     if (card.status !== "issued") {
       return json(
-        { ok: false, error: "Kadi hii tayari imetumika au imeisha." },
+        { ok: false, error: "This card has already been used or has expired." },
         400,
       );
     }

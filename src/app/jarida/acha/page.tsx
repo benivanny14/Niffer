@@ -34,11 +34,11 @@ export default function NewsletterUnsubscribePage() {
 
   return (
     <div className="container-x max-w-xl py-16 lg:py-20">
-      <p className="eyebrow">Jarida la Niffer</p>
-      <h1 className="heading-display mt-2">Jiondoe kwenye jarida</h1>
+      <p className="eyebrow">Niffer newsletter</p>
+      <h1 className="heading-display mt-2">Unsubscribe from the newsletter</h1>
       <p className="mt-3 text-ink-500">
-        Weka barua pepe uliyojisajilia nayo tutakuoondoa kwenye orodha ya
-        jarida. Hutapokea tena ofa zetu.
+        Enter the email address you subscribed with to remove it from the
+        newsletter. You will no longer receive our offers.
       </p>
 
       {done ? (
@@ -55,14 +55,14 @@ export default function NewsletterUnsubscribePage() {
         <form onSubmit={submit} className="card mt-8 p-6">
           <label className="block text-sm">
             <span className="mb-1.5 block font-medium text-ink-700">
-              Barua pepe
+              Email address
             </span>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="wewe@mfano.com"
+          placeholder="you@example.com"
               autoComplete="email"
               className="w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500"
             />
@@ -75,14 +75,14 @@ export default function NewsletterUnsubscribePage() {
             disabled={sending}
             className="btn-primary mt-4 disabled:opacity-60"
           >
-            {sending ? "Inaondoa…" : "Jiondoe kwenye jarida"}
+            {sending ? "Inaondoa…" : "Unsubscribe from the newsletter"}
           </button>
         </form>
       )}
 
       <p className="mt-6 text-sm text-ink-500">
         <Link href="/" className="text-accent underline hover:text-accent/80">
-          Rudi nyumbani
+          Back to home
         </Link>
       </p>
     </div>

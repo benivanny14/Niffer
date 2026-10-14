@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Tafuta",
+  title: "Search",
   alternates: { canonical: "/tafuta" },
 };
 

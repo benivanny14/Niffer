@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   await connection();
   try {
     if (!(await isAdminRequest())) {
-      return fail("Ingia kama admin kuona oda zote.", 401);
+      return fail("Sign in as an administrator to view all orders.", 401);
     }
     const limit = intParam(req.nextUrl.searchParams.get("limit"), 200, 1000);
     return json({ ok: true, orders: await listOrders(limit) });
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-/** Weka oda mpya (checkout). */
+/** Enter oda mpya (checkout). */
 export async function POST(req: NextRequest) {
   try {
     const limited = rateLimit(req, "order-create", 10, 300);
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       return fail(rateLimitMessage(limited.retryAfterSec), 429);
     }
     const body = await readBody<CreateOrderInput>(req);
-    if (!body) return fail("Taarifa za oda hazisahihi.");
+    if (!body) return fail("The order details are invalid.");
     // Ikiwa mteja ameingia,unganisha oda na akaunti yake.
     const customer = await currentCustomer();
     const { order, stock } = await createOrder({

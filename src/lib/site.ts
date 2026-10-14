@@ -1,14 +1,14 @@
-/** Taarifa za duka — badilisha hapa unapobadilisha simu/anwani halisi. */
+/** Store information — badilisha hapa unapobadilisha simu/anwani halisi. */
 
 export const site = {
   name: "Niffer Cosmetics",
-  tagline: "Bidhaa za urembo na huduma ya karibu",
+  tagline: "Thoughtfully chosen beauty, with care",
   phoneDisplay: "+255 747 340 170",
   phoneTel: "+255747340170",
   whatsapp: "255747340170",
   email: "habari@niffercosmetics.co.tz",
-  address: "Mtaa wa Samora, Dar es Salaam",
-  hours: "Jumatatu hadi Jumamosi · saa 3:00 asubuhi–2:00 usiku",
+  address: "Samora Street, Dar es Salaam",
+  hours: "Monday through Saturday, 9:00 AM to 8:00 PM",
   freeShippingThresholdTsh: 50000,
   baseShippingTsh: 3000,
   codEnabled: true,
@@ -20,10 +20,10 @@ export const site = {
 } as const;
 
 export const paymentMethods = [
-  { id: "mpesa", label: "M-Pesa", note: "Lipa kwa simu yako" },
-  { id: "mixx", label: "Mixx by Yas", note: "Lipa kwa simu yako" },
-  { id: "airtel", label: "Airtel Money", note: "Lipa kwa simu yako" },
-  { id: "cod", label: "Lipa ukipokea", note: "Lipa bidhaa ikikufikia" },
+  { id: "mpesa", label: "M-Pesa", note: "Pay with your phone" },
+  { id: "mixx", label: "Mixx by Yas", note: "Pay with your phone" },
+  { id: "airtel", label: "Airtel Money", note: "Pay with your phone" },
+  { id: "cod", label: "Cash on delivery", note: "Pay when your order arrives" },
 ] as const;
 
 export type PaymentId = (typeof paymentMethods)[number]["id"];
@@ -53,19 +53,19 @@ export type TanzaniaRegion = (typeof tanzaniaRegions)[number];
  */
 export const tanzaniaCities: Record<TanzaniaRegion, readonly string[]> = {
   "Dar es Salaam": ["Kinondoni", "Ilala", "Temeke", "Ubungo", "Kigamboni"],
-  Arusha: ["Arusha Jiji", "Meru", "Karatu", "Monduli"],
-  Dodoma: ["Dodoma Jiji", "Chamwino", "Bahi"],
-  Mbeya: ["Mbeya Jiji", "Rungwe", "Kyela"],
+  Arusha: ["Arusha City", "Meru", "Karatu", "Monduli"],
+  Dodoma: ["Dodoma City", "Chamwino", "Bahi"],
+  Mbeya: ["Mbeya City", "Rungwe", "Kyela"],
   Mwanza: ["Nyamagana", "Ilemela", "Sengerema", "Magu"],
-  Tanga: ["Tanga Jiji", "Pangani", "Muheza"],
-  Morogoro: ["Morogoro Jiji", "Kilosa", "Kilombero"],
-  Iringa: ["Iringa Jiji", "Mafinga"],
-  Kilimanjaro: ["Moshi Jiji", "Hai", "Rombo"],
-  Zanzibar: ["Unguja Kaskazini", "Unguja Kusini", "Mjini Magharibi"],
-  Songea: ["Songea Jiji", "Mbinga"],
+  Tanga: ["Tanga City", "Pangani", "Muheza"],
+  Morogoro: ["Morogoro City", "Kilosa", "Kilombero"],
+  Iringa: ["Iringa City", "Mafinga"],
+  Kilimanjaro: ["Moshi City", "Hai", "Rombo"],
+  Zanzibar: ["North Unguja", "South Unguja", "Urban West"],
+  Songea: ["Songea City", "Mbinga"],
   Musoma: ["Musoma Jiji", "Bariadi"],
-  Tabora: ["Tabora Jiji", "Nzega"],
-  Kigoma: ["Kigoma Jiji", "Kasulu"],
+  Tabora: ["Tabora City", "Nzega"],
+  Kigoma: ["Kigoma City", "Kasulu"],
 };
 
 /** Miji yote (bila kujali mkoa). */

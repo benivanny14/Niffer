@@ -20,11 +20,11 @@ type Rfq = {
 };
 
 const statusLabels: Record<Rfq["status"], string> = {
-  new: "Imepokelewa",
-  reviewed: "Inapitiwa",
-  quoted: "Bei yamewekwa",
-  accepted: "Imekubalika",
-  declined: "Imekataliwa",
+  new: "Received",
+  reviewed: "Under review",
+  quoted: "Quote sent",
+  accepted: "Accepted",
+  declined: "Declined",
 };
 
 const statusStyles: Record<Rfq["status"], string> = {
@@ -42,7 +42,7 @@ const STATUS_FLOW: Rfq["status"][] = [
   "accepted",
 ];
 
-/** Portali ya jumla: tafuta ombi lako la RFQ kwa namba ya simu. */
+/** Wholesale portal: track your quote requests by phone number. */
 export function RfqTracker() {
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
@@ -54,7 +54,7 @@ export function RfqTracker() {
     e.preventDefault();
     if (loading) return;
     if (!/^[0-9+\s]{9,15}$/.test(phone.trim())) {
-      setError("Weka namba sahihi ya simu (mfano 0754 000 000).");
+      setError("Enter a valid phone number (e.g. 0754 000 000).");
       return;
     }
     setError("");
@@ -77,7 +77,7 @@ export function RfqTracker() {
       <form onSubmit={search} className="card flex flex-col gap-3 p-6 sm:flex-row">
         <label className="flex-1 text-sm">
           <span className="mb-1.5 block font-medium text-ink-700">
-            Namba ya simu ya biashara *
+            Business phone number *
           </span>
           <input
             required
@@ -94,7 +94,7 @@ export function RfqTracker() {
           className="btn-primary h-fit self-end px-6 disabled:opacity-60"
         >
           <SearchIcon className="h-4 w-4" />
-          {loading ? "Inatafuta…" : "Tafuta ombi"}
+          {loading ? "Searching…" : "Find requests"}
         </button>
       </form>
 
@@ -106,10 +106,10 @@ export function RfqTracker() {
 
       {searched && rfqs.length === 0 ? (
         <p className="card mt-6 p-6 text-sm text-ink-500">
-          Hatujapata ombi lolote kwa namba hii. Hakikisha namba ni ile uliyotumia
-          kwenye fomu ya RFQ, au{" "}
+          No requests found for this number. Check that it matches the phone number you used
+          on your quote request, or{" "}
           <a href="/jumla" className="font-semibold text-accent hover:underline">
-            weka ombi jipya
+            submit a new request
           </a>
           .
         </p>
@@ -133,16 +133,16 @@ export function RfqTracker() {
                     </span>
                     {declined ? (
                       <span className="badge bg-danger-100 text-danger-600">
-                        Haiendelei
+                        Declined
                       </span>
                     ) : null}
                   </div>
                   <span className="text-xs text-ink-400">
-                    {new Date(rfq.createdAt).toLocaleDateString("sw-TZ")}
+                    {new Date(rfq.createdAt).toLocaleDateString("en-TZ")}
                   </span>
                 </div>
 
-                {/* Hatua za ombi */}
+                {/* Request progress */}
                 {!declined ? (
                   <ol className="mt-4 flex flex-wrap gap-2">
                     {STATUS_FLOW.map((status, index) => (
@@ -162,13 +162,13 @@ export function RfqTracker() {
 
                 <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
                   <div>
-                    <dt className="text-ink-400">Bidhaa</dt>
+                    <dt className="text-ink-400">Product</dt>
                     <dd className="mt-0.5 font-medium text-ink-900">
                       {rfq.productName || "—"}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-ink-400">Wingi</dt>
+                    <dt className="text-ink-400">Quantity</dt>
                     <dd className="mt-0.5 font-medium text-ink-900">
                       {rfq.qty} pcs
                     </dd>
@@ -179,12 +179,12 @@ export function RfqTracker() {
                 <div className="mt-4 rounded-xl bg-cream-100 p-4 text-sm">
                   {rfq.unitQuoteTsh != null ? (
                     <>
-                      <p className="text-ink-500">Bei iliyowekwa na timu</p>
+                      <p className="text-ink-500">Quote from our team</p>
                       <p className="mt-1 font-display text-xl text-ink-900">
-                        {formatTsh(rfq.unitQuoteTsh)} kwa kitu
+                        {formatTsh(rfq.unitQuoteTsh)} each
                         {rfq.quoteTsh != null ? (
                           <span className="ml-2 text-sm font-semibold text-success-600">
-                            jumla {formatTsh(rfq.quoteTsh)}
+                            total {formatTsh(rfq.quoteTsh)}
                           </span>
                         ) : null}
                       </p>
@@ -192,11 +192,11 @@ export function RfqTracker() {
                   ) : (
                     <>
                       <p className="text-ink-500">
-                        Bei rasmi bado haijawekwa — tutakupigia simu na bei
-                        yako maalum:
+                        Your quote is being prepared. We will call with a price for
+                        your order:
                       </p>
                       <p className="mt-1 font-display text-lg text-ink-700">
-                        {tierFor(rfq.qty)?.label ?? "Rejareja"} · {rfq.qty} pcs
+                        {tierFor(rfq.qty)?.label ?? "Retail"} · {rfq.qty} pcs
                       </p>
                     </>
                   )}

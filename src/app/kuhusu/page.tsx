@@ -9,40 +9,40 @@ import {
 } from "@/components/ui/icons";
 
 export const metadata: Metadata = {
-  title: "Kuhusu Niffer Cosmetics",
+  title: "About Niffer Cosmetics",
   description:
-    "Taarifa za duka la mtandaoni la Niffer Cosmetics na namna ya kuwasiliana nasi.",
+    "Learn about Niffer Cosmetics, our online beauty store and how to reach our team.",
 };
 
 const values = [
   {
     icon: ShieldIcon,
-    title: "Maelezo wazi",
-        body: "Tunaweka maelezo ya kila bidhaa wazi ili uweze kuyakagua kabla ya kuagiza.",
+    title: "Clear product details",
+    body: "We share clear product information so you can make an informed choice before ordering.",
   },
   {
     icon: TruckIcon,
-    title: "Usafirishaji wa haraka",
-        body: "Tunakueleza gharama na makadirio ya muda wa kufika wakati wa kuagiza.",
+    title: "Reliable delivery",
+    body: "Delivery fees and estimated arrival times are shown when you place your order.",
   },
   {
     icon: ChatIcon,
-    title: "Huduma ya wateja",
-    body: "Tunakusaidia kuchagua bidhaa zinazokufaa, kabla na baada ya ununuzi.",
+    title: "Friendly support",
+    body: "We can help you choose products and answer questions before or after your purchase.",
   },
 ];
 
 export default function AboutPage() {
   return (
     <div className="container-x py-12 lg:py-16">
-      <p className="eyebrow">Kuhusu Niffer</p>
+      <p className="eyebrow">About Niffer</p>
       <h1 className="heading-display mt-2 max-w-2xl">
-        Bidhaa za urembo, kwa urahisi wa kuagiza
+        Beauty shopping made simple
       </h1>
       <p className="mt-5 max-w-2xl leading-relaxed text-ink-500">
-        Niffer Cosmetics ni duka la mtandaoni la bidhaa za urembo. Vinjari
-        bidhaa, soma maelezo na wasiliana nasi ukiwa na swali kabla ya
-        kukamilisha oda yako.
+        Niffer Cosmetics is an online beauty store serving customers across Tanzania.
+        Browse products, read the details and contact us if you need help before
+        placing an order.
       </p>
 
       <section className="mt-12 grid gap-6 sm:grid-cols-3">
@@ -59,25 +59,24 @@ export default function AboutPage() {
 
       <section className="mt-16 grid items-center gap-10 lg:grid-cols-2">
         <div>
-          <p className="eyebrow">Duka letu</p>
+          <p className="eyebrow">Our store</p>
           <h2 className="heading-display mt-2 text-3xl">
-            Tafuta bidhaa kwa urahisi
+            Find what you need
           </h2>
           <p className="mt-4 leading-relaxed text-ink-500">
-            Tunakusanya bidhaa za skincare, makeup, nywele na harufu kwenye
-            sehemu moja ili iwe rahisi kuzitafuta na kulinganisha kabla ya
-            kuagiza.
+            Shop skincare, makeup, haircare and fragrance in one place. Compare
+            product details before you order.
           </p>
           <p className="mt-4 leading-relaxed text-ink-500">
-            Una swali kuhusu bidhaa, malipo au usafirishaji? Timu yetu inaweza
-            kukusaidia kupitia simu au barua pepe zilizo hapa chini.
+            Questions about products, payment or delivery? Our team is happy to
+            help by phone, WhatsApp or email.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/bidhaa" className="btn-primary">
-              Vinjari Bidhaa
+              Browse products
             </Link>
             <Link href="/wasiliana" className="btn-outline">
-              Wasiliana Nasi
+              Contact us
             </Link>
           </div>
         </div>
@@ -87,10 +86,10 @@ export default function AboutPage() {
       </section>
 
       <section className="mt-16 rounded-2xl bg-cream-100 p-8">
-        <h2 className="font-display text-2xl text-ink-900">Wasiliana</h2>
+        <h2 className="font-display text-2xl text-ink-900">Get in touch</h2>
         <div className="mt-4 grid gap-4 text-sm sm:grid-cols-3">
           <div>
-            <p className="text-ink-500">Simu / WhatsApp</p>
+            <p className="text-ink-500">Phone / WhatsApp</p>
             <a
               href={`tel:${site.phoneTel}`}
               className="font-medium text-accent hover:underline"
@@ -99,7 +98,7 @@ export default function AboutPage() {
             </a>
           </div>
           <div>
-            <p className="text-ink-500">Barua pepe</p>
+            <p className="text-ink-500">Email</p>
             <a
               href={`mailto:${site.email}`}
               className="font-medium text-accent hover:underline"
@@ -108,7 +107,7 @@ export default function AboutPage() {
             </a>
           </div>
           <div>
-            <p className="text-ink-500">Ofisi</p>
+            <p className="text-ink-500">Address</p>
             <p className="font-medium text-ink-900">{site.address}</p>
           </div>
         </div>

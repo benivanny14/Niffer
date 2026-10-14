@@ -18,7 +18,7 @@ export async function GET() {
   await connection();
   try {
     if (!(await isAdminRequest())) {
-      return fail("Ingia kama admin kuona takwimu.", 401);
+      return fail("Sign in as an administrator to view analytics.", 401);
     }
 
     const stock = await getStockMap();

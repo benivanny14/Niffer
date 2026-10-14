@@ -6,7 +6,7 @@ import { formatTsh } from "@/lib/format";
 import { CheckIcon } from "@/components/ui/icons";
 
 export const metadata: Metadata = {
-  title: "Malipo Yamefanikiwa",
+  title: "Payment successful",
   robots: { index: false },
 };
 
@@ -23,38 +23,38 @@ export default async function PaymentSuccessPage({ searchParams }: PageProps) {
       <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-100 text-success-600">
         <CheckIcon className="h-8 w-8" />
       </span>
-      <h1 className="heading-display mt-6">Malipo yamefanikiwa!</h1>
+      <h1 className="heading-display mt-6">Payment successful!</h1>
       <p className="mt-3 text-ink-500">
-        Asante kwa kununua kwa Niffer Cosmetics. Tunatayarisha oda yako na
-        tutakupigia simu ndani ya dakika chache.
+        Thank you for shopping with Niffer Cosmetics. We are preparing your order and
+        will call you shortly.
       </p>
 
       {order ? (
         <div className="card mt-8 p-6 text-left">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-ink-500">Nambari ya oda</p>
+              <p className="text-sm text-ink-500">Order number</p>
               <p className="font-display text-xl text-ink-900">{order.code}</p>
             </div>
             <span className="badge bg-success-100 text-success-600">
-              Malipo: {formatTsh(order.totalTsh)}
+              Payment: {formatTsh(order.totalTsh)}
             </span>
           </div>
           <ul className="mt-4 space-y-1.5 border-t border-cream-200 pt-4 text-sm text-ink-500">
             <li className="flex justify-between">
-              <span>Jumla</span>
+              <span>Total</span>
               <span className="font-medium text-ink-900">
                 {formatTsh(order.totalTsh)}
               </span>
             </li>
             <li className="flex justify-between">
-              <span>Njia ya malipo</span>
+              <span>Payment method</span>
               <span className="font-medium text-ink-900 uppercase">
                 {order.payment}
               </span>
             </li>
             <li className="flex justify-between">
-              <span>Anwani</span>
+              <span>Address</span>
               <span className="font-medium text-ink-900">
                 {order.customer.region}
               </span>
@@ -68,10 +68,10 @@ export default async function PaymentSuccessPage({ searchParams }: PageProps) {
           href={order ? `/odha/${order.code}` : "/fuatilia"}
           className="btn-primary"
         >
-          Fuatilia oda yako
+          Track your order
         </Link>
         <Link href="/bidhaa" className="btn-outline">
-          Endelea kununua
+          Continue shopping
         </Link>
       </div>
     </div>

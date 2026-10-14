@@ -43,7 +43,7 @@ export function useStockOverrides(): Record<string, number> {
   );
 }
 
-/** Weka stoo (admin). */
+/** Enter stoo (admin). */
 export function setStock(slug: string, qty: number) {
   stockStore.set({ ...stockStore.get(), [slug]: Math.max(0, qty) });
 }

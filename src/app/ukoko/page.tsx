@@ -39,7 +39,7 @@ export default function CheckoutPage() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Msimbo wa punguzo (promo) — thibitishwa na server (DB).
+  // Discount code (promo) — thibitishwa na server (DB).
   const [promoInput, setPromoInput] = useState("");
   const [promo, setPromo] = useState<{
     code: string;
@@ -50,7 +50,7 @@ export default function CheckoutPage() {
   const [promoError, setPromoError] = useState("");
   const [promoChecking, setPromoChecking] = useState(false);
 
-  // Kadi ya zawadi.
+  // Gift card.
   const [giftInput, setGiftInput] = useState("");
   const [gift, setGift] = useState<{
     code: string;
@@ -103,7 +103,7 @@ export default function CheckoutPage() {
       : promo.discountTsh
     : 0;
   const shipping = promo?.freeShipping ? 0 : shippingBase;
-  // Kadi ya zawadi inaweza kufunika subtotal tu (si usafirishaji).
+  // Gift card inaweza kufunika subtotal tu (si usafirishaji).
   const beforeGift = Math.max(0, subtotalTsh - (promo?.freeShipping ? 0 : discountTsh));
   const giftDiscountTsh = gift ? Math.min(gift.amountTsh, beforeGift) : 0;
   const total = Math.max(0, beforeGift - giftDiscountTsh) + shipping;
@@ -159,15 +159,15 @@ export default function CheckoutPage() {
     e.preventDefault();
     if (lines.length === 0 || submitting) return;
     if (!/^[0-9+\s]{9,15}$/.test(phone.trim())) {
-      setError("Weka namba sahihi ya simu (mfano 0754 000 000).");
+      setError("Enter a valid phone number (e.g. 0754 000 000).");
       return;
     }
     if (!city) {
-      setError("Chagua mji / wilaya yako.");
+      setError("Select your city or district.");
       return;
     }
     if (!street.trim()) {
-      setError("Weka mtaa / kata yako.");
+      setError("Enter your street or ward.");
       return;
     }
     // Kizuizi cha haraka kwenye client (server ndio huthibitisha tena).
@@ -176,8 +176,8 @@ export default function CheckoutPage() {
       if (line.qty > available) {
         setError(
           available === 0
-            ? `${line.product.name} imeisha stoo. Ondoa kutoka kikapu.`
-            : `Stoo ya ${line.product.name} imebaki ${available} tu.`,
+            ? `${line.product.name} is out of stock. Remove it from your bag.`
+            : `Only ${available} of ${line.product.name} remain in stock.`,
         );
         return;
       }
@@ -194,7 +194,7 @@ export default function CheckoutPage() {
         giftCardCode: gift?.code,
       });
 
-      // Stoo mpya kutoka server + oda imehifadhiwa kwenye DB.
+      // Stock has been updated and the order saved.
       applyServerStock(stock);
       pushOrder(order);
       clear();
@@ -219,12 +219,12 @@ export default function CheckoutPage() {
     return (
       <div className="container-x max-w-xl py-20 text-center">
         <BagIcon className="mx-auto h-14 w-14 text-ink-300" />
-        <h1 className="heading-display mt-6">Kikapu chako ni tupu</h1>
+        <h1 className="heading-display mt-6">Your bag is empty</h1>
         <p className="mt-3 text-ink-500">
-          Ongeza bidhaa kwanza ili kuendelea na malipo.
+          Add a product to continue to checkout.
         </p>
         <Link href="/bidhaa" className="btn-primary mt-8">
-          Vinjari Bidhaa
+          Browse products
         </Link>
       </div>
     );
@@ -235,34 +235,34 @@ export default function CheckoutPage() {
 
   return (
     <div className="checkout-page container-x py-10 lg:py-14">
-      <h1 className="heading-display">Malipo</h1>
+      <h1 className="heading-display">Checkout</h1>
       <p className="mt-2 text-ink-500">
-        Jaza taarifa zako ili tukuletee bidhaa haraka iwezekanavyo.
+        Enter your details so we can deliver your order as soon as possible.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-8 grid gap-10 lg:grid-cols-5">
-        {/* Taarifa */}
+        {/* Delivery details */}
         <div className="space-y-5 lg:col-span-3">
           <h2 className="font-display text-xl text-ink-900">
-            Taarifa za kuwasilisha
+            Delivery details
           </h2>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block text-sm">
               <span className="mb-1.5 block font-medium text-ink-700">
-                Jina kamili *
+                Full name *
               </span>
               <input
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className={field}
-                placeholder="Jina lako"
+                placeholder="Your name"
               />
             </label>
             <label className="block text-sm">
               <span className="mb-1.5 block font-medium text-ink-700">
-                Namba ya simu *
+                Phone number *
               </span>
               <input
                 required
@@ -277,14 +277,14 @@ export default function CheckoutPage() {
 
           <label className="block text-sm">
             <span className="mb-1.5 block font-medium text-ink-700">
-              Barua pepe (hiari)
+              Email address (optional)
             </span>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={field}
-              placeholder="wewe@mfano.com"
+              placeholder="you@example.com"
               autoComplete="email"
             />
           </label>
@@ -292,7 +292,7 @@ export default function CheckoutPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block text-sm">
               <span className="mb-1.5 block font-medium text-ink-700">
-                Mkoa *
+                Region *
               </span>
               <select
                 value={region}
@@ -311,7 +311,7 @@ export default function CheckoutPage() {
             </label>
             <label className="block text-sm">
               <span className="mb-1.5 block font-medium text-ink-700">
-                Mji / Wilaya *
+                City / District *
               </span>
               <select
                 required
@@ -319,7 +319,7 @@ export default function CheckoutPage() {
                 onChange={(e) => setCity(e.target.value)}
                 className={field}
               >
-                <option value="">Chagua mji…</option>
+                <option value="">Select a city…</option>
                 {cities.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -331,21 +331,21 @@ export default function CheckoutPage() {
 
           <label className="block text-sm">
             <span className="mb-1.5 block font-medium text-ink-700">
-              Mtaa / Kata *
+              Street / Ward *
             </span>
             <input
               required
               value={street}
               onChange={(e) => setStreet(e.target.value)}
               className={field}
-              placeholder="Mfano: Mikocheni B, Mtaa wa Uhuru"
+              placeholder="e.g. Mikocheni B, Uhuru Street"
               minLength={2}
             />
           </label>
 
           <label className="block text-sm">
             <span className="mb-1.5 block font-medium text-ink-700">
-              Anwani kamili *
+              Full address *
             </span>
             <textarea
               required
@@ -353,26 +353,26 @@ export default function CheckoutPage() {
               onChange={(e) => setAddress(e.target.value)}
               rows={3}
               className={field}
-              placeholder="Jina la nyumba, ofisi, alama ya njia…"
+              placeholder="House or office name, nearby landmark…"
             />
           </label>
 
           <label className="block text-sm">
             <span className="mb-1.5 block font-medium text-ink-700">
-              Maelezo ya ziada (hiari)
+              Delivery notes (optional)
             </span>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={2}
               className={field}
-              placeholder="Muda unafaa, alama ya njia…"
+              placeholder="Preferred delivery time or directions…"
             />
           </label>
 
           <div>
             <h2 className="font-display text-xl text-ink-900">
-              Njia ya malipo
+              Payment method
             </h2>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               {paymentMethods.map((m) => (
@@ -406,10 +406,10 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        {/* Muhtasari */}
+        {/* Order summary */}
         <aside className="lg:col-span-2">
           <div className="card sticky top-30 p-6 sm:top-32">
-            <h2 className="font-display text-xl text-ink-900">Oda yako</h2>
+            <h2 className="font-display text-xl text-ink-900">Your order</h2>
             <ul className="mt-4 space-y-3">
               {lines.map(({ product, qty }) => (
                 <li key={product.slug} className="flex items-center gap-3">
@@ -433,8 +433,8 @@ export default function CheckoutPage() {
               ))}
             </ul>
 
-            {/* Msimbo wa punguzo */}
-            {/* Si <form>: HTML hairuhusu form ndani ya fomu kuu ya oda. */}
+            {/* Discount code */}
+            {/* Avoid a nested form here because HTML does not allow forms inside other forms. */}
             <div className="mt-5 flex gap-2">
               <div className="flex flex-1 items-center gap-2 rounded-xl border border-cream-300 bg-surface px-3">
                 <TagIcon className="h-4 w-4 shrink-0 text-ink-400" />
@@ -447,8 +447,8 @@ export default function CheckoutPage() {
                       applyPromoCode();
                     }
                   }}
-                  placeholder="Msimbo wa punguzo"
-                  aria-label="Msimbo wa punguzo"
+                  placeholder="Discount code"
+                  aria-label="Discount code"
                   className="w-full bg-transparent py-2.5 text-sm uppercase text-ink-900 outline-none placeholder:text-ink-400"
                 />
               </div>
@@ -457,7 +457,7 @@ export default function CheckoutPage() {
                 onClick={applyPromoCode}
                 className="btn-outline px-4 py-2 text-xs"
               >
-                Tumia
+                Apply
               </button>
             </div>
             {promoError ? (
@@ -466,11 +466,11 @@ export default function CheckoutPage() {
             {promo ? (
               <p className="mt-2 flex items-center gap-1.5 text-xs text-success-600">
                 <CheckIcon className="h-3.5 w-3.5" />
-                {promo.label} imeongezwa.
+                {promo.label} applied.
               </p>
             ) : null}
 
-            {/* Kadi ya zawadi */}
+            {/* Gift card */}
             <div className="mt-3 flex gap-2">
               <div className="flex flex-1 items-center gap-2 rounded-xl border border-cream-300 bg-surface px-3">
                 <SparkleIcon className="h-4 w-4 shrink-0 text-ink-400" />
@@ -483,8 +483,8 @@ export default function CheckoutPage() {
                       void applyGiftCard();
                     }
                   }}
-                  placeholder="Msimbo wa kadi ya zawadi"
-                  aria-label="Msimbo wa kadi ya zawadi"
+                  placeholder="Gift card code"
+                  aria-label="Gift card code"
                   className="w-full bg-transparent py-2.5 text-sm uppercase text-ink-900 outline-none placeholder:text-ink-400"
                 />
               </div>
@@ -494,7 +494,7 @@ export default function CheckoutPage() {
                 disabled={giftChecking}
                 className="btn-outline px-4 py-2 text-xs disabled:opacity-60"
               >
-                {giftChecking ? "Inathibitisha…" : "Tumia"}
+                {giftChecking ? "Checking…" : "Apply"}
               </button>
             </div>
             {giftError ? (
@@ -503,35 +503,35 @@ export default function CheckoutPage() {
             {gift ? (
               <p className="mt-2 flex items-center gap-1.5 text-xs text-success-600">
                 <CheckIcon className="h-3.5 w-3.5" />
-                Kadi {gift.code} — {formatTsh(gift.amountTsh)} imeongezwa.
+                Gift card {gift.code} — {formatTsh(gift.amountTsh)} applied.
               </p>
             ) : null}
 
             <dl className="mt-5 space-y-2 border-t border-cream-200 pt-4 text-sm">
               <div className="flex justify-between">
-                <dt className="text-ink-500">Jumla ndogo</dt>
+                <dt className="text-ink-500">Subtotal</dt>
                 <dd className="font-medium">{formatTsh(subtotalTsh)}</dd>
               </div>
               {discountTsh > 0 ? (
                 <div className="flex justify-between text-success-600">
-                  <dt>Punguzo ({promo?.code})</dt>
+                  <dt>Discount ({promo?.code})</dt>
                   <dd className="font-medium">−{formatTsh(discountTsh)}</dd>
                 </div>
               ) : null}
               {giftDiscountTsh > 0 ? (
                 <div className="flex justify-between text-success-600">
-                  <dt>Kadi ya zawadi ({gift?.code})</dt>
+                  <dt>Gift card ({gift?.code})</dt>
                   <dd className="font-medium">−{formatTsh(giftDiscountTsh)}</dd>
                 </div>
               ) : null}
               <div className="flex justify-between">
-                <dt className="text-ink-500">Usafirishaji</dt>
+                <dt className="text-ink-500">Delivery</dt>
                 <dd className="font-medium">
-                  {shipping === 0 ? "Bure" : formatTsh(shipping)}
+                  {shipping === 0 ? "Free" : formatTsh(shipping)}
                 </dd>
               </div>
               <div className="flex justify-between border-t border-cream-200 pt-2 text-base">
-                <dt className="font-semibold text-ink-900">Jumla</dt>
+                <dt className="font-semibold text-ink-900">Total</dt>
                 <dd className="font-display text-ink-900">
                   {formatTsh(total)}
                 </dd>
@@ -549,19 +549,19 @@ export default function CheckoutPage() {
               disabled={submitting}
               className="btn-primary mt-5 w-full disabled:opacity-60"
             >
-              {submitting ? "Inaweka oda…" : "Weka Oda"}
+              {submitting ? "Placing order…" : "Place order"}
             </button>
 
             <ul className="mt-4 space-y-2 text-xs text-ink-500">
               <li className="flex items-center gap-2">
                 <TruckIcon className="h-4 w-4 shrink-0 text-brand-600" />
                 {region === "Dar es Salaam"
-                  ? "Dar es Salaam: siku 1–2"
-                  : "Mikoa mingine: siku 2–5"}
+                  ? "Dar es Salaam: 1–2 days"
+                  : "Other regions: 2–5 days"}
               </li>
               <li className="flex items-center gap-2">
                 <ShieldIcon className="h-4 w-4 shrink-0 text-brand-600" />
-                Kagua maelezo ya bidhaa kabla ya kulipa
+                Review your order details before payment
               </li>
             </ul>
           </div>

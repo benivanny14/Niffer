@@ -101,7 +101,7 @@ async function uploadImage(file: File, folder: string, publicId: string): Promis
         },
         (error, result) => {
           if (error) reject(error);
-          else if (!result) reject(new Error("Cloudinary haikurudisha picha."));
+          else if (!result) reject(new Error("Cloudinary did not return an image."));
           else resolve(result);
         },
       );

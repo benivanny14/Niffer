@@ -15,11 +15,11 @@ export async function POST(
 ) {
   try {
     if (!(await isAdminRequest())) {
-      return fail("Ingia kama admin kutuma ujumbe.", 401);
+      return fail("Sign in as an administrator to send a message.", 401);
     }
     const { code } = await ctx.params;
     const order = await getOrder(code);
-    if (!order) return fail("Oda haipatikani.", 404);
+    if (!order) return fail("Order not found.", 404);
 
     const body = await readBody<{
       title?: string;
@@ -28,7 +28,7 @@ export async function POST(
     }>(req);
     const title = (body?.title ?? "").trim();
     if (title.length < 2) {
-      throw new InputError("Weka kichwa cha ujumbe.");
+      throw new InputError("Enter a message subject.");
     }
 
     await notifyCustomer({

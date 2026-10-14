@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Jiondoe kwenye jarida",
+  title: "Unsubscribe from the newsletter",
   alternates: { canonical: "/jarida/acha" },
 };
 

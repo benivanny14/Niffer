@@ -39,7 +39,7 @@ export function NewsletterForm() {
           <CheckIcon className="h-5 w-5" />
         </span>
         <p className="text-sm text-ink-700">
-          {note || "Asante!"}{" "}
+          {note || "Thanks for signing up!"}{" "}
           <span className="font-semibold">{email}</span>
         </p>
       </div>
@@ -56,8 +56,8 @@ export function NewsletterForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="barua.pepe@mfano.com"
-            aria-label="Anwani ya barua pepe"
+            placeholder="you@example.com"
+            aria-label="Email address"
             className="w-full bg-transparent py-3 text-sm text-ink-900 outline-none placeholder:text-ink-400"
           />
         </div>
@@ -66,19 +66,19 @@ export function NewsletterForm() {
           disabled={sending}
           className="btn-primary shrink-0 disabled:opacity-60"
         >
-          {sending ? "Inaweka…" : "Jiunge Sasa"}
+          {sending ? "Signing up…" : "Sign up"}
         </button>
       </div>
       {error ? (
         <p className="mt-2 px-2 text-xs text-danger-600">{error}</p>
       ) : (
         <p className="mt-2 px-2 text-xs text-ink-400">
-          Tutatuma ofa muhimu tu.{" "}
+          We only send useful updates.{" "}
           <Link
             href="/jarida/acha"
             className="underline transition-colors hover:text-accent"
           >
-            Unaweza kuacha wakati wowote.
+            Unsubscribe at any time.
           </Link>
         </p>
       )}

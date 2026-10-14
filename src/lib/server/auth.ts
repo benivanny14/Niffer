@@ -15,7 +15,7 @@ export function adminPassword(): string {
   if (process.env.NODE_ENV === "production") {
     if (pw.length < 8 || pw === "niffer2026") {
       throw new Error(
-        "ADMIN_PASSWORD lazima iwekwe kwenye .env na isiwe 'niffer2026' (herufi 8+).",
+        "Set ADMIN_PASSWORD in the environment. Use at least 8 characters and do not use the default password.",
       );
     }
   }

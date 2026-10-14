@@ -93,15 +93,15 @@ export function VideoModal({ video, onClose }: Props) {
                   <PlayIcon className="ml-1 h-7 w-7" />
                 </span>
                 <p className="max-w-sm px-4 text-sm font-medium text-white">
-                  Video rasmi inakuja hivi karibuni. Weka YouTube ID au mp4
-                  kwenye catalog ili icheze hapa.
+                  The video will be available soon. Add a YouTube ID or MP4 file
+                  in the catalog to play it here.
                 </p>
               </div>
             </div>
           )}
         </div>
 
-        <p className="pt-3 text-xs text-white/60">Muda: {video.duration}</p>
+                <p className="pt-3 text-xs text-white/60">Duration: {video.duration}</p>
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ export function BuyBox({ product }: { product: Product }) {
   const outOfStock = max === 0;
 
   function handleAdd() {
-    // Zuzuia kuongeza zaidi ya stoo iliyopo.
+    // Zuzuia kuongeza morei ya stoo iliyopo.
     add(product.slug, Math.min(qty, max));
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
@@ -25,16 +25,16 @@ export function BuyBox({ product }: { product: Product }) {
 
   const lineTotal = product.priceTsh * qty;
   const waText = waLink(
-    `Habari ${site.name}, nina nia ya kununua: ${product.name} (x${qty}) — ${formatTsh(lineTotal)}`,
+    `Hello ${site.name}, I would like to order: ${product.name} (x${qty}) — ${formatTsh(lineTotal)}`,
   );
 
   return (
     <div className="mt-6">
       {outOfStock ? (
-        <p className="text-sm font-medium text-danger-600">Imeisha</p>
+        <p className="text-sm font-medium text-danger-600">Out of stock</p>
       ) : max <= 5 ? (
         <p className="text-sm font-medium text-warning-600">
-          Zimebaki {max} tu
+              Only {max} left
         </p>
       ) : null}
 
@@ -42,14 +42,14 @@ export function BuyBox({ product }: { product: Product }) {
         <div
           className="flex items-center rounded-full border border-cream-300 bg-surface"
           role="group"
-          aria-label="Idadi"
+          aria-label="Quantity"
         >
           <button
             type="button"
             className="px-4 py-3 text-ink-500 transition-colors hover:text-accent disabled:opacity-40"
             onClick={() => setQty((q) => Math.max(1, q - 1))}
             disabled={outOfStock || qty <= 1}
-            aria-label="Punguza idadi"
+            aria-label="Decrease quantity"
           >
             −
           </button>
@@ -64,7 +64,7 @@ export function BuyBox({ product }: { product: Product }) {
             className="px-4 py-3 text-ink-500 transition-colors hover:text-accent disabled:opacity-40"
             onClick={() => setQty((q) => Math.min(max, q + 1))}
             disabled={outOfStock || qty >= max}
-            aria-label="Ongeza idadi"
+            aria-label="Increase quantity"
           >
             +
           </button>
@@ -80,12 +80,12 @@ export function BuyBox({ product }: { product: Product }) {
           {added ? (
             <>
               <CheckIcon className="h-4 w-4" />
-              Imeongezwa
+              Added to bag
             </>
           ) : (
             <>
               <BagIcon className="h-4 w-4" />
-              Weka kikapu
+              Add to bag
             </>
           )}
         </button>
@@ -93,7 +93,7 @@ export function BuyBox({ product }: { product: Product }) {
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-ink-400">
-          Jumla:{" "}
+          Total:{" "}
           <span className="font-semibold text-ink-900">
             {formatTsh(lineTotal)}
           </span>
@@ -105,7 +105,7 @@ export function BuyBox({ product }: { product: Product }) {
           className="btn-outline"
         >
           <ChatIcon className="h-4 w-4" />
-          Oda kwa WhatsApp
+          Order on WhatsApp
         </a>
       </div>
     </div>

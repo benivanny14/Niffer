@@ -25,10 +25,10 @@ export default function GlobalError({
       >
         <div>
           <h1 style={{ fontSize: "28px", margin: "0 0 12px" }}>
-            Kuna hitilafu kubwa imeotokea
+            A serious error occurred
           </h1>
           <p style={{ color: "#94a3b8", margin: "0 0 24px" }}>
-            Samahani, tumeshindikana kupakia ukurasa huu. Jaribu tena.
+            We could not load this page. Please try again.
           </p>
           <button
             type="button"

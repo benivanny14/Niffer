@@ -9,7 +9,7 @@ import { getOrder } from "@/lib/server/orders";
 
 /**
  * AzamPay callback (webhook) — gateway hutuma hali ya muamala hapa baada ya
- * mteja kumaliza malipo. Weka `PAYMENT_CALLBACK_TOKEN` kwenye env ili kuhakikisha
+ * mteja kumaliza malipo. Enter `PAYMENT_CALLBACK_TOKEN` kwenye env ili kuhakikisha
  * ni mwitikio halisi wa gateway (header: `x-callback-token` au `token`).
  */
 export async function POST(req: NextRequest) {
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       req.headers.get("x-callback-token") ??
       req.nextUrl.searchParams.get("token");
     if (!validCallbackToken(token)) {
-      return fail("Token si sahihi.", 401);
+      return fail("Invalid token.", 401);
     }
 
     const body = (await req.json().catch(() => null)) as {
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       status?: string;
       result?: string;
     } | null;
-    if (!body) return fail("Mwitikio haujajazwa vizuri.");
+if (!body) return fail("The payment response is invalid.");
 
     const reference = (
       body.reference ??
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       .trim()
       .toUpperCase();
     if (!reference || !(await getOrder(reference))) {
-      return fail("Oda haipatikani.", 404);
+      return fail("Order not found.", 404);
     }
 
     const raw = (body.status ?? body.result ?? "").toUpperCase();
@@ -53,6 +53,6 @@ export async function POST(req: NextRequest) {
     await setPaymentStatus(reference, status, body.transactionId);
     return json({ ok: true, reference, status });
   } catch {
-    return fail("Hitilafu ya seva.", 500);
+    return fail("Server error.", 500);
   }
 }

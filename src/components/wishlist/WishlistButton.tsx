@@ -15,7 +15,7 @@ export function WishlistButton({ slug, className = "" }: Props) {
       type="button"
       onClick={() => toggleWishlist(slug)}
       aria-pressed={active}
-      aria-label={active ? "Ondoa kwenye upendwa" : "Hifadhi kwenye upendwa"}
+      aria-label={active ? "Remove from wishlist" : "Add to wishlist"}
       className={`rounded-full p-2 transition-colors ${
         active
           ? "bg-surface/90 text-danger-600"

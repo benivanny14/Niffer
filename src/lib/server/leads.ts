@@ -41,12 +41,12 @@ export async function addMessage(input: {
       ? input.kind
       : "contact";
 
-  if (name.length < 2) throw new InputError("Jina halisi linahitajika.");
+  if (name.length < 2) throw new InputError("Please enter your name.");
   if (phone && !/^[0-9+\s]{9,15}$/.test(phone)) {
-    throw new InputError("Weka namba sahihi ya simu (mfano 0754 000 000).");
+    throw new InputError("Enter a valid phone number (for example, 0754 000 000).");
   }
   if (kind === "contact" && (input.body?.message ?? "").trim().length < 5) {
-    throw new InputError("Ujumbe wako ni mfupi sana.");
+    throw new InputError("Your message is too short.");
   }
 
   const record: MessageRecord = {
@@ -112,7 +112,7 @@ export async function countUnreadMessages(): Promise<number> {
   return Number(row?.n ?? 0);
 }
 
-/** Weka ujumbe kuwa umesomwa (admin). Rudisha true kama umebadilika. */
+/** Enter ujumbe kuwa umesomwa (admin). Rudisha true kama umebadilika. */
 export async function markMessageRead(messageId: string): Promise<boolean> {
   const result = await getDb()
     .prepare(
@@ -122,7 +122,7 @@ export async function markMessageRead(messageId: string): Promise<boolean> {
   return Number((await result).changes) > 0;
 }
 
-/** Weka ujumbe WOTE kuwa wamesomwa (admin bulk). Rudisha idadi. */
+/** Enter ujumbe WOTE kuwa wamesomwa (admin bulk). Rudisha idadi. */
 export async function markAllMessagesRead(): Promise<number> {
   const result = await getDb()
     .prepare("UPDATE messages SET status = 'read' WHERE status = 'new'")
@@ -138,7 +138,7 @@ export async function subscribeNewsletter(
 ): Promise<{ email: string; created: boolean }> {
   const email = rawEmail.trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
-    throw new InputError("Weka anwani sahihi ya barua pepe.");
+    throw new InputError("Enter a valid email address.");
   }
   const existing = await getDb()
     .prepare("SELECT email FROM newsletter WHERE email = ?")
@@ -196,7 +196,7 @@ export type GiftCard = {
 
 const GIFT_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-/** Kadi ya zawadi inaisha baada ya miaka 1. */
+/** Gift card inaisha baada ya miaka 1. */
 const GIFT_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 
 function giftExpiresAt(createdAt: string): string {
@@ -231,7 +231,7 @@ export async function issueGiftCard(input: {
 }): Promise<GiftCard> {
   const amount = Math.floor(Number(input.amountTsh ?? 0));
   if (!Number.isFinite(amount) || amount < 1000 || amount > 1_000_000) {
-    throw new InputError("Chagua thamani sahihi ya kadi.");
+    throw new InputError("Choose a valid gift card value.");
   }
 
   const db = getDb();
@@ -315,7 +315,7 @@ export async function getGiftCard(code: string): Promise<GiftCard | undefined> {
 
   let status = row.status;
   if (isGiftExpired(status, row.created_at, row.expires_at)) {
-    // Weka "expired" kwenye DB kwa kudumu (lazy persist).
+    // Enter "expired" kwenye DB kwa kudumu (lazy persist).
     status = "expired";
     await getDb()
       .prepare(
@@ -335,7 +335,7 @@ export async function getGiftCard(code: string): Promise<GiftCard | undefined> {
   };
 }
 
-/** Weka kadi kuwa imetumika (ndani ya transaction ya oda). Rudisha true kama imefanikiwa. */
+/** Enter kadi kuwa imetumika (ndani ya transaction ya oda). Rudisha true kama imefanikiwa. */
 export async function redeemGiftCard(code: string, orderCode: string, tx?: ReturnType<typeof getDb>): Promise<boolean> {
   const result = await (tx ?? getDb())
     .prepare(
@@ -372,9 +372,9 @@ export async function addReview(input: {
   const comment = (input.comment ?? "").trim();
   const rating = Math.min(5, Math.max(1, Math.floor(Number(input.rating ?? 5))));
 
-  if (customerName.length < 2) throw new InputError("Jina halisi linahitajika.");
+  if (customerName.length < 2) throw new InputError("Please enter your name.");
   if (comment.length < 10) {
-    throw new InputError("Hakiki yako ni fupi zaidi (angalau herufi 10).");
+    throw new InputError("Your review is too short (at least 10 characters).");
   }
 
   const record: StoredReview = {
@@ -500,9 +500,9 @@ export async function setReviewStatus(
     .prepare("UPDATE reviews SET status = ? WHERE id = ?")
     .run(status, reviewId);
   if ((await result).changes === 0) {
-    throw new InputError("Hakiki haipatikani.", 404);
+    throw new InputError("Review not found.", 404);
   }
-  // Sasisha rating ya bidhaa kutoka hakiki zilizoidhishwa.
+  // Refresh rating ya bidhaa kutoka hakiki zilizoidhishwa.
   await recomputeProductRating(existing?.product_slug ?? "");
   const row = await getDb()
     .prepare("SELECT * FROM reviews WHERE id = ?")

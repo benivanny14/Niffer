@@ -10,29 +10,29 @@ import { ProductImage } from "@/components/media/ProductImage";
 import { ArrowRightIcon } from "@/components/ui/icons";
 
 export const metadata: Metadata = {
-  title: "Makala za Urembo",
+  title: "Beauty Journal",
   description:
-    "Makala za Kiswahili kuhusu bidhaa za skincare, makeup, nywele na harufu.",
+    "Helpful articles on skincare, makeup, haircare and fragrance.",
 };
 
 const categoryNames = Object.fromEntries(
   articleCategories.map((c) => [c.slug, c.name]),
 ) as Record<Article["category"], string>;
 
-export default function MakalaPage() {
+export default function ArticlesPage() {
   const [featured, ...rest] = [...articles].sort(
     (a, b) => Date.parse(b.date) - Date.parse(a.date),
   );
 
   return (
     <div className="container-x py-12 lg:py-16">
-      <p className="eyebrow">Jarida la Niffer</p>
-      <h1 className="heading-display mt-2">Makala za urembo</h1>
+      <p className="eyebrow">The Niffer journal</p>
+      <h1 className="heading-display mt-2">Beauty journal</h1>
       <p className="mt-3 max-w-2xl text-ink-500">
-        Maelezo ya Kiswahili kuhusu skincare, makeup, nywele na harufu.
+        Helpful reading on skincare, makeup, haircare and fragrance.
       </p>
 
-      {/* Makala kuu */}
+      {/* Featured article */}
       {featured ? (
         <Link
           href={`/makala/${featured.slug}`}
@@ -56,7 +56,7 @@ export default function MakalaPage() {
               {featured.excerpt}
             </p>
             <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-accent">
-              Soma zaidi
+              Read article
               <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </span>
           </div>
@@ -80,7 +80,7 @@ export default function MakalaPage() {
               </div>
               <div className="flex flex-1 flex-col gap-2 p-5">
                 <p className="text-xs font-semibold uppercase tracking-wide text-gold-600">
-                  {categoryNames[article.category]} · {article.readMinutes} dakika
+                  {categoryNames[article.category]} · {article.readMinutes} min read
                 </p>
                 <h2 className="font-display text-lg leading-snug text-ink-900 group-hover:text-accent">
                   {article.title}

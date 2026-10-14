@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Niffer Cosmetics — Urembo halisi, ubora wa juu";
+export const alt = "Niffer Cosmetics — Authentic beauty, exceptional quality";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

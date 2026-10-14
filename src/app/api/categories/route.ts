@@ -17,7 +17,7 @@ function slugify(value: string): string {
     .slice(0, 60);
 }
 
-/** Kategoria zinazopatikana kwenye duka. */
+/** Category zinazopatikana kwenye duka. */
 export async function GET() {
   await connection();
   try {
@@ -31,22 +31,22 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   await connection();
   try {
-    if (!(await isAdminRequest())) return fail("Ingia kama admin kuongeza kategoria.", 401);
+    if (!(await isAdminRequest())) return fail("Sign in as an administrator to add categories.", 401);
 
     const body = await readBody<{ name?: string; description?: string }>(req);
-    if (!body) return fail("Taarifa za kategoria hazisahihi.");
+    if (!body) return fail("The category details are invalid.");
 
     const name = (body.name ?? "").trim();
     const description = (body.description ?? "").trim();
     const slug = slugify(name);
     if (name.length < 2 || name.length > 60 || !slug) {
-      return fail("Jina la kategoria liwe na herufi 2 hadi 60.");
+      return fail("Category names must be 2 to 60 characters long.");
     }
-    if (description.length > 240) return fail("Maelezo yasizidi herufi 240.");
+if (description.length > 240) return fail("Category details must be 240 characters or fewer.");
 
     const db = getDb();
     if (await db.prepare("SELECT 1 FROM categories WHERE slug = ?").get(slug)) {
-      return fail("Kategoria yenye jina hili tayari ipo.", 409);
+      return fail("A category with this name already exists.", 409);
     }
     const count = await db.prepare("SELECT COUNT(*) AS n FROM categories").get() as
       | { n?: number }

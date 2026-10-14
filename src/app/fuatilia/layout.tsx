@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Fuatilia oda",
+  title: "Track your order",
   alternates: { canonical: "/fuatilia" },
   robots: { index: false },
 };

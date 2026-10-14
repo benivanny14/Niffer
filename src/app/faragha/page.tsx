@@ -1,41 +1,40 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sera ya Faragha",
-  description: "Jinsi Niffer Cosmetics inavyotumia na kulinda taarifa zako.",
+  title: "Privacy Policy",
+  description: "How Niffer Cosmetics uses and protects your information.",
 };
 
 const sections = [
   {
-    h: "Taarifa tunazokusanya",
-    p: "Tunakusanya jina, namba ya simu, anwani na barua pepe unapoweka oda au kujiunga na jarida. Pia tunahifadhi historia ya oda zako kwenye kifaa chako.",
+    h: "Information we collect",
+    p: "We collect your name, phone number, address, and email when you place an order or subscribe. We also store your order history on your device.",
   },
   {
-    h: "Jinsi tunavyotumia taarifa",
-    p: "Tunatumia taarifa zako kusafirisha oda, kuwasiliana kuhusu hali ya oda, na kukutumia ofa unazokubali. Hatuziuzi taarifa zako kwa watu wa tatu.",
+    h: "How we use your information",
+    p: "We use your information to deliver orders, share order updates, and send offers you have opted into. We do not sell your information.",
   },
   {
-    h: "Malipo",
-    p: "Malipo hufanywa kupitia M-Pesa, Mixx by Yas, Airtel Money au kulipa bidhaa inapofikishwa. Hatuhifadhi taarifa zozote za kadi za benki kwenye seva zetu.",
+    h: "Payments",
+    p: "Payments are handled through M-Pesa, Mixx by Yas, Airtel Money, or payment on delivery. We do not store bank card details on our servers.",
   },
   {
-    h: "Haki zako",
-    p: "Unaweza kuomba kuona, kurekebisha, au kufuta taarifa zako wakati wowote. Wasiliana nasi kwa WhatsApp au barua pepe.",
+    h: "Your rights",
+    p: "You can request access to, correction of, or deletion of your information at any time. Contact us by WhatsApp or email.",
   },
   {
-    h: "Vidakuzi",
-    p: "Tovuti yetu inatumia localStorage kuhifadhi kikapu chako na bidhaa unazopenda kwenye kifaa chako. Hatumii vidakuzi vya ufuatiliaji.",
+    h: "Cookies and local storage",
+    p: "Our site uses local storage to save your cart and wishlist on your device. We do not use tracking cookies.",
   },
 ];
 
 export default function PrivacyPage() {
   return (
     <div className="container-x max-w-3xl py-12 lg:py-16">
-      <p className="eyebrow">Kisheria</p>
-      <h1 className="heading-display mt-2">Sera ya Faragha</h1>
+      <p className="eyebrow">Legal</p>
+      <h1 className="heading-display mt-2">Privacy Policy</h1>
       <p className="mt-3 text-ink-500">
-        Tunaheshimu faragha yako. Hapa kuelezea jinsi tunavyokusanya na
-        kulinda taarifa zako.
+        We respect your privacy. This page explains how we collect and protect your information.
       </p>
       <div className="mt-10 space-y-8">
         {sections.map((s) => (

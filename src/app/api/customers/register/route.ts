@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       email?: string;
       password?: string;
     }>(req);
-    if (!body) return fail("Taarifa za akaunti hazisahihi.");
+    if (!body) return fail("The account details are invalid.");
 
     const customer = await registerCustomer(body);
     const { token, maxAge } = await createCustomerSession(customer.id);

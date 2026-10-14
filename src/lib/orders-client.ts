@@ -20,13 +20,13 @@ export function listOrders(): Order[] {
   return ordersStore.get();
 }
 
-/** Hifadhi oda (kumbuka ya ndani baada ya server kuidhinisha). */
+/** Save oda (kumbuka ya ndani baada ya server kuidhinisha). */
 export function pushOrder(order: Order) {
   const rest = ordersStore.get().filter((o) => o.code !== order.code);
   ordersStore.set([order, ...rest].slice(0, 50));
 }
 
-/** Weka oda kwenye kifaa (bila kugusa server — tumia `patchOrderStatus`). */
+/** Enter oda kwenye kifaa (bila kugusa server — tumia `patchOrderStatus`). */
 export function cacheOrders(next: Order[]) {
   ordersStore.set(next.slice(0, 50));
 }
@@ -59,7 +59,7 @@ export type CreateOrderPayload = {
   giftCardCode?: string;
 };
 
-/** Weka oda mpya kwenye server. Hurusha `ApiError` kama kuna hitilafu. */
+/** Enter oda mpya kwenye server. Hurusha `ApiError` kama kuna hitilafu. */
 export async function createOrder(
   payload: CreateOrderPayload,
 ): Promise<{
@@ -110,7 +110,7 @@ export async function patchOrderStatus(
     `/api/orders/${encodeURIComponent(code)}`,
     { status },
   );
-  // Sasisha kumbuka ya ndani ikiwa oda hii ipo hapa.
+  // Refresh kumbuka ya ndani ikiwa oda hii ipo hapa.
   const local = ordersStore.get();
   if (local.some((o) => o.code === code)) {
     ordersStore.set(

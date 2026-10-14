@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
       return json({ ok: true, rfqs });
     }
     if (!(await isAdminRequest())) {
-      return fail("Ingia kama admin kuona ombi zote za RFQ.", 401);
+      return fail("Sign in as an administrator to view all quote requests.", 401);
     }
     const limit = intParam(req.nextUrl.searchParams.get("limit"), 200, 500);
     return json({ ok: true, rfqs: await listRfqs(limit), stats: await rfqStats() });
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
       qty?: number | string;
       note?: string;
     }>(req);
-    if (!body) return fail("Taarifa za ombi hazisahihi.");
+    if (!body) return fail("The request details are invalid.");
     const rfq = await createRfq(body);
     return json({ ok: true, rfq }, 201);
   } catch (error) {

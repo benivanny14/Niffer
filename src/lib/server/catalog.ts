@@ -56,13 +56,17 @@ export async function listCategories(): Promise<Category[]> {
        ORDER BY c.created_at, c.name`,
     ).all() as CategoryRow[];
     if (rows.length > 0) {
-      return rows.map((row) => ({
-        slug: row.slug,
-        name: row.name,
-        description: row.description,
-        swatch: row.swatch,
-        productCount: Number(row.product_count),
-      }));
+      const defaults = new Map(catalogCategories.map((category) => [category.slug, category]));
+      return rows.map((row) => {
+        const translatedDefault = defaults.get(row.slug);
+        return {
+          slug: row.slug,
+          name: translatedDefault?.name ?? row.name,
+          description: translatedDefault?.description ?? row.description,
+          swatch: row.swatch,
+          productCount: Number(row.product_count),
+        };
+      });
     }
   } catch {
     // DB mpya/haipatikani: onyesha kategoria za msingi badala ya kuvunja duka.

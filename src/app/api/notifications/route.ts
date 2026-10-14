@@ -12,7 +12,7 @@ export async function GET() {
   await connection();
   try {
     if (!(await isAdminRequest())) {
-      return fail("Ingia kama admin.", 401);
+      return fail("Sign in as an administrator.", 401);
     }
     return json({
       ok: true,
@@ -24,16 +24,16 @@ export async function GET() {
   }
 }
 
-/** Weka arifa kuwa imesomwa (admin). */
+/** Enter arifa kuwa imesomwa (admin). */
 export async function PATCH(req: NextRequest) {
   try {
     if (!(await isAdminRequest())) {
-      return fail("Ingia kama admin.", 401);
+      return fail("Sign in as an administrator.", 401);
     }
     const body = (await req.json().catch(() => null)) as {
       id?: string;
     } | null;
-    if (!body?.id) return fail("Arifa haipatikani.");
+    if (!body?.id) return fail("Notification not found.");
     const updated = await markNotificationRead(body.id);
     return json({ ok: true, updated });
   } catch (error) {

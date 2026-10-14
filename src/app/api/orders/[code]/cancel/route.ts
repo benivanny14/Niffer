@@ -23,8 +23,8 @@ export async function POST(
     }
     const { code } = await ctx.params;
     const order = await getOrder(code);
-    if (!order) return fail("Oda hiyo haipatikani.", 404);
-    if (order.demo) return fail("Oda ya majaribio haiwezi kughairiwa.");
+    if (!order) return fail("Order not found.", 404);
+    if (order.demo) return fail("Demo orders cannot be cancelled.");
 
     const body = await readBody<{ phone?: string }>(req);
     const phone = (body?.phone ?? "").trim();
@@ -38,7 +38,7 @@ export async function POST(
 
     if (!ownsBySession && !ownsByPhone) {
       return fail(
-        "Nambari ya simu hailingani na oda hii. Weka simu uliyotumia kuweka oda.",
+        "The phone number does not match this order. Enter the number used to place it.",
         403,
       );
     }

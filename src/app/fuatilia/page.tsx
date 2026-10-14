@@ -44,12 +44,12 @@ export default function TrackOrderPage() {
 
   return (
     <div className="container-x max-w-2xl py-12 lg:py-16">
-      <p className="eyebrow">Huduma kwa wateja</p>
-      <h1 className="heading-display mt-2">Fuatilia oda yako</h1>
+      <p className="eyebrow">Customer service</p>
+      <h1 className="heading-display mt-2">Track your order</h1>
       <p className="mt-3 text-ink-500">
-        Weka nambari ya oda uliyopata (mfano{" "}
+        Enter the order number you received (for example{" "}
         <span className="font-medium text-ink-700">NCF-XXXX</span>) ili kuona
-        hatua iliyofikia.
+        to check its progress.
       </p>
 
       <form onSubmit={lookup} className="mt-6 flex gap-2">
@@ -59,7 +59,7 @@ export default function TrackOrderPage() {
             value={code}
             onChange={(e) => setCode(e.target.value)}
             placeholder="NCF-XXXX"
-            aria-label="Nambari ya oda"
+            aria-label="Order number"
             className="w-full bg-transparent py-3 text-sm uppercase text-ink-900 outline-none placeholder:text-ink-400"
           />
         </div>
@@ -68,7 +68,7 @@ export default function TrackOrderPage() {
           disabled={searching}
           className="btn-primary disabled:opacity-60"
         >
-          {searching ? "Inatafuta…" : "Tafuta"}
+{searching ? "Searching…" : "Search"}
         </button>
       </form>
 
@@ -93,10 +93,10 @@ export default function TrackOrderPage() {
       {notFound && !searching ? (
         <div className="card mt-8 p-6">
           <p className="font-display text-lg text-ink-900">
-            Hatukupata oda hiyo
+            We could not find that order
           </p>
           <p className="mt-1 text-sm text-ink-500">
-            Hakikisha nambari ni sahihi, au tupigie simu{" "}
+            Check that the number is correct, or call us{" "}
             <a
               href="tel:+255754000000"
               className="font-medium text-accent hover:underline"
@@ -112,7 +112,7 @@ export default function TrackOrderPage() {
         <div className="card mt-8 p-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <p className="text-sm text-ink-500">Nambari ya oda</p>
+              <p className="text-sm text-ink-500">Order number</p>
               <p className="font-display text-xl text-ink-900">
                 {order.code}
               </p>
@@ -129,7 +129,7 @@ export default function TrackOrderPage() {
           </div>
           {isCancelled ? (
             <p className="mt-3 rounded-lg bg-danger-50 px-3 py-2 text-sm text-danger-600">
-              Oda hii imeghairiwa. Tupigie simu kwa msaada zaidi.
+              This order was cancelled. Call us if you need help.
             </p>
           ) : null}
           <p className="mt-3 text-sm">
@@ -137,7 +137,7 @@ export default function TrackOrderPage() {
               href={`/odha/${order.code}`}
               className="font-medium text-accent hover:underline"
             >
-              Ona maelezo kamili ya oda hii →
+              View full order details →
             </Link>
           </p>
 
@@ -167,7 +167,7 @@ export default function TrackOrderPage() {
           <div className="mt-6 grid gap-4 border-t border-cream-200 pt-4 text-sm sm:grid-cols-2">
             {order.customer?.name ? (
               <div>
-                <p className="text-ink-500">Mpokeaji</p>
+                <p className="text-ink-500">Recipient</p>
                 <p className="font-medium text-ink-900">
                   {order.customer.name}
                 </p>
@@ -180,7 +180,7 @@ export default function TrackOrderPage() {
             ) : null}
             {order.customer?.region ? (
               <div>
-                <p className="text-ink-500">Kuwasilishwa</p>
+                <p className="text-ink-500">Delivery address</p>
                 <p className="font-medium text-ink-900">
                   {[order.customer.city, order.customer.region]
                     .filter(Boolean)
@@ -211,7 +211,7 @@ export default function TrackOrderPage() {
               );
             })}
             <li className="flex justify-between border-t border-cream-200 pt-2 font-semibold">
-              <span>Jumla</span>
+              <span>Total</span>
               <span className="text-accent">
                 {formatTsh(order.totalTsh)}
               </span>
@@ -223,12 +223,12 @@ export default function TrackOrderPage() {
       <div className="mt-10 flex flex-wrap items-center gap-3">
         <TruckIcon className="h-5 w-5 text-brand-600" />
         <p className="text-sm text-ink-500">
-          Maswali kuhusu oda yako?{" "}
+          Questions about your order?{" "}
           <Link
             href="/wasiliana"
             className="font-medium text-accent hover:underline"
           >
-            Wasiliana nasi
+            Contact us
           </Link>
         </p>
       </div>

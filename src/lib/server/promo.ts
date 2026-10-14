@@ -41,7 +41,7 @@ export async function applyPromoFromDb(
   subtotalTsh: number,
 ): Promise<PromoResult> {
   const code = rawCode.trim().toUpperCase();
-  if (!code) return { ok: false, reason: "Weka msimbo wa punguzo." };
+  if (!code) return { ok: false, reason: "Enter a discount code." };
 
   const row = await getDb()
     .prepare("SELECT * FROM promo_codes WHERE code = ?")
@@ -49,16 +49,16 @@ export async function applyPromoFromDb(
   const rule = row ? rowToRule(row) : undefined;
 
   if (!rule || !rule.active) {
-    return { ok: false, reason: "Msimbo huo si sahihi au umeisha muda." };
+    return { ok: false, reason: "This code is invalid or has expired." };
   }
   if (rule.minSubtotalTsh && subtotalTsh < rule.minSubtotalTsh) {
     return {
       ok: false,
-      reason: `Msimbo huu unahitaji oda ya angalau TSh ${rule.minSubtotalTsh.toLocaleString("en-US")}.`,
+      reason: `This code requires an order of at least TSh ${rule.minSubtotalTsh.toLocaleString("en-US")}.`,
     };
   }
   if (subtotalTsh <= 0) {
-    return { ok: false, reason: "Kikapu chako ni tupu." };
+    return { ok: false, reason: "Your cart is empty." };
   }
 
   return {
@@ -88,23 +88,23 @@ export async function createPromoRule(input: {
   const code = (input.code ?? "").trim().toUpperCase();
   const label = (input.label ?? "").trim();
   if (!/^[A-Z0-9_-]{3,24}$/.test(code)) {
-    throw new InputError("Msimbo wa (herufi 3–24: A-Z, 0–9, _ , -).");
+    throw new InputError("Code must be 3-24 characters and use only letters, numbers, underscores, or hyphens.");
   }
-  if (label.length < 3) throw new InputError("Eleza msimbo (label) fupi.");
+  if (label.length < 3) throw new InputError("Enter a short label for the code.");
   const percentOff = input.percentOff ? Math.floor(input.percentOff) : undefined;
   const minSubtotalTsh = input.minSubtotalTsh
     ? Math.floor(input.minSubtotalTsh)
     : undefined;
   if (percentOff != null && (percentOff < 1 || percentOff > 100)) {
-    throw new InputError("Asilimia lazima iwe kati ya 1 na 100.");
+    throw new InputError("Percentage must be between 1 and 100.");
   }
   if (!percentOff && !input.freeShipping) {
-    throw new InputError("Weka punguzo la asilimia au usafirishaji bure.");
+    throw new InputError("Enter a percentage discount or select free shipping.");
   }
 
   const db = getDb();
   const exists = await db.prepare("SELECT 1 FROM promo_codes WHERE code = ?").get(code);
-  if (exists) throw new InputError("Msimbo huo tayari upo.", 409);
+  if (exists) throw new InputError("This code already exists.", 409);
 
   await db.prepare(
     `INSERT INTO promo_codes (
@@ -125,14 +125,14 @@ export async function createPromoRule(input: {
   return rowToRule(row);
 }
 
-/** Weka/ondoa uzima wa msimbo (admin). */
+/** Enter/ondoa uzima wa msimbo (admin). */
 export async function setPromoActive(code: string, active: boolean): Promise<PromoRule> {
   const key = code.trim().toUpperCase();
   const db = getDb();
   const result = await db
     .prepare("UPDATE promo_codes SET active = ? WHERE code = ?")
     .run(active ? 1 : 0, key);
-  if (result.changes === 0) throw new InputError("Msimbo haupatikani.", 404);
+  if (result.changes === 0) throw new InputError("Code not found.", 404);
   const row = await db
     .prepare("SELECT * FROM promo_codes WHERE code = ?")
     .get(key) as PromoRow;

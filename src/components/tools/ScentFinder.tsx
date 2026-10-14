@@ -14,30 +14,30 @@ type Question = {
 const QUESTIONS: Question[] = [
   {
     id: "family",
-    title: "Unapenda familia gani ya harufu?",
+    title: "Which fragrance family do you enjoy?",
     options: [
-      { value: "mwaarifi", label: "Mwaarifi — vanilla, honey, caramel" },
-      { value: "mizizi", label: "Mizizi — citrus, limau, peremende mpya" },
-      { value: "maua", label: "Maua — rose, jasmine, maua ya tropiki" },
-      { value: "miti", label: "Miti & udzi — sandalwood, cedar, oud, amber" },
+      { value: "mwaarifi", label: "Warm & sweet — vanilla, honey, caramel" },
+      { value: "mizizi", label: "Fresh & citrus — lemon, mint, bright notes" },
+      { value: "maua", label: "Floral — rose, jasmine, tropical flowers" },
+      { value: "miti", label: "Woody & rich — sandalwood, cedar, oud, amber" },
     ],
   },
   {
     id: "occasion",
-    title: "Matukio yako ni mangapi?",
+    title: "When do you usually wear fragrance?",
     options: [
-      { value: "kila_siku", label: "Kila siku — kazi, shule, mazingira ya kawaida" },
-      { value: "jioni", label: "Jioni — mikutano, dinner, bar" },
-      { value: "maalum", label: "Tukio maalum — harusi, sikukuu, selfie time" },
+      { value: "kila_siku", label: "Every day — work, school or casual plans" },
+      { value: "jioni", label: "Evenings — dinners and nights out" },
+      { value: "maalum", label: "Special occasions — celebrations and events" },
     ],
   },
   {
     id: "strength",
-    title: "Unapenda ushawishi wa aina gani?",
+    title: "How strong would you like it to be?",
     options: [
-      { value: "nyepesi", label: "Nyepesi — isiyovutia uzito, inayofaa mchana" },
-      { value: "kati", label: "Ya kati — inajulikana lakini si ngumu" },
-      { value: "muda_mrefu", label: "Ya muda mrefu — inadumu saa nyingi" },
+      { value: "nyepesi", label: "Light — subtle and good for daytime" },
+      { value: "kati", label: "Balanced — noticeable but not overpowering" },
+      { value: "muda_mrefu", label: "Long-lasting — stays with you for hours" },
     ],
   },
 ];
@@ -72,7 +72,7 @@ function score(product: Product, answers: Record<string, string>): number {
   return value;
 }
 
-/** Tafuta harufu inayokufaa — inapanga bidhaa za Fragrance/Body kwa majibu yako. */
+/** Search harufu inayokufaa — inapanga bidhaa za Fragrance/Body kwa majibu yako. */
 export function ScentFinder({ products: items }: { products?: Product[] }) {
   // Bidhaa hutoka kwenye DB kupitia ukurasa (fallback: katalogi ya ndani).
   const catalog = items ?? products;
@@ -106,10 +106,10 @@ export function ScentFinder({ products: items }: { products?: Product[] }) {
             </span>
             <div>
               <p className="font-semibold text-ink-900">
-                Harufu zinazokufaa zimepatikana
+                Fragrances picked for you
               </p>
               <p className="text-sm text-ink-500">
-                Zilizopangwa kwa familia, tukio na ushawishi uliochagua.
+                Matched to the notes, occasions and strength you chose.
               </p>
             </div>
           </div>
@@ -121,14 +121,14 @@ export function ScentFinder({ products: items }: { products?: Product[] }) {
             }}
             className="btn-outline px-4 py-2 text-xs"
           >
-            Anza tena
+            Start again
           </button>
         </div>
 
         {results.length === 0 ? (
           <p className="card mt-6 p-6 text-sm text-ink-500">
-            Bado hatujapata harufu inayolingana kabisa — wasiliana nasi kwa
-            ushauri wa bure kwa WhatsApp.
+            We could not find an exact match. Message us on WhatsApp for
+            personal advice.
           </p>
         ) : (
           <ul className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -149,7 +149,7 @@ export function ScentFinder({ products: items }: { products?: Product[] }) {
     <div className="card p-6 sm:p-8">
       <div className="flex items-center justify-between text-xs text-ink-500">
         <span>
-          Hatua {step + 1} kati ya {total}
+          Step {step + 1} of {total}
         </span>
         <span>{Math.round((step / total) * 100)}%</span>
       </div>
@@ -181,7 +181,7 @@ export function ScentFinder({ products: items }: { products?: Product[] }) {
           onClick={() => setStep((s) => Math.max(0, s - 1))}
           className="mt-6 text-sm text-ink-500 transition-colors hover:text-accent"
         >
-          ← Rudi nyuma
+          ← Go back
         </button>
       ) : null}
     </div>

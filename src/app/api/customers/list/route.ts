@@ -8,7 +8,7 @@ export async function GET() {
   await connection();
   try {
     if (!(await isAdminRequest())) {
-      return fail("Ingia kama admin kuona wateja.", 401);
+      return fail("Sign in as an administrator to view customers.", 401);
     }
     const customers = await listAllCustomers();
     return json({ ok: true, count: customers.length, customers });

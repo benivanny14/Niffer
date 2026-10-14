@@ -46,22 +46,22 @@ export function ContactForm() {
           </span>
           <div>
             <p className="font-semibold text-ink-900">
-              Asante, ujumbe wako umepokelewa!
+              Thanks, we received your message!
             </p>
             <p className="text-sm text-ink-500">
-              Tutakujibu kwa simu ndani ya saa chache za kazi.
+              We will get back to you during business hours.
             </p>
           </div>
         </div>
         <div className="mt-5 flex flex-wrap gap-3">
           <a
-            href={waLink(`Habari ${site.name}, ${message}`)}
+            href={waLink(`Hello ${site.name}, ${message}`)}
             target="_blank"
             rel="noopener noreferrer"
             className="btn-primary"
           >
             <ChatIcon className="h-4 w-4" />
-            Endelea kwa WhatsApp
+            Continue on WhatsApp
           </a>
           <button
             type="button"
@@ -71,7 +71,7 @@ export function ContactForm() {
             }}
             className="btn-outline"
           >
-            Tuma ujumbe mwingine
+            Send another message
           </button>
         </div>
       </div>
@@ -83,19 +83,19 @@ export function ContactForm() {
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium text-ink-700">
-            Jina lako *
+            Your name *
           </span>
           <input
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
             className={field}
-            placeholder="Jina lako"
+            placeholder="Your name"
           />
         </label>
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium text-ink-700">
-            Namba ya simu *
+            Phone number *
           </span>
           <input
             required
@@ -109,7 +109,7 @@ export function ContactForm() {
       </div>
       <label className="mt-4 block text-sm">
         <span className="mb-1.5 block font-medium text-ink-700">
-          Ujumbe wako *
+          Your message *
         </span>
         <textarea
           required
@@ -117,7 +117,7 @@ export function ContactForm() {
           onChange={(e) => setMessage(e.target.value)}
           rows={5}
           className={field}
-          placeholder="Tuliza swali lako hapa…"
+          placeholder="Type your message here…"
         />
       </label>
 
@@ -134,19 +134,19 @@ export function ContactForm() {
           className="btn-primary disabled:opacity-60"
         >
           <ChatIcon className="h-4 w-4" />
-          {sending ? "Inatuma…" : "Tuma ujumbe"}
+          {sending ? "Sending…" : "Send message"}
         </button>
         <a
-          href={waLink(`Habari ${site.name}! Jina: ${name}\nSimu: ${phone}`)}
+          href={waLink(`Hello ${site.name}! Name: ${name}\nPhone: ${phone}`)}
           target="_blank"
           rel="noopener noreferrer"
           className="btn-outline"
         >
-          WhatsApp moja kwa moja
+          Message us on WhatsApp
         </a>
         <p className="flex items-center gap-1.5 text-xs text-ink-500">
           <CheckIcon className="h-4 w-4 text-success-600" />
-          Majibu ndani ya saa chache za kazi
+          We usually reply within a few business hours
         </p>
       </div>
     </form>

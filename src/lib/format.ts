@@ -39,7 +39,7 @@ export function formatTsh(amount: number): string {
   return `TSh ${new Intl.NumberFormat("en-US").format(amount)}`;
 }
 
-/** Punguzo la 20% — au null kama hakuna compare-at price. */
+/** Discount la 20% — au null kama hakuna compare-at price. */
 export function discountPercent(
   priceTsh: number,
   compareAtTsh?: number,

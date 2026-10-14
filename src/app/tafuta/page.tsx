@@ -50,7 +50,7 @@ function SearchResults() {
   });
   const categoryOptions = categoryResource.data ?? fallbackCategories;
 
-  // Utafitaji wa backend (bidhaa + makala) — hutumia utafutaji wa ndani kama
+  // Search wa backend (bidhaa + makala) — hutumia utafutaji wa ndani kama
   // kinga endapo server/mtandao haupo.
   const resource = useAsync<SearchResult[]>(`search:${q}`, async () => {
     const query = q.trim();
@@ -73,21 +73,21 @@ function SearchResults() {
 
   return (
     <div className="container-x py-12 lg:py-16">
-      <p className="eyebrow">Utafitaji</p>
+      <p className="eyebrow">Search</p>
       <h1 className="heading-display mt-2">
-        {q ? `Matokeo ya “${q}”` : "Tafuta bidhaa"}
+        {q ? `Results for “${q}”` : "Search products"}
       </h1>
 
       {loading ? (
-        <p className="mt-2 text-sm text-ink-500">Inatafuta…</p>
+<p className="mt-2 text-sm text-ink-500">Searching…</p>
       ) : q ? (
         <p className="mt-2 text-sm text-ink-500">
-          {results.length} {results.length === 1 ? "kipengele" : "vipengele"}
-          {" vimepatikana"}
+          {results.length} {results.length === 1 ? "result" : "results"}
+          {" found"}
         </p>
       ) : (
         <p className="mt-2 text-ink-500">
-          Andika neno la utafutaji, au chagua kategoria hapa chini.
+          Enter a search term or choose a category below.
         </p>
       )}
 
@@ -114,13 +114,13 @@ function SearchResults() {
         <div className="card mt-10 p-12 text-center">
           <SearchIcon className="mx-auto h-12 w-12 text-ink-300" />
           <p className="font-display mt-6 text-xl text-ink-900">
-            Hakuna matokeo ya “{q}”
+            No results for “{q}”
           </p>
           <p className="mt-2 text-sm text-ink-500">
-            Jaribu neno lingine, au vinjari bidhaa zote.
+            Try another search or browse all products.
           </p>
           <Link href="/bidhaa" className="btn-primary mt-6">
-            Vinjari Bidhaa
+            Browse products
           </Link>
         </div>
       ) : (
@@ -142,7 +142,7 @@ function SearchResults() {
           {articleResults.length > 0 ? (
             <section className="mt-12">
               <h2 className="font-display text-2xl text-ink-900">
-                Makala zinazohusiana
+                Related articles
               </h2>
               <ul className="mt-4 grid gap-3 sm:grid-cols-2">
                 {articleResults.map((result) => (

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -8,16 +8,16 @@ import { HeaderControls } from "@/components/layout/HeaderControls";
 import { CloseIcon, MenuIcon, SparkleIcon } from "@/components/ui/icons";
 
 const navLinks = [
-  { href: "/bidhaa", label: "Bidhaa" },
-  { href: "/ofa", label: "Ofa" },
-  { href: "/zawadi", label: "Zawadi" },
-  { href: "/makala", label: "Makala" },
-  { href: "/swali", label: "Zana Bure" },
-  { href: "/matawi", label: "Matawi" },
-  { href: "/kuhusu", label: "Kuhusu" },
-  { href: "/wasiliana", label: "Wasiliana" },
-  { href: "/akaunti", label: "Akaunti", mobileOnly: true },
-  { href: "/upendwa", label: "Upendwa", mobileOnly: true },
+  { href: "/bidhaa", label: "Products" },
+  { href: "/ofa", label: "Sale" },
+  { href: "/zawadi", label: "Gifts" },
+  { href: "/makala", label: "Journal" },
+  { href: "/swali", label: "Free Tools" },
+  { href: "/matawi", label: "Locations" },
+  { href: "/kuhusu", label: "About" },
+  { href: "/wasiliana", label: "Contact" },
+  { href: "/akaunti", label: "Account", mobileOnly: true },
+  { href: "/upendwa", label: "Wishlist", mobileOnly: true },
 ];
 
 export function SiteHeader() {
@@ -89,19 +89,19 @@ export function SiteHeader() {
       <div className="site-header__announcement">
         <div className="container-x flex min-h-8 items-center justify-center gap-2 py-1 text-[11px] leading-snug">
           <SparkleIcon className="h-3.5 w-3.5 shrink-0 text-gold-500" />
-          <p className="text-center">Usafirishaji bure Dar es Salaam kwa oda zaidi ya TSh 50,000 <span>·</span> Lipa kwa M-Pesa, Mixx, Airtel au baada ya kupokea</p>
+          <p className="text-center">Free delivery in Dar es Salaam on orders over TSh 50,000 <span>·</span> Pay with M-Pesa, Mixx, Airtel or on delivery</p>
         </div>
       </div>
 
       <div className="site-header__main container-x flex min-h-[5.25rem] items-center justify-between gap-3 py-1.5">
-        <Link href="/" className="group flex min-w-0 shrink-0 items-center gap-2.5 sm:gap-3" onClick={() => setOpen(false)} aria-label="Niffer Cosmetics, ukurasa wa mwanzo">
+        <Link href="/" className="group flex min-w-0 shrink-0 items-center gap-2.5 sm:gap-3" onClick={() => setOpen(false)} aria-label="Niffer Cosmetics home">
           <span className="relative flex h-16 w-16 shrink-0 items-center justify-center transition-transform duration-300 ease-out group-hover:scale-[1.04] sm:h-[5.25rem] sm:w-[5.25rem]">
             <span aria-hidden className="absolute -inset-1 rounded-full border border-dashed border-gold-500/60 transition-transform duration-500 ease-out group-hover:rotate-90" />
             <span className="relative flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-gold-500 via-brand-400 to-brand-800 p-[4px] shadow-[0_14px_30px_-16px_rgba(95,23,49,0.7)]">
               <span className="flex h-full w-full items-center justify-center rounded-full bg-surface p-[3px]">
                 <span className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-cream-100 text-accent">
                   {profileImage ? (
-                    <Image src={profileImage} alt="Profile ya Niffer Cosmetics" fill unoptimized sizes="84px" className="object-cover" />
+                    <Image src={profileImage} alt="Niffer Cosmetics profile" fill unoptimized sizes="84px" className="object-cover" />
                   ) : (
                     <SparkleIcon className="h-8 w-8 sm:h-10 sm:w-10" />
                   )}
@@ -122,7 +122,7 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav aria-label="Menyu kuu" className="hidden lg:block">
+        <nav aria-label="Main menu" className="hidden lg:block">
           <ul className="flex items-center gap-6">
             {navLinks
               .filter((link) => !link.mobileOnly)
@@ -146,7 +146,7 @@ export function SiteHeader() {
             className="rounded-full p-2 text-ink-700 transition-colors hover:bg-cream-200 hover:text-accent lg:hidden"
             aria-expanded={open}
             aria-controls="mobile-menu"
-            aria-label={open ? "Funga menyu" : "Fungua menyu"}
+            aria-label={open ? "Close menu" : "Open menu"}
             onClick={() => setOpen((v) => !v)}
           >
             {open ? <CloseIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
@@ -156,7 +156,7 @@ export function SiteHeader() {
 
       {open ? (
           <div id="mobile-menu" className="site-header__mobile border-t border-cream-300 bg-cream-50 lg:hidden">
-          <nav aria-label="Menyu ya simu" className="container-x py-4">
+          <nav aria-label="Mobile menu" className="container-x py-4">
             <ul className="flex flex-col gap-1">
               {navLinks.map((link) => (
                 <li key={link.href}>
@@ -170,7 +170,7 @@ export function SiteHeader() {
                 </li>
               ))}
             </ul>
-            <p className="eyebrow mt-5 px-3">Kategoria</p>
+            <p className="eyebrow mt-5 px-3">Categories</p>
             <ul className="mt-2 grid grid-cols-2 gap-1">
               {categoryOptions.map((category) => (
                 <li key={category.slug}>

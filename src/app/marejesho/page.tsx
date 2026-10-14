@@ -3,39 +3,39 @@ import Link from "next/link";
 import { CheckIcon, CloseIcon } from "@/components/ui/icons";
 
 export const metadata: Metadata = {
-  title: "Marejesho",
+  title: "Returns",
   description:
-    "Sera ya marejesho na ubadilishaji wa bidhaa za Niffer Cosmetics.",
+    "Niffer Cosmetics return and exchange policy.",
 };
 
 const can = [
-  "Bidhaa haijatumika na iko kwenye hali ya asili",
-  "Urejesho ndani ya siku 7 tangu ulipokea oda",
-  "Unaonyesha risiti au nambari ya oda",
-  "Urejeshaji wa pesa au ubadilishaji wa bidhaa",
+  "The product is unused and in its original condition",
+  "Return within 7 days of receiving your order",
+  "Provide your receipt or order number",
+  "Refund or product exchange",
 ];
 
 const cannot = [
-  "Bidhaa zilizofunguliwa au zilizotumika",
-  "Bidhaa za urembo zinazotumia moja kwa moja kwenye ngozi (mascara, lipsticks)",
-  "Oda zilizopita zaidi ya siku 7",
+  "Opened or used products",
+  "Products applied directly to the skin, such as mascara and lipstick",
+  "Orders received more than 7 days ago",
 ];
 
 export default function ReturnsPage() {
   return (
     <div className="container-x max-w-3xl py-12 lg:py-16">
-      <p className="eyebrow">Huduma</p>
-      <h1 className="heading-display mt-2">Marejesho na Uborekaji</h1>
+      <p className="eyebrow">Customer service</p>
+      <h1 className="heading-display mt-2">Returns & Exchanges</h1>
       <p className="mt-3 text-ink-500">
-        Ukipata bidhaa isiyo sawa au haikufurahisha, tuko hapa kukusaidia.
-        Tunataka uwe na uhalali kila unaponunua.
+        If an item is incorrect or does not meet your expectations, we are here to help.
+        We want you to shop with confidence.
       </p>
 
       <div className="mt-10 grid gap-6 sm:grid-cols-2">
         <div className="card p-6">
           <h2 className="flex items-center gap-2 font-display text-lg text-success-600">
             <CheckIcon className="h-5 w-5" />
-            Tunaruhusu
+            Accepted
           </h2>
           <ul className="mt-4 space-y-2.5 text-sm text-ink-500">
             {can.map((c) => (
@@ -49,7 +49,7 @@ export default function ReturnsPage() {
         <div className="card p-6">
           <h2 className="flex items-center gap-2 font-display text-lg text-danger-600">
             <CloseIcon className="h-5 w-5" />
-            Haturuhusu
+            Not accepted
           </h2>
           <ul className="mt-4 space-y-2.5 text-sm text-ink-500">
             {cannot.map((c) => (
@@ -64,7 +64,7 @@ export default function ReturnsPage() {
 
       <section className="mt-10">
         <h2 className="font-display text-2xl text-ink-900">
-          Jinsi ya kurejesha
+          How to return an item
         </h2>
         <ol className="mt-4 space-y-3 text-sm text-ink-500">
           <li className="flex gap-3">
@@ -72,8 +72,8 @@ export default function ReturnsPage() {
               1
             </span>
             <p>
-              Wasiliana nasi ndani ya siku 7 kupitia WhatsApp au simu, uonyeshe
-              nambari ya oda yako.
+              Contact us within 7 days via WhatsApp or phone, uonyeshe
+              your order number.
             </p>
           </li>
           <li className="flex gap-3">
@@ -81,7 +81,7 @@ export default function ReturnsPage() {
               2
             </span>
             <p>
-              Tutakupa maelekezo ya kurejesha bidhaa (kupitia duka letu au
+              We will provide instructions for returning the product (kupitia duka letu au
               courier).
             </p>
           </li>
@@ -90,14 +90,14 @@ export default function ReturnsPage() {
               3
             </span>
             <p>
-              Baada ya kupokea na kukagua, tutakupa urejeshaji wa pesa au
+              After we receive and inspect the item, we will arrange a refund or
               ubadilishaji.
             </p>
           </li>
         </ol>
         <div className="mt-8">
           <Link href="/wasiliana" className="btn-primary">
-            Wasiliana Nasi
+            Contact us
           </Link>
         </div>
       </section>

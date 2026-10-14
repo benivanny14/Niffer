@@ -39,7 +39,7 @@ async function request<T>(path: string, options: Options = {}): Promise<T> {
   } catch {
     clearTimeout(timer);
     throw new ApiError(
-      "Imeshindikana kuunganisha na seva. Hakikisha una mtandao.",
+      "Could not connect to the server. Check your internet connection.",
       0,
     );
   }
@@ -54,7 +54,7 @@ async function request<T>(path: string, options: Options = {}): Promise<T> {
 
   if (!res.ok || data?.ok === false) {
     throw new ApiError(
-      data?.error ?? `Hitilafu ya seva (${res.status}). Jaribu tena.`,
+      data?.error ?? `Server error (${res.status}). Please try again.`,
       res.status,
     );
   }
@@ -115,9 +115,9 @@ export function apiForm<T>(
   return request<T>(path, { ...options, method: "POST", body: formData });
 }
 
-/** Ujumbe wa hitilafu unaonyesha kwenye fomu (daima wa Kiswahili). */
+/** Ujumbe wa hitilafu unaonyesha kwenye fomu (in English). */
 export function errorMessage(error: unknown): string {
   if (error instanceof ApiError) return error.message;
   if (error instanceof Error && error.message) return error.message;
-  return "Hitilafu imetokea. Jaribu tena.";
+  return "Something went wrong. Please try again.";
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Malipo",
+  title: "Checkout",
   alternates: { canonical: "/ukoko" },
   robots: { index: false },
 };

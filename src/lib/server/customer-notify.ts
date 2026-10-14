@@ -122,7 +122,7 @@ export async function countUnreadCustomerNotifications(
   return Number(row?.n ?? 0);
 }
 
-/** Weka arifa kuwa imesomwa. */
+/** Enter arifa kuwa imesomwa. */
 export async function markCustomerNotificationRead(id: string): Promise<boolean> {
   const result = await getDb()
     .prepare("UPDATE customer_notifications SET status = 'read' WHERE id = ?")
@@ -130,7 +130,7 @@ export async function markCustomerNotificationRead(id: string): Promise<boolean>
   return Number((await result).changes) > 0;
 }
 
-/** Weka zote kuwa zimesomwa (mteja alipoingia). */
+/** Enter zote kuwa zimesomwa (mteja alipoingia). */
 export async function markAllCustomerNotificationsRead(
   customerId: string,
   phone?: string,

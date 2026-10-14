@@ -55,7 +55,7 @@ export function VideoGallery({ videos }: { videos: BeautyVideo[] }) {
                     href={`/bidhaa/${video.relatedProductSlug}`}
                     className="mt-auto pt-3 text-sm font-semibold text-accent hover:text-accent"
                   >
-                    Bidhaa zinazohusiana →
+                    Related products →
                   </Link>
                 ) : null}
               </div>

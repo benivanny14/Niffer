@@ -7,7 +7,7 @@ import { isAdminRequest } from "@/lib/server/auth";
 export async function GET() {
   try {
     if (!(await isAdminRequest())) {
-      return fail("Ingia kama admin.", 401);
+      return fail("Sign in as an administrator.", 401);
     }
     return json({ ok: true, promos: await listPromoRules() });
   } catch (error) {
@@ -19,7 +19,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     if (!(await isAdminRequest())) {
-      return fail("Ingia kama admin.", 401);
+      return fail("Sign in as an administrator.", 401);
     }
     const body = await readBody<{
       code?: string;
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       freeShipping?: boolean;
       minSubtotalTsh?: number;
     }>(req);
-    if (!body) return fail("Taarifa za msimbo hazisahihi.");
+    if (!body) return fail("The code details are invalid.");
     const promo = await createPromoRule(body);
     return json({ ok: true, promo }, 201);
   } catch (error) {

@@ -5,9 +5,9 @@ import { listProducts } from "@/lib/server/catalog";
 import { RoutineQuiz } from "@/components/tools/RoutineQuiz";
 
 export const metadata: Metadata = {
-  title: "Swali la Utunzaji wa Ngozi",
+  title: "Skincare Routine Quiz",
   description:
-    "Jibu maswali mafupi na upate mapendekezo ya bidhaa za skincare zinazokufaa — rutini yako ya kila siku kwa ngozi yako.",
+    "Answer a few questions to get skincare product recommendations tailored to you — for your daily routine.",
 };
 
 export default async function RoutineQuizPage() {
@@ -17,17 +17,17 @@ export default async function RoutineQuizPage() {
 
   return (
     <div className="container-x max-w-3xl py-12 lg:py-16">
-      <p className="eyebrow">Zana ya bure</p>
-      <h1 className="heading-display mt-2">Swali la utunzaji wa ngozi</h1>
+      <p className="eyebrow">Free tool</p>
+      <h1 className="heading-display mt-2">Skincare routine quiz</h1>
       <p className="mt-3 max-w-2xl text-ink-500">
-        Maswali manne mafupi. Tutakupendekeza bidhaa tatu zinazolingana na aina
-        ya ngozi yako, lengo lako na bajeti yako.
+        Answer four quick questions to find three products that suit your skin type,
+        goals and budget.
       </p>
 
       <p className="mt-4 text-sm text-ink-500">
-        Unatafuta harufu? Pia jaribu{" "}
+        Looking for a fragrance? Try our{" "}
         <Link href="/harufu" className="font-semibold text-accent hover:underline">
-          Tafuta Harufu →
+          Fragrance finder →
         </Link>
       </p>
 

@@ -1,10 +1,10 @@
-/** Makala ya Kiswahili kuhusu kuchagua na kutumia bidhaa za urembo. */
+/** Practical guides to choosing and using beauty products. */
 
 export type Article = {
   slug: string;
   title: string;
   excerpt: string;
-  category: "skincare" | "makeup" | "nywele" | "harufu" | "habari";
+  category: "skincare" | "makeup" | "haircare" | "fragrance" | "news";
   author: string;
   date: string;
   readMinutes: number;
@@ -16,104 +16,104 @@ export type Article = {
 export const articleCategories: { slug: Article["category"]; name: string }[] = [
   { slug: "skincare", name: "Skincare" },
   { slug: "makeup", name: "Makeup" },
-  { slug: "nywele", name: "Nywele" },
-  { slug: "harufu", name: "Harufu" },
-  { slug: "habari", name: "Habari" },
+  { slug: "haircare", name: "Haircare" },
+  { slug: "fragrance", name: "Fragrance" },
+  { slug: "news", name: "News" },
 ];
 
 export const articles: Article[] = [
   {
     slug: "rutini-ya-skincare-ya-asubuhi",
-    title: "Hatua rahisi za kutunza ngozi asubuhi",
-    excerpt: "Usafi, unyevunyevu na kinga ya jua vinaweza kuwa mwanzo mzuri wa siku.",
+    title: "A simple morning skincare routine",
+    excerpt: "Cleansing, moisturising and sun protection make a simple place to start.",
     category: "skincare",
-    author: "Timu ya Niffer",
+    author: "Niffer Team",
     date: "2026-09-12",
     readMinutes: 4,
     image: "/images/packs/pack-135k-qe.jpg",
     body: [
-      { paragraph: "Ratiba ya asubuhi haihitaji bidhaa nyingi. Chagua hatua chache zinazokufaa, na fuata maelekezo yaliyo kwenye kila bidhaa." },
-      { heading: "1. Osha uso kwa upole", paragraph: "Tumia kisafishaji kinachofaa ngozi yako na maji ya uvuguvugu. Suuza vizuri, kisha kausha uso kwa taulo safi bila kusugua." },
-      { heading: "2. Paka moisturizer", paragraph: "Ikiwa ngozi yako huhisi kukauka, paka moisturizer baada ya kuosha. Anza na kiasi kidogo na ongeza tu ikihitajika." },
-      { heading: "3. Tumia sunscreen", paragraph: "Ukiwa nje wakati wa mchana, paka sunscreen yenye SPF 30 au zaidi kulingana na maelekezo ya bidhaa. Rudia kupaka kama lebo inavyoelekeza, hasa baada ya kuogelea au kutokwa jasho." },
-      { paragraph: "Bidhaa mpya inaweza isiifae kila ngozi. Isijaribu kwanza kwenye eneo dogo na acha kuitumia ukiona muwasho unaoendelea." },
+      { paragraph: "A morning routine does not need many products. Choose a few steps that suit you and follow each product label." },
+      { heading: "1. Cleanse gently", paragraph: "Use a cleanser suited to your skin and lukewarm water. Rinse well, then pat your face dry with a clean towel." },
+      { heading: "2. Moisturise", paragraph: "If your skin feels dry, apply moisturiser after cleansing. Start with a small amount and add more only if needed." },
+      { heading: "3. Apply sunscreen", paragraph: "When outdoors during the day, use sunscreen with SPF 30 or higher as directed. Reapply especially after swimming or sweating." },
+      { paragraph: "A new product may not suit every skin type. Test it on a small area first and stop using it if irritation persists." },
     ],
     relatedProductSlugs: ["purest-glow-pack-65k", "purest-glow-pack-100k", "purest-glow-pack-135k"],
   },
   {
     slug: "lipstick-ya-muda-mrefu-hatua-kwa-hatua",
-    title: "Jinsi ya kupaka lipstick kwa mwonekano nadhifu",
-    excerpt: "Andaa midomo, weka rangi kwa tabaka nyepesi na rekebisha kingo kwa utulivu.",
+    title: "How to apply lipstick neatly",
+    excerpt: "Prep your lips, apply light layers and take your time around the edges.",
     category: "makeup",
-    author: "Timu ya Niffer",
+    author: "Niffer Team",
     date: "2026-09-28",
     readMinutes: 3,
     image: "/images/packs/pack-200k-glass-skin.jpg",
     body: [
-      { paragraph: "Lipstick hukaa vizuri zaidi midomoni ikiwa safi na imetayarishwa. Matokeo hutegemea bidhaa na shughuli zako, kwa hiyo unaweza kuhitaji kuipaka tena." },
-      { heading: "1. Andaa midomo", paragraph: "Paka lip balm kidogo ikiwa midomo imekauka. Iache kwa muda mfupi, kisha futa kiasi kilichobaki kabla ya kuweka rangi." },
-      { heading: "2. Chora kingo", paragraph: "Tumia lip liner inayokaribiana na rangi ya lipstick, au ruka hatua hii kama unapendelea mwonekano wa kawaida." },
-      { heading: "3. Weka lipstick", paragraph: "Paka tabaka jembamba kuanzia katikati ya mdomo. Unaweza kuongeza tabaka jingine ikiwa unataka rangi ionekane zaidi." },
-      { heading: "4. Ondoa rangi ya ziada", paragraph: "Bonyeza tissue taratibu katikati ya midomo. Angalia kingo kwenye mwanga mzuri na usahihishe sehemu zinazohitaji." },
+      { paragraph: "Lipstick applies more evenly to clean, prepared lips. Results vary by product and activity, so you may need to reapply." },
+      { heading: "1. Prep your lips", paragraph: "Apply a little lip balm if your lips feel dry. Let it settle, then remove any excess before applying colour." },
+      { heading: "2. Define the edges", paragraph: "Use a lip liner close to your lipstick shade, or skip this step for a softer look." },
+      { heading: "3. Apply lipstick", paragraph: "Apply a thin layer from the centre of your lips. Add another layer if you want more colour." },
+      { heading: "4. Blot and tidy", paragraph: "Gently press a tissue between your lips. Check the edges in good light and touch up where needed." },
     ],
     relatedProductSlugs: ["body-pack-200k-glass", "body-pack-245k-rose"],
   },
   {
     slug: "kuchagua-perfume-inayokufaa",
-    title: "Namna ya kuchagua harufu unayoipenda",
-    excerpt: "Jaribu harufu moja baada ya nyingine na upe muda kabla ya kuamua.",
-    category: "harufu",
-    author: "Timu ya Niffer",
+    title: "How to find a fragrance you love",
+    excerpt: "Try one fragrance at a time and give it a few minutes before deciding.",
+    category: "fragrance",
+    author: "Niffer Team",
     date: "2026-10-02",
     readMinutes: 4,
     image: "/images/packs/pack-265k-eos.jpg",
     body: [
-      { paragraph: "Harufu ni chaguo la mtu binafsi. Ile unayoipenda inaweza kuwa tofauti na anayopenda rafiki yako, kwa hiyo ni vizuri kuijaribu mwenyewe." },
-      { heading: "Anza na aina unazopendelea", paragraph: "Harufu za citrus huwa na noti za matunda jamii ya machungwa; floral hukumbusha maua; na baadhi ya harufu zenye vanilla au mbao huwa na hisia nzito zaidi. Majina haya ni mwongozo tu—jaribu bidhaa yenyewe." },
-      { heading: "Ijaribu kabla ya kununua", paragraph: "Ikiwezekana, jaribu kiasi kidogo kwenye ngozi au karatasi ya kupimia. Ipe dakika kadhaa kabla ya kuamua kama unaipenda, na epuka kupuliza karibu na macho au ngozi iliyowashwa." },
-      { heading: "Tumia kulingana na lebo", paragraph: "Fuata maelekezo ya chupa. Kama unapuliza kwenye nguo, hakikisha lebo inaruhusu na jaribu kwanza sehemu isiyoonekana ili kuepuka doa." },
+      { paragraph: "Fragrance is personal. You may prefer a different scent from your friends, so try it for yourself when possible." },
+      { heading: "Start with notes you enjoy", paragraph: "Citrus scents have bright, zesty notes; floral scents suggest flowers; vanilla or woody notes can feel warmer. These are only guides, so try the fragrance itself." },
+      { heading: "Test before you buy", paragraph: "If possible, test a small amount on your skin or a tester strip. Give it a few minutes before deciding, and avoid spraying near your eyes or irritated skin." },
+      { heading: "Follow the label", paragraph: "Follow the bottle directions. If spraying it on clothing, check the label and test an unseen area first to avoid stains." },
     ],
     relatedProductSlugs: ["body-pack-265k", "body-pack-140k"],
   },
   {
     slug: "nywele-zinazoumiza-5-tiba-za-argan",
-    title: "Utunzaji wa nywele zilizokauka au kukatika",
-    excerpt: "Hatua za kawaida za kuosha na kutunza nywele bila kuzisumbua kupita kiasi.",
-    category: "nywele",
-    author: "Timu ya Niffer",
+    title: "Caring for dry or fragile hair",
+    excerpt: "Simple washing and care habits that are gentle on your hair.",
+    category: "haircare",
+    author: "Niffer Team",
     date: "2026-10-05",
     readMinutes: 4,
     image: "/images/packs/pack-mwanachuo-95k-argan.jpg",
     body: [
-      { paragraph: "Nywele kukauka au kukatika kunaweza kuwa na sababu tofauti. Anza na utunzaji mpole na chagua bidhaa kulingana na mahitaji ya nywele zako." },
-      { heading: "Osha kwa upole", paragraph: "Paka shampoo zaidi kichwani na usugue kwa ncha za vidole. Tumia mara kulingana na aina ya nywele na maelekezo ya bidhaa." },
-      { heading: "Tumia conditioner", paragraph: "Baada ya shampoo, paka conditioner kwenye urefu wa nywele na ncha. Iache kwa muda ulioelekezwa kisha suuza." },
-      { heading: "Punguza joto kali", paragraph: "Kama unatumia kifaa cha joto, tumia kiwango cha chini kinachokufaa na bidhaa ya kinga ya joto iliyoandikwa kwa matumizi hayo." },
-      { paragraph: "Mafuta au bidhaa zenye argan zinaweza kuwa sehemu ya ratiba yako ikiwa zinakufaa. Fuata lebo; bidhaa moja haiwezi kutatua kila aina ya tatizo la nywele." },
+      { paragraph: "Dryness or breakage can have different causes. Start with gentle care and choose products for your hair needs." },
+      { heading: "Wash gently", paragraph: "Apply shampoo mainly to your scalp and massage with your fingertips. Wash as often as suits your hair and follow the product directions." },
+      { heading: "Use conditioner", paragraph: "After shampooing, apply conditioner to the lengths and ends. Leave it on as directed, then rinse." },
+      { heading: "Limit heat", paragraph: "If you use heated tools, choose a suitable lower setting and use a heat protectant intended for that purpose." },
+      { paragraph: "Argan oils or products may be part of your routine if they suit you. Follow the label; no single product solves every hair concern." },
     ],
     relatedProductSlugs: ["mwanachuo-pack-95k-argan", "body-pack-195k-coffee"],
   },
   {
     slug: "habari-kubwa-niffer-duka-jipya-dar",
-    title: "Jinsi ya kuagiza bidhaa kwenye Niffer Cosmetics",
-    excerpt: "Tafuta bidhaa, kagua maelezo na chagua njia inayokufaa ya kukamilisha oda.",
-    category: "habari",
-    author: "Timu ya Niffer",
+    title: "How to order from Niffer Cosmetics",
+    excerpt: "Find a product, check the details and choose a convenient way to complete your order.",
+    category: "news",
+    author: "Niffer Team",
     date: "2026-10-08",
     readMinutes: 2,
     image: "/images/packs/pack-245k-ogx-rose.jpg",
     body: [
-      { paragraph: "Unaweza kuanza kwa kutafuta bidhaa kwa jina au kuchagua kategoria kwenye duka. Fungua ukurasa wa bidhaa ili kuona maelezo, bei na upatikanaji wake." },
-      { heading: "Kagua bidhaa na oda", paragraph: "Chagua bidhaa unazotaka na uziongeze kwenye kikapu. Kabla ya kuendelea, hakiki majina, idadi na jumla ya gharama." },
-      { heading: "Weka maelezo ya kupokea", paragraph: "Jaza jina, namba ya simu na anwani ya kufikishiwa. Kagua gharama na makadirio ya muda wa usafirishaji yanayoonyeshwa wakati wa kulipa." },
-      { heading: "Unahitaji msaada?", paragraph: "Wasiliana nasi kupitia namba ya simu au WhatsApp iliyo kwenye ukurasa wa mawasiliano ikiwa una swali kuhusu bidhaa au oda." },
+      { paragraph: "Search for a product by name or browse a category. Open its page to check details, price, and availability." },
+      { heading: "Review your selection", paragraph: "Choose the products you want and add them to your cart. Before continuing, check the names, quantities, and total." },
+      { heading: "Enter delivery details", paragraph: "Enter your name, phone number, and delivery address. Review the costs and estimated delivery time shown at checkout." },
+      { heading: "Need help?", paragraph: "Contact us by phone or WhatsApp using the details on our contact page if you have a question about a product or order." },
     ],
     relatedProductSlugs: [],
   },
 ];
 
 export function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("sw-TZ", {
+  return new Date(iso).toLocaleDateString("en-TZ", {
     year: "numeric",
     month: "long",
     day: "numeric",

@@ -97,7 +97,7 @@ export function ProductManager() {
       setCategoryDescription("");
       categoryResource.refresh();
       setCategoryFilter(result.category.slug);
-      flash(`Kategoria “${result.category.name}” limeongezwa`);
+      flash(`Category ${result.category.name} added`);
     } catch (err) {
       setCategoryError(errorMessage(err));
     } finally {
@@ -141,11 +141,11 @@ export function ProductManager() {
     if (!draft || saving) return;
     const price = Math.round(Number(draft.price));
     if (draft.name.trim().length < 2) {
-      setFormError("Jina la bidhaa linahitajika.");
+      setFormError("Product name is required.");
       return;
     }
     if (!Number.isFinite(price) || price <= 0) {
-      setFormError("Bei si sahihi.");
+      setFormError("Enter a valid price.");
       return;
     }
 
@@ -180,7 +180,7 @@ export function ProductManager() {
       }
 
       refresh();
-      flash("Imehifadhiwa kwenye database");
+      flash("Saved to the database");
       setDraft(null);
     } catch (err) {
       setFormError(errorMessage(err));
@@ -191,13 +191,13 @@ export function ProductManager() {
 
   async function remove(product: Product) {
     const ok = window.confirm(
-      `Futa "${product.name}"? Oda zilizopo haziguswi lakini hakiki zake zitaondoka.`,
+      `Delete "${product.name}"? Existing orders will remain, but its reviews will be removed.`,
     );
     if (!ok) return;
     try {
       await apiDelete(`/api/products/${product.slug}`);
       refresh();
-      flash("Bidhaa imefutwa");
+      flash("Product deleted");
     } catch (err) {
       setStockError(errorMessage(err));
     }
@@ -207,13 +207,13 @@ export function ProductManager() {
     <div>
       {/* Vyombo */}
       <div className="flex flex-wrap items-center gap-3">
-        <label className="text-sm font-medium text-ink-700">Kategoria:</label>
+        <label className="text-sm font-medium text-ink-700">Category:</label>
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
           className="rounded-xl border border-cream-300 bg-surface px-3 py-2 text-sm"
         >
-          <option value="zote">Zote</option>
+          <option value="zote">All categories</option>
           {categoryOptions.map((c) => (
             <option key={c.slug} value={c.slug}>
               {c.name}
@@ -229,7 +229,7 @@ export function ProductManager() {
           }}
           className="btn-primary ml-auto px-4 py-2 text-xs"
         >
-          + Bidhaa mpya
+          + Add product
         </button>
 
         {notice ? (
@@ -244,27 +244,27 @@ export function ProductManager() {
 
       <details className="card mt-4 p-4">
         <summary className="cursor-pointer text-sm font-semibold text-ink-800">
-          + Ongeza kategoria mpya
+          + Add a category
         </summary>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <label className="block text-sm">
-            <span className="mb-1.5 block font-medium text-ink-700">Jina la kategoria</span>
+            <span className="mb-1.5 block font-medium text-ink-700">Category name</span>
             <input
               value={categoryName}
               onChange={(event) => setCategoryName(event.target.value)}
               maxLength={60}
               className={field}
-              placeholder="Mfano: Manukato"
+              placeholder="e.g. Fragrance"
             />
           </label>
           <label className="block text-sm">
-            <span className="mb-1.5 block font-medium text-ink-700">Maelezo mafupi (hiari)</span>
+            <span className="mb-1.5 block font-medium text-ink-700">Short description (optional)</span>
             <input
               value={categoryDescription}
               onChange={(event) => setCategoryDescription(event.target.value)}
               maxLength={240}
               className={field}
-              placeholder="Bidhaa za manukato na body mist"
+              placeholder="Fragrance and body mists"
             />
           </label>
           {categoryError ? <p className="text-sm text-danger-600 sm:col-span-2">{categoryError}</p> : null}
@@ -275,7 +275,7 @@ export function ProductManager() {
               disabled={categorySaving || categoryName.trim().length < 2}
               className="btn-primary px-4 py-2 text-sm disabled:opacity-60"
             >
-              {categorySaving ? "Inaongeza…" : "Ongeza kategoria"}
+              {categorySaving ? "Adding…" : "Add category"}
             </button>
           </div>
         </div>
@@ -295,11 +295,11 @@ export function ProductManager() {
           <table className="w-full min-w-[720px] text-left text-sm">
             <thead>
               <tr className="border-b border-cream-300 text-xs uppercase tracking-wide text-ink-400">
-                <th className="px-5 py-3 font-semibold">Bidhaa</th>
-                <th className="px-5 py-3 font-semibold">Kategoria</th>
-                <th className="px-5 py-3 font-semibold">Bei</th>
-                <th className="px-5 py-3 font-semibold">Stoo</th>
-                <th className="px-5 py-3 font-semibold">Vitendo</th>
+                <th className="px-5 py-3 font-semibold">Product</th>
+                <th className="px-5 py-3 font-semibold">Category</th>
+                <th className="px-5 py-3 font-semibold">Price</th>
+                <th className="px-5 py-3 font-semibold">Stock</th>
+                <th className="px-5 py-3 font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -345,7 +345,7 @@ export function ProductManager() {
                           if (v !== product.stock) void quickStock(product.slug, v);
                         }}
                         className="w-20 rounded-lg border border-cream-300 px-2 py-1 text-sm"
-                        aria-label={`Stoo ya ${product.name}`}
+                        aria-label={`Stock for ${product.name}`}
                       />
                       {low ? (
                         <span className="badge ml-2 bg-warning-100 text-warning-600">
@@ -360,12 +360,12 @@ export function ProductManager() {
                           onClick={() => openEdit(product)}
                           className="rounded-lg border border-cream-300 px-3 py-1.5 text-xs font-medium text-ink-700 transition-colors hover:border-brand-300 hover:text-accent"
                         >
-                          Hariri
+                          Edit
                         </button>
                         <button
                           type="button"
                           onClick={() => void remove(product)}
-                          aria-label={`Futa ${product.name}`}
+                          aria-label={`Delete ${product.name}`}
                           className="rounded-lg border border-cream-300 p-1.5 text-ink-400 transition-colors hover:border-danger-600 hover:text-danger-600"
                         >
                           <TrashIcon className="h-4 w-4" />
@@ -381,8 +381,8 @@ export function ProductManager() {
       </div>
 
       <p className="mt-3 text-xs text-ink-400">
-        Kubadilisha bei, jina au picha kunahifadhiwa kwenye database ya seva na
-        kuonekana mara moja kwenye duka lote (pamoja na ukurasa wa bidhaa).
+        Price, name and image changes are saved to the server database and
+        appear throughout the store right away.
       </p>
 
       {/* Modal ya kuhariri / kuongeza */}
@@ -391,12 +391,12 @@ export function ProductManager() {
           <div className="card mt-10 w-full max-w-2xl p-6">
             <div className="flex items-center justify-between">
               <h3 className="font-display text-xl text-ink-900">
-                {draft.mode === "create" ? "Bidhaa mpya" : "Hariri bidhaa"}
+                {draft.mode === "create" ? "Add product" : "Edit product"}
               </h3>
               <button
                 type="button"
                 onClick={() => setDraft(null)}
-                aria-label="Funga"
+                aria-label="Close"
                 className="rounded-full p-2 text-ink-500 hover:bg-cream-200"
               >
                 <CloseIcon className="h-5 w-5" />
@@ -406,19 +406,19 @@ export function ProductManager() {
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <label className="block text-sm sm:col-span-2">
                 <span className="mb-1.5 block font-medium text-ink-700">
-                  Jina la bidhaa *
+                  Product name *
                 </span>
                 <input
                   value={draft.name}
                   onChange={(e) => setDraft({ ...draft, name: e.target.value })}
                   className={field}
-                  placeholder="mfano: Radiance Vitamin C Serum"
+                  placeholder="e.g. Radiance Vitamin C Serum"
                 />
               </label>
 
               <label className="block text-sm">
                 <span className="mb-1.5 block font-medium text-ink-700">
-                  Bei (TSh) *
+                  Price (TSh) *
                 </span>
                 <input
                   type="number"
@@ -432,7 +432,7 @@ export function ProductManager() {
 
               <label className="block text-sm">
                 <span className="mb-1.5 block font-medium text-ink-700">
-                  Bei ya zamani (hiari)
+                  Original price (optional)
                 </span>
                 <input
                   type="number"
@@ -448,7 +448,7 @@ export function ProductManager() {
 
               <label className="block text-sm">
                 <span className="mb-1.5 block font-medium text-ink-700">
-                  Kategoria
+                  Category
                 </span>
                 <select
                   value={draft.category}
@@ -465,7 +465,7 @@ export function ProductManager() {
 
               <label className="block text-sm">
                 <span className="mb-1.5 block font-medium text-ink-700">
-                  Stoo
+                  Stock
                 </span>
                 <input
                   type="number"
@@ -479,7 +479,7 @@ export function ProductManager() {
 
               <label className="block text-sm sm:col-span-2">
                 <span className="mb-1.5 block font-medium text-ink-700">
-                  Maelezo mafupi
+                  Short description
                 </span>
                 <input
                   value={draft.shortDescription}
@@ -487,13 +487,13 @@ export function ProductManager() {
                     setDraft({ ...draft, shortDescription: e.target.value })
                   }
                   className={field}
-                  placeholder="Sentensi moja inayovutia"
+                  placeholder="A short product summary"
                 />
               </label>
 
               <label className="block text-sm sm:col-span-2">
                 <span className="mb-1.5 block font-medium text-ink-700">
-                  Maelezo kamili
+                  Full description
                 </span>
                 <textarea
                   value={draft.description}
@@ -507,7 +507,7 @@ export function ProductManager() {
 
               <div className="sm:col-span-2">
                 <label className="mb-1.5 block text-sm font-medium text-ink-700">
-                  Picha
+                  Image
                 </label>
                 <div className="flex items-center gap-4">
                   <ProductImage
@@ -516,15 +516,15 @@ export function ProductManager() {
                     }
                     alt={
                       draft.file
-                        ? `Hakiki ya ${draft.file.name}`
-                        : `Hakiki ya ${draft.name || "picha ya bidhaa"}`
+                        ? `Preview of ${draft.file.name}`
+                        : `Preview of ${draft.name || "product image"}`
                     }
                     className="h-16 w-16 rounded-xl border border-cream-300 object-cover"
                   />
                   <input
                     type="file"
                     accept="image/*"
-                    aria-label="Picha ya bidhaa"
+                    aria-label="Product image"
                     onChange={(e) =>
                       setDraft({ ...draft, file: e.target.files?.[0] ?? null })
                     }
@@ -532,7 +532,7 @@ export function ProductManager() {
                   />
                 </div>
                 <p className="mt-1 text-xs text-ink-400">
-                  PNG, JPG, Webp au AVIF — zaidi ya 3MB. (Tupu = ongeza baadaye)
+                  PNG, JPG, WebP or AVIF ? up to 12 MB. Leave blank to add an image later.
                 </p>
               </div>
             </div>
@@ -549,7 +549,7 @@ export function ProductManager() {
                 onClick={() => setDraft(null)}
                 className="btn-outline px-5 py-2.5 text-sm"
               >
-                Ghairi
+                    Cancel
               </button>
               <button
                 type="button"
@@ -557,7 +557,7 @@ export function ProductManager() {
                 disabled={saving}
                 className="btn-primary px-5 py-2.5 text-sm disabled:opacity-60"
               >
-                {saving ? "Inahifadhi…" : "Hifadhi"}
+                {saving ? "Saving?" : "Save"}
               </button>
             </div>
           </div>

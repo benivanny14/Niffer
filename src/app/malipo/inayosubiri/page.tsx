@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { PaymentPoller } from "@/components/payments/PaymentPoller";
 
 export const metadata: Metadata = {
-  title: "Inasubiri Malipo",
-  description: "Tunasubiri uthibitisho wa malipo yako kwa oda ya Niffer Cosmetics.",
+  title: "Payment pending",
+  description: "We are waiting for payment confirmation for your Niffer Cosmetics order.",
   robots: { index: false },
 };
 
@@ -15,15 +15,15 @@ export default async function PaymentPendingPage({ searchParams }: PageProps) {
 
   return (
     <div className="container-x max-w-xl py-16">
-      <p className="eyebrow">Malipo</p>
-      <h1 className="heading-display mt-2">Malipo yako yanakamilika</h1>
+      <p className="eyebrow">Payment</p>
+      <h1 className="heading-display mt-2">Your payment is processing</h1>
       <div className="mt-6">
         {code ? (
           <PaymentPoller reference={code} />
         ) : (
           <p className="card p-6 text-sm text-ink-500">
-            Nambari ya oda haipatikani. Angalia barua pepe au simu yako kwa
-            kiungo sahihi.
+            Order number not found. Check your email or phone for
+            the correct link.
           </p>
         )}
       </div>

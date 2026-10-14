@@ -9,7 +9,7 @@ export async function GET() {
   await connection();
   try {
     if (!(await isAdminRequest())) {
-      return fail("Ingia kama admin.", 401);
+      return fail("Sign in as an administrator.", 401);
     }
     return json({ ok: true, giftCards: await listGiftCards() });
   } catch (error) {
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       recipient?: string;
       message?: string;
     }>(req);
-    if (!body) return fail("Taarifa za kadi hazisahihi.");
+    if (!body) return fail("The card details are invalid.");
     const giftCard = await issueGiftCard(body);
     return json({ ok: true, giftCard }, 201);
   } catch (error) {

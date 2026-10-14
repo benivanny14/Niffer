@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     const body = await readBody<{ password?: string }>(req);
     if (!body || !checkPassword(String(body.password ?? ""))) {
       return NextResponse.json(
-        { ok: false, error: "Nywila si sahihi. Jaribu tena." },
+        { ok: false, error: "Incorrect password. Please try again." },
         { status: 401 },
       );
     }

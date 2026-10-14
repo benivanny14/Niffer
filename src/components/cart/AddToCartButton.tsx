@@ -54,7 +54,7 @@ export function AddToCartButton({
       ) : (
         <>
           <BagIcon className="h-4 w-4" />
-          Weka kikapu
+          Add to cart
         </>
       )}
     </button>

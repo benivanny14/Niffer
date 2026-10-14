@@ -1,5 +1,5 @@
 /**
- * Bei za jumla (wholesale / bulk pricing) — model kama Alibaba MOQ tiers.
+ * Wholesale pricing (wholesale / bulk pricing) — model kama Alibaba MOQ tiers.
  * Ritimu moja inatumika na ukurasa wa /jumla, kikokotoo cha portali na API.
  */
 
@@ -11,12 +11,12 @@ export type BulkTier = {
 };
 
 export const bulkTiers: BulkTier[] = [
-  { min: 10, max: 24, discount: 10, label: "Jumla ya Daraja 1" },
-  { min: 25, max: 49, discount: 15, label: "Jumla ya Daraja 2" },
-  { min: 50, max: null, discount: 22, label: "Jumla ya Daraja 3" },
+  { min: 10, max: 24, discount: 10, label: "Wholesale Tier 1" },
+  { min: 25, max: 49, discount: 15, label: "Wholesale Tier 2" },
+  { min: 50, max: null, discount: 22, label: "Wholesale Tier 3" },
 ];
 
-/** Daraja linalofaa kwa wingi ulioingiza (null = bado bei ya rejareja). */
+/** Tier linalofaa kwa wingi ulioingiza (null = bado bei ya rejareja). */
 export function tierFor(qty: number): BulkTier | null {
   if (!Number.isFinite(qty) || qty <= 0) return null;
   let match: BulkTier | null = null;
@@ -34,7 +34,7 @@ export function bulkUnitPrice(priceTsh: number, qty: number): number {
   return Math.round(discounted / 100) * 100;
 }
 
-/** Jumla kwa wingi. */
+/** Total kwa wingi. */
 export function bulkTotal(priceTsh: number, qty: number): number {
   return bulkUnitPrice(priceTsh, qty) * Math.max(0, Math.floor(qty));
 }

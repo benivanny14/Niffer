@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Akaunti yako",
+  title: "Your account",
   alternates: { canonical: "/akaunti" },
   robots: { index: false },
 };

@@ -8,7 +8,7 @@ export function organizationJsonLd() {
     "@type": "CosmeticsStore",
     name: site.name,
     description:
-      "Bidhaa za urembo halisi: skincare, makeup, na huduma za nywele — Tanzania.",
+      "Genuine skincare, makeup and haircare products — Tanzania.",
     url: baseUrl,
     telephone: site.phoneTel,
     email: site.email,

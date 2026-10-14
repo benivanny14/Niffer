@@ -18,7 +18,7 @@ export function CartDrawer({ open, onClose }: Props) {
   useEffect(() => {
     if (!open) return;
     const dialog = document.querySelector<HTMLElement>(
-      '[aria-label="Kikapu chako"]',
+      '[aria-label="Your shopping bag"]',
     );
     const previous = document.activeElement as HTMLElement | null;
 
@@ -31,7 +31,7 @@ export function CartDrawer({ open, onClose }: Props) {
       ).filter((el) => el.offsetParent !== null);
     }
 
-    // Weka kwenye kipengele cha kwanza (kitufe cha kufunga).
+    // Enter kwenye result cha kwanza (kitufe cha kufunga).
     focusables()[0]?.focus();
 
     function onKey(e: KeyboardEvent) {
@@ -66,7 +66,7 @@ export function CartDrawer({ open, onClose }: Props) {
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
-      // Rudisha focus kwenye kipengele kilichochochea drawer.
+      // Rudisha focus kwenye result kilichochochea drawer.
       previous?.focus?.();
     };
   }, [open, onClose]);
@@ -79,7 +79,7 @@ export function CartDrawer({ open, onClose }: Props) {
   );
 
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Kikapu chako">
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Your shopping bag">
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={onClose}
@@ -88,12 +88,12 @@ export function CartDrawer({ open, onClose }: Props) {
       <aside className="absolute right-0 top-0 flex h-full w-full max-w-md animate-slide-in-right flex-col bg-cream-50 shadow-2xl">
         <header className="flex items-center justify-between border-b border-cream-300 px-5 py-4">
           <h2 className="font-display text-xl text-ink-900">
-            Kikapu ({count})
+            Your bag ({count})
           </h2>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Funga kikapu"
+            aria-label="Close shopping bag"
             className="rounded-full p-2 text-ink-500 transition-colors hover:bg-cream-200 hover:text-ink-900"
           >
             <CloseIcon className="h-5 w-5" />
@@ -104,13 +104,13 @@ export function CartDrawer({ open, onClose }: Props) {
           <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
             <BagIcon className="h-12 w-12 text-ink-300" />
             <p className="font-display text-lg text-ink-900">
-              Kikapu chako ni tupu
+              Your shopping bag is empty
             </p>
             <p className="text-sm text-ink-500">
-              Ongeza bidhaa unazopenda ili kuanza oda yako.
+              Add products to your bag to get started.
             </p>
             <Link href="/bidhaa" onClick={onClose} className="btn-primary mt-2">
-              Vinjari bidhaa
+              Browse products
             </Link>
           </div>
         ) : (
@@ -118,12 +118,12 @@ export function CartDrawer({ open, onClose }: Props) {
             <div className="flex-1 overflow-y-auto px-5 py-4">
               {freeShippingLeft > 0 ? (
                 <p className="mb-4 rounded-xl bg-brand-100 px-4 py-2.5 text-sm text-accent">
-                  Ongeza bidhaa {formatTsh(freeShippingLeft)} upate
-                  usafirishaji bure Dar es Salaam.
+                  Add {formatTsh(freeShippingLeft)} to qualify for
+                  free delivery in Dar es Salaam.
                 </p>
               ) : (
                 <p className="mb-4 rounded-xl bg-success-100 px-4 py-2.5 text-sm text-success-600">
-                  Hongera! Umepata usafirishaji bure Dar es Salaam.
+                  Hongera! Umepata free delivery in Dar es Salaam.
                 </p>
               )}
 
@@ -156,7 +156,7 @@ export function CartDrawer({ open, onClose }: Props) {
                         <button
                           type="button"
                           onClick={() => remove(product.slug)}
-                          aria-label={`Ondoa ${product.name}`}
+                          aria-label={`Remove ${product.name}`}
                           className="text-xs text-ink-400 underline hover:text-danger-600"
                         >
                           Ondoa
@@ -170,7 +170,7 @@ export function CartDrawer({ open, onClose }: Props) {
                           <button
                             type="button"
                             onClick={() => setQty(product.slug, qty - 1)}
-                            aria-label="Punguza"
+                            aria-label="Decrease quantity"
                             className="px-3 py-1.5 text-ink-500 hover:text-accent"
                           >
                             −
@@ -181,7 +181,7 @@ export function CartDrawer({ open, onClose }: Props) {
                           <button
                             type="button"
                             onClick={() => setQty(product.slug, qty + 1)}
-                            aria-label="Ongeza"
+                            aria-label="Increase quantity"
                             className="px-3 py-1.5 text-ink-500 hover:text-accent"
                           >
                             +
@@ -199,34 +199,34 @@ export function CartDrawer({ open, onClose }: Props) {
 
             <footer className="border-t border-cream-300 px-5 py-4">
               <div className="flex items-baseline justify-between">
-                <span className="text-sm text-ink-500">Jumla ndogo</span>
+                <span className="text-sm text-ink-500">Subtotal</span>
                 <span className="font-display text-xl text-ink-900">
                   {formatTsh(subtotalTsh)}
                 </span>
               </div>
               <p className="mt-1 text-xs text-ink-400">
-                Usafirishaji huhesabiwa kwenye hatua ya malipo.
+                Delivery is calculated at checkout.
               </p>
               <Link
                 href="/ukoko"
                 onClick={onClose}
                 className="btn-primary mt-4 w-full"
               >
-                Endelea na Malipo
+                Continue to checkout
               </Link>
               <Link
                 href="/kikapu"
                 onClick={onClose}
                 className="mt-2 block w-full text-center text-sm font-medium text-ink-500 hover:text-accent"
               >
-                Ona kikapu kamili
+                View full bag
               </Link>
               <button
                 type="button"
                 onClick={onClose}
                 className="mt-1 w-full text-center text-sm font-medium text-ink-500 hover:text-accent"
               >
-                Endelea Kununua
+                Continue shopping
               </button>
             </footer>
           </>

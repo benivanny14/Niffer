@@ -49,7 +49,7 @@ export async function GET(
         (o) => o.code.toLowerCase() === code.trim().toLowerCase(),
       );
 
-    if (!order) return fail("Oda hiyo haipatikani.", 404);
+    if (!order) return fail("Order not found.", 404);
     return json({ ok: true, order: sanitizeOrder(order) });
   } catch (error) {
     return toErrorResponse(error);
@@ -63,13 +63,13 @@ export async function PATCH(
 ) {
   try {
     if (!(await isAdminRequest())) {
-      return fail("Ingia kama admin kubadilisha oda.", 401);
+      return fail("Sign in as an administrator to update orders.", 401);
     }
     const { code } = await ctx.params;
     const body = await readBody<{ status?: OrderStatus }>(req);
-    if (!body?.status) return fail("Hatua mpya haijawekwa.");
+    if (!body?.status) return fail("The new status was not saved.");
     const order = await updateOrderStatus(code, body.status);
-    if (!order) return fail("Oda haipatikani.", 404);
+    if (!order) return fail("Order not found.", 404);
     // Arifu mteja kwa mkupuo wa hatua mpya (kughairiwa: cancelOrder tayari
     // imetuma arifa kwa mteja na admin).
     if (body.status !== "ghairiwa") {
@@ -79,8 +79,8 @@ export async function PATCH(
         phone: order.customer.phone,
         orderCode: order.code,
         kind: "status",
-        title: `Oda ${order.code}: ${stepLabel}`,
-        body: `Oda yako ${order.code} imefikia hatua ya ${stepLabel.toLowerCase()}.`,
+        title: `Order ${order.code}: ${stepLabel}`,
+        body: `Your order ${order.code} is now ${stepLabel.toLowerCase()}.`,
       });
     }
     return json({ ok: true, order });

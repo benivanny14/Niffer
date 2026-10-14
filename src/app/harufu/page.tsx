@@ -5,9 +5,9 @@ import { listProducts } from "@/lib/server/catalog";
 import { ScentFinder } from "@/components/tools/ScentFinder";
 
 export const metadata: Metadata = {
-  title: "Tafuta Harufu Yako",
+  title: "Find Your Fragrance",
   description:
-    "Jibu maswali mafupi na upate harufu zinazokufaa — perfumes na body mist za Niffer Cosmetics zilizopangwa kwa ladha yako.",
+    "Answer a few questions to find fragrances that suit you — from Niffer Cosmetics that match your preferences.",
 };
 
 export default async function ScentFinderPage() {
@@ -17,17 +17,17 @@ export default async function ScentFinderPage() {
 
   return (
     <div className="container-x max-w-3xl py-12 lg:py-16">
-      <p className="eyebrow">Zana ya bure</p>
-      <h1 className="heading-display mt-2">Tafuta harufu yako</h1>
+      <p className="eyebrow">Free tool</p>
+      <h1 className="heading-display mt-2">Find your fragrance</h1>
       <p className="mt-3 max-w-2xl text-ink-500">
-        Harufu ni ya kibinafsi. Jibu maswali matatu na tunakuletea chaguo
-        zinazolingana na ladha na matukio yako.
+        Fragrance is personal. Answer three questions to see options
+        matched to your taste and occasions.
       </p>
 
       <p className="mt-4 text-sm text-ink-500">
-        Ngozi yako inahitaji utunzaji? Pia jaribu{" "}
+        Looking for a skincare routine? Try our{" "}
         <Link href="/swali" className="font-semibold text-accent hover:underline">
-          Swali la Utunzaji →
+          Skincare routine quiz →
         </Link>
       </p>
 

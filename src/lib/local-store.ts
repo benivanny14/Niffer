@@ -46,7 +46,7 @@ export function createLocalStore<T>(key: string, initial: T) {
       writeStorage(key, next);
       listeners.forEach((l) => l());
     },
-    /** Soma upya kutoka localStorage (kwa admin/refresh). */
+    /** Read upya kutoka localStorage (kwa admin/refresh). */
     reload() {
       loaded = false;
       load();

@@ -13,7 +13,7 @@ export async function GET() {
   await connection();
   try {
     const customer = await currentCustomer();
-    if (!customer) return fail("Ingia kwenye akaunti yako.", 401);
+    if (!customer) return fail("Sign in to your account.", 401);
     return json({
       ok: true,
       notifications: await listCustomerNotifications({
@@ -29,20 +29,20 @@ export async function GET() {
 }
 
 /**
- * Weka arifa kuwa imesomwa.
+ * Enter arifa kuwa imesomwa.
  * Body: `{ id }` — oda moja; au `{ all: true }` — zote.
  */
 export async function PATCH(req: NextRequest) {
   try {
     const customer = await currentCustomer();
-    if (!customer) return fail("Ingia kwenye akaunti yako.", 401);
+    if (!customer) return fail("Sign in to your account.", 401);
 
     const body = await readBody<{ id?: string; all?: boolean }>(req);
     if (body?.all) {
       const n = await markAllCustomerNotificationsRead(customer.id, customer.phone);
       return json({ ok: true, updated: n });
     }
-    if (!body?.id) return fail("Arifa haijachaguliwa.");
+if (!body?.id) return fail("Select a notification.");
     const updated = await markCustomerNotificationRead(body.id);
     return json({ ok: true, updated });
   } catch (error) {

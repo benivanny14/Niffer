@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
       subtotalTsh?: number;
       shippingTsh?: number;
     }>(req);
-    if (!body) return fail("Msimbo si sahihi.");
+    if (!body) return fail("The code is invalid.");
     const subtotal = Math.max(0, Math.floor(Number(body.subtotalTsh ?? 0)));
     const shipping = Math.max(
       0,

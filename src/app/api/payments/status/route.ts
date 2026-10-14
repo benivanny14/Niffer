@@ -17,11 +17,11 @@ export async function GET(req: NextRequest) {
       .get("reference")
       ?.trim()
       .toUpperCase();
-    if (!reference) return fail("Nambari ya oda inahitajika.");
+if (!reference) return fail("An order number is required.");
 
     const status = await getPaymentStatus(reference);
     const order = await getOrder(reference);
-    if (!order || !status) return fail("Oda haipatikani.", 404);
+    if (!order || !status) return fail("Order not found.", 404);
 
     // Rudisha tu taarifa zinazohitajika — si PII kamili ya mteja.
     return json({

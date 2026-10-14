@@ -22,11 +22,11 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "Niffer Cosmetics — Beauty ya Kisasa, Ubora wa Juu",
+    default: "Niffer Cosmetics — Modern Beauty, Exceptional Quality",
     template: "%s | Niffer Cosmetics",
   },
   description:
-    "Niffer Cosmetics — bidhaa za urembo halisi: skincare, makeup, na huduma za nywele. Tunaletea Tanzania bei nafuu na malipo salama ya mobile money.",
+    "Shop skincare, makeup and haircare at Niffer Cosmetics. We deliver across Tanzania with convenient mobile money payments.",
   keywords: [
     "cosmetics Tanzania",
     "skincare",
@@ -36,18 +36,18 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     type: "website",
-    locale: "sw_TZ",
+    locale: "en_TZ",
     siteName: "Niffer Cosmetics",
-    title: "Niffer Cosmetics — Beauty ya Kisasa, Ubora wa Juu",
+    title: "Niffer Cosmetics — Modern Beauty, Exceptional Quality",
     description:
-      "Skincare, makeup na nywele zilizochaguliwa. Bei nafuu, malipo salama, usafirishaji wa haraka hadi mlangoni kwako.",
+      "Thoughtfully selected skincare, makeup and haircare. Great value, secure payments and fast delivery to your door.",
     images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Niffer Cosmetics",
     description:
-      "Skincare, makeup na nywele zilizochaguliwa — Tanzania.",
+      "Thoughtfully selected skincare, makeup and haircare across Tanzania.",
     images: ["/twitter-image"],
   },
   icons: {
@@ -65,14 +65,14 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="sw"
+      lang="en"
       translate="no"
       className={`${inter.variable} ${playfair.variable} h-full antialiased notranslate`}
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col bg-cream-50 text-ink-900">
         <script
-          // Weka dark mode KABLA ya render pertama — hakuna flash ya mwanga.
+          // Enter dark mode KABLA ya render pertama — hakuna flash ya mwanga.
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('niffer.theme');var d=t?t==='dark':true;if(d)document.documentElement.classList.add('dark');}catch(e){document.documentElement.classList.add('dark');}})();`,
           }}
@@ -88,7 +88,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             href="#main-content"
             className="sr-only z-100 rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
           >
-            Ruka hadi maudhui
+            Skip to content
           </a>
           <SiteHeader />
           <main id="main-content" className="flex-1">

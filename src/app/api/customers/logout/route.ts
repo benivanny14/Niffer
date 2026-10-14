@@ -5,7 +5,7 @@ import {
   destroyCustomerSession,
 } from "@/lib/server/customers";
 
-/** Toka kwenye akaunti — futa session na cookie. */
+/** Sign out kwenye akaunti — futa session na cookie. */
 export async function POST() {
   await connection();
   await destroyCustomerSession();

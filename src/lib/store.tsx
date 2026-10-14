@@ -104,7 +104,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const add = useCallback((slug: string, qty = 1) => {
-    // Zuzuia kuongeza zaidi ya stoo halisi iliyopo.
+    // Zuzuia kuongeza morei ya stoo halisi iliyopo.
     const cap = Math.max(getStock(slug), 0);
     if (cap <= 0) return;
     const prev = cartStore.get();

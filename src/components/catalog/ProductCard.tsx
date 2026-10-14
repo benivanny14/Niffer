@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
@@ -18,10 +18,10 @@ const badgeStyles: Record<Product["badges"][number], string> = {
 };
 
 const badgeLabels: Record<Product["badges"][number], string> = {
-  new: "Mpya",
-  bestseller: "Kinachouzwa zaidi",
-  sale: "Punguzo",
-  "low-stock": "Zimebaki kidogo",
+  new: "New",
+  bestseller: "Bestseller",
+  sale: "Sale",
+  "low-stock": "Low stock",
 };
 
 const subscribeNoop = () => () => {};
@@ -80,9 +80,9 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
 
         {mounted && outOfStock ? (
-          <span className="mt-1 text-sm font-medium text-danger-600">Imeisha</span>
+          <span className="mt-1 text-sm font-medium text-danger-600">Out of stock</span>
         ) : mounted && stock <= 5 ? (
-          <span className="mt-1 text-sm font-medium text-warning-600">Zimebaki {stock} tu</span>
+          <span className="mt-1 text-sm font-medium text-warning-600">Only {stock} left</span>
         ) : null}
 
         <div className="mt-auto pt-2">

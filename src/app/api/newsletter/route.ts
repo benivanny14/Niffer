@@ -13,7 +13,7 @@ export async function GET() {
   await connection();
   try {
     if (!(await isAdminRequest())) {
-      return fail("Ingia kama admin.", 401);
+      return fail("Sign in as an administrator.", 401);
     }
     return json({
       ok: true,
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
       return fail(rateLimitMessage(limited.retryAfterSec), 429);
     }
     const body = await readBody<{ email?: string; source?: string }>(req);
-    if (!body?.email) return fail("Weka anwani ya barua pepe.");
+    if (!body?.email) return fail("Enter your email address.");
     const result = await subscribeNewsletter(
       String(body.email),
       String(body.source ?? "site"),
@@ -43,8 +43,8 @@ export async function POST(req: NextRequest) {
         ok: true,
         ...result,
         message: result.created
-          ? "Asante! Umejiunga na jarida la Niffer."
-          : "Barua pepe hii tayari iko kwenye jarida.",
+          ? "Thank you for subscribing to the Niffer newsletter."
+          : "This email is already subscribed.",
       },
       result.created ? 201 : 200,
     );

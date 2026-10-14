@@ -17,24 +17,24 @@ export default function WishlistPage() {
 
   return (
     <div className="container-x py-12 lg:py-16">
-      <p className="eyebrow">Hifadhi yako</p>
-      <h1 className="heading-display mt-2">Bidhaa unazopenda</h1>
+      <p className="eyebrow">Your wishlist</p>
+      <h1 className="heading-display mt-2">Your wishlist</h1>
       <p className="mt-3 max-w-2xl text-ink-500">
-        Hifadhi bidhaa unazopenda ili zipate pale unapohitaji. Zinahifadhiwa
-        kwenye kifaa chako.
+        Save products you like so you can find them when needed. They are saved
+        on your device.
       </p>
 
       {items.length === 0 ? (
         <div className="card mt-10 p-12 text-center">
           <HeartIcon className="mx-auto h-14 w-14 text-ink-300" />
           <p className="font-display mt-6 text-xl text-ink-900">
-            Bado hujahifadhi bidhaa yoyote
+            Your wishlist is empty
           </p>
           <p className="mt-2 text-sm text-ink-500">
-            Bofya alama ya moyo kwenye bidhaa yoyote ili kuiongeza hapa.
+            Select the heart on any product to add it here.
           </p>
           <Link href="/bidhaa" className="btn-primary mt-6">
-            Vinjari Bidhaa
+            Browse products
           </Link>
         </div>
       ) : (

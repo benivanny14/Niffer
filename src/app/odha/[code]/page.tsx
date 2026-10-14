@@ -30,7 +30,7 @@ const paymentLabels: Record<string, string> = {
   mpesa: "M-Pesa",
   mixx: "Mixx by Yas",
   airtel: "Airtel Money",
-  cod: "Lipa ukipokea bidhaa",
+  cod: "Pay on delivery",
 };
 
 export default function OrderPage() {
@@ -76,12 +76,12 @@ export default function OrderPage() {
     return (
       <div className="container-x max-w-xl py-20 text-center">
         <BagIcon className="mx-auto h-14 w-14 text-ink-300" />
-        <h1 className="heading-display mt-6">Hatukupata oda hii</h1>
+        <h1 className="heading-display mt-6">We could not find this order</h1>
         <p className="mt-3 text-ink-500">
-          {error && !error.startsWith("Oda hiyo")
+          {error && !error.startsWith("Order")
             ? error
-            : <>Nambari <span className="font-medium text-ink-700">{code}</span>{" "}
-              haipatikani. Angalia tena, au tupigie simu{" "}
+            : <>Order number <span className="font-medium text-ink-700">{code}</span>{" "}
+              was not found. Check again or call us{" "}
               <a
                 href={`tel:${site.phoneTel}`}
                 className="font-medium text-accent hover:underline"
@@ -93,10 +93,10 @@ export default function OrderPage() {
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link href="/fuatilia" className="btn-primary">
-            Fuatilia Oda
+            Track order
           </Link>
           <Link href="/bidhaa" className="btn-outline">
-            Vinjari Bidhaa
+            Browse products
           </Link>
         </div>
       </div>
@@ -107,7 +107,7 @@ export default function OrderPage() {
   const isCancelled = status === "ghairiwa";
   const stepIndex = statusSteps.findIndex((s) => s.id === status);
   const events = statusEvents(order);
-  const waText = `Habari ${site.name}, nina oda ${order.code}. Jumla: ${formatTsh(order.totalTsh)}`;
+  const waText = `Hello ${site.name}, I have order ${order.code}. Total: ${formatTsh(order.totalTsh)}`;
 
   return (
     <div className="container-x max-w-3xl py-12 lg:py-16">
@@ -129,28 +129,28 @@ export default function OrderPage() {
           )}
         </span>
         <h1 className="heading-display mt-6">
-          {isCancelled ? "Oda yako imeghairiwa" : "Asante! Oda yako imepokelewa"}
+          {isCancelled ? "Your order was cancelled" : "Thank you! Your order has been received"}
         </h1>
         <p className="mt-3 text-ink-500">
-          Nambari ya oda yako ni{" "}
+          Your order number is{" "}
           <span className="font-semibold text-ink-900">{order.code}</span>.
           {isCancelled
-            ? " Stoo imerudishwa; ikiwa ulilipa tayari, tutakuarifu kuhusu marejesho."
-            : " Tutakupigia simu kuthibitisha ndani ya dakika chache."}
+            ? " Stock has been restored. If you already paid, we will contact you about the refund."
+            : " We will call shortly to confirm."}
         </p>
         <button
           type="button"
           onClick={() => window.print()}
           className="btn-outline no-print mt-5"
         >
-          Chapisha risiti
+          Print receipt
         </button>
       </div>
 
       <div className="card mt-10 p-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <p className="text-sm text-ink-500">Nambari ya oda</p>
+            <p className="text-sm text-ink-500">Order number</p>
             <p className="font-display text-xl text-ink-900">{order.code}</p>
           </div>
           <span
@@ -196,7 +196,7 @@ export default function OrderPage() {
         </ol>
         {isCancelled ? (
           <p className="mt-3 rounded-lg bg-danger-50 px-3 py-2 text-center text-sm text-danger-600">
-            Oda hii imeghairiwa — hatua za usafirishaji zimesimama.
+            This order was cancelled. Delivery updates have stopped.
           </p>
         ) : null}
 
@@ -228,10 +228,10 @@ export default function OrderPage() {
                     future ? (
                       <>
                         <ClockIcon className="h-3.5 w-3.5" />
-                        Inatarajiwa {event.at.toLocaleString("sw-TZ")}
+                        Expected {event.at.toLocaleString("en-TZ")}
                       </>
                     ) : (
-                      event.at.toLocaleString("sw-TZ")
+                      event.at.toLocaleString("en-TZ")
                     )
                   ) : (
                     "—"
@@ -246,7 +246,7 @@ export default function OrderPage() {
         <div className="mt-6 grid gap-4 border-t border-cream-200 pt-4 text-sm sm:grid-cols-2">
           {order.customer?.name ? (
             <div>
-              <p className="text-ink-500">Mpokeaji</p>
+              <p className="text-ink-500">Recipient</p>
               <p className="font-medium text-ink-900">{order.customer.name}</p>
               {order.customer.phone ? (
                 <p className="text-ink-500">
@@ -257,7 +257,7 @@ export default function OrderPage() {
           ) : null}
           {order.customer?.region ? (
             <div>
-              <p className="text-ink-500">Kuwasilishwa</p>
+              <p className="text-ink-500">Delivery address</p>
               <p className="font-medium text-ink-900">
                 {[order.customer.city, order.customer.region]
                   .filter(Boolean)
@@ -272,15 +272,15 @@ export default function OrderPage() {
             </div>
           ) : null}
           <div>
-            <p className="text-ink-500">Njia ya malipo</p>
+            <p className="text-ink-500">Payment method</p>
             <p className="font-medium text-ink-900">
               {paymentLabels[order.payment] ?? order.payment}
             </p>
           </div>
           <div>
-            <p className="text-ink-500">Oda iliwekwa</p>
+            <p className="text-ink-500">Order placed</p>
             <p className="font-medium text-ink-900">
-              {new Date(order.createdAt).toLocaleString("sw-TZ")}
+              {new Date(order.createdAt).toLocaleString("en-TZ")}
             </p>
           </div>
         </div>
@@ -314,7 +314,7 @@ export default function OrderPage() {
           {order.discountTsh && order.discountTsh > 0 ? (
             <li className="flex justify-between text-success-600">
               <span>
-                Punguzo{order.promoCode ? ` (${order.promoCode})` : ""}
+                Discount{order.promoCode ? ` (${order.promoCode})` : ""}
               </span>
               <span className="font-medium">−{formatTsh(order.discountTsh)}</span>
             </li>
@@ -322,7 +322,7 @@ export default function OrderPage() {
           {order.giftDiscountTsh && order.giftDiscountTsh > 0 ? (
             <li className="flex justify-between text-success-600">
               <span>
-                Kadi ya zawadi
+                Gift card
                 {order.giftCardCode ? ` (${order.giftCardCode})` : ""}
               </span>
               <span className="font-medium">
@@ -331,13 +331,13 @@ export default function OrderPage() {
             </li>
           ) : null}
           <li className="flex justify-between border-t border-cream-200 pt-3">
-            <span className="text-ink-500">Usafirishaji</span>
+            <span className="text-ink-500">Delivery</span>
             <span className="font-medium">
-              {order.shippingTsh === 0 ? "Bure" : formatTsh(order.shippingTsh)}
+              {order.shippingTsh === 0 ? "Free" : formatTsh(order.shippingTsh)}
             </span>
           </li>
           <li className="flex justify-between border-t border-cream-200 pt-2 text-base font-semibold">
-            <span>Jumla</span>
+            <span>Total</span>
             <span className="text-accent">{formatTsh(order.totalTsh)}</span>
           </li>
         </ul>
@@ -349,10 +349,9 @@ export default function OrderPage() {
           {!cancelOpen ? (
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="font-medium text-ink-900">Hujakubali oda hii?</p>
+                <p className="font-medium text-ink-900">Need to cancel this order?</p>
                 <p className="text-sm text-ink-500">
-                  Unaweza kuighairi bila gharama ikiwa bado haijaanza
-                  kuandaliwa.
+                  You can cancel at no cost if order preparation has not started.
                 </p>
               </div>
               <button
@@ -360,15 +359,15 @@ export default function OrderPage() {
                 onClick={() => setCancelOpen(true)}
                 className="rounded-full bg-danger-100 px-4 py-1.5 text-xs font-semibold text-danger-600 transition-colors hover:bg-danger-200"
               >
-                Ghairi oda
+                Cancel order
               </button>
             </div>
           ) : (
             <form onSubmit={handleCancel}>
-              <p className="font-medium text-ink-900">Thibitisha kughairi</p>
+        <p className="font-medium text-ink-900">Confirm cancellation</p>
               <p className="mt-1 text-sm text-ink-500">
-                Weka namba ya simu uliyotumia kuweka oda ili kuthibitisha
-                ni wewe.
+                Enter the phone number used to place the order to confirm
+                to verify your identity.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <input
@@ -377,7 +376,7 @@ export default function OrderPage() {
                   value={cancelPhone}
                   onChange={(e) => setCancelPhone(e.target.value)}
                   placeholder="0754 000 000"
-                  aria-label="Namba ya simu ya oda"
+                  aria-label="Order phone number"
                   className="w-full max-w-56 flex-1 rounded-xl border border-cream-300 bg-surface px-4 py-2.5 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500"
                 />
                 <button
@@ -385,7 +384,7 @@ export default function OrderPage() {
                   disabled={cancelBusy}
                   className="rounded-full bg-danger-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-danger-700 disabled:opacity-60"
                 >
-                  {cancelBusy ? "Inaghairi…" : "Ndiyo, ghairi"}
+                  {cancelBusy ? "Cancelling…" : "Yes, cancel"}
                 </button>
                 <button
                   type="button"
@@ -395,7 +394,7 @@ export default function OrderPage() {
                   }}
                   className="btn-outline px-4 py-2 text-xs"
                 >
-                  Rudi
+                  Back
                 </button>
               </div>
               {cancelError ? (
@@ -414,24 +413,24 @@ export default function OrderPage() {
           className="btn-primary"
         >
           <ChatIcon className="h-4 w-4" />
-          Thibitisha kwa WhatsApp
+          Confirm via WhatsApp
         </a>
         <Link href="/bidhaa" className="btn-outline">
-          Endelea Kununua
+          Continue shopping
         </Link>
         <Link href="/fuatilia" className="btn-outline">
-          Fuatilia Oda
+          Track order
         </Link>
       </div>
 
       <ul className="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-ink-400">
         <li className="flex items-center gap-1.5">
           <TruckIcon className="h-4 w-4 text-brand-600" />
-          Dar es Salaam siku 1–2 · mikoa mingine 2–5
+      Dar es Salaam: 1–2 days · other regions: 2–5 days
         </li>
         <li className="flex items-center gap-1.5">
           <ShieldIcon className="h-4 w-4 text-brand-600" />
-          Kagua maelezo ya bidhaa
+          Review product details
         </li>
       </ul>
     </div>

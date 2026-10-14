@@ -13,7 +13,7 @@ import { MapPinIcon } from "@/components/ui/icons";
 
 /**
  * Vichujio vya ukurasa wa bidhaa — mtindo wa jiji.com: kipande kimoja cha
- * mkoa → mji, kategoria, kipengele, bei na upangaji. Kila mabadiliko
+ * mkoa → mji, kategoria, result, bei na upangaji. Kila mabadiliko
  * huandika kwenye URL (?mkoa=&mji=…) ili viungi viweze kushirikiwa.
  */
 export function CatalogFilters({ counts, categories }: { counts: ProductFilterCounts; categories: Category[] }) {
@@ -22,7 +22,7 @@ export function CatalogFilters({ counts, categories }: { counts: ProductFilterCo
   const params = useSearchParams();
 
   const category = params.get("kategoria") ?? "";
-  const feature = params.get("kipengele") ?? "";
+  const feature = params.get("result") ?? "";
   const region = params.get("mkoa") ?? "";
   const city = params.get("mji") ?? "";
   const bei = params.get("bei") ?? "";
@@ -61,27 +61,27 @@ export function CatalogFilters({ counts, categories }: { counts: ProductFilterCo
   }
   if (feature) {
     const featureLabels: Record<string, string> = {
-      mpya: "Bidhaa mpya",
-      punguzo: "Punguzo",
-      inayoisha: "Zinazoisha",
+      mpya: "New arrivals",
+      punguzo: "On sale",
+      inayoisha: "Low stock",
     };
     activeLabels.push({
-      key: "kipengele",
+      key: "result",
       label: featureLabels[feature] ?? feature,
-      clear: { kipengele: null },
+      clear: { result: null },
     });
   }
   if (region) {
     activeLabels.push({
       key: "mkoa",
-      label: `Mkoa: ${region}`,
+      label: `Region: ${region}`,
       clear: { mkoa: null, mji: null },
     });
   }
   if (city) {
     activeLabels.push({
       key: "mji",
-      label: `Mji: ${city}`,
+      label: `City: ${city}`,
       clear: { mji: null },
     });
   }
@@ -98,7 +98,7 @@ export function CatalogFilters({ counts, categories }: { counts: ProductFilterCo
 
   return (
     <div className="space-y-5">
-      {/* Kategoria + kipengele */}
+      {/* Category + result */}
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
@@ -106,7 +106,7 @@ export function CatalogFilters({ counts, categories }: { counts: ProductFilterCo
           aria-pressed={!category}
           className={chip(!category)}
         >
-          Zote
+          All categories
         </button>
         {categories.map((c) => {
           const count = counts.category[c.slug] ?? 0;
@@ -133,15 +133,15 @@ export function CatalogFilters({ counts, categories }: { counts: ProductFilterCo
         })}
         <span className="mx-1 hidden h-5 w-px bg-cream-300 sm:block" />
         {[
-          { value: "mpya", label: "Mpya" },
-          { value: "punguzo", label: "Punguzo" },
-          { value: "inayoisha", label: "Zinazoisha" },
+          { value: "mpya", label: "New" },
+          { value: "punguzo", label: "On sale" },
+          { value: "inayoisha", label: "Low stock" },
         ].map((f) => (
           <button
             key={f.value}
             type="button"
             onClick={() =>
-              update({ kipengele: feature === f.value ? null : f.value })
+              update({ result: feature === f.value ? null : f.value })
             }
             aria-pressed={feature === f.value}
             className={chip(feature === f.value)}
@@ -160,8 +160,8 @@ export function CatalogFilters({ counts, categories }: { counts: ProductFilterCo
         onClick={() => setShowLocationFilters((visible) => !visible)}
       >
         <span>
-          {showLocationFilters ? "Ficha vichujio vya kina" : "Eneo, bei na upangaji"}
-          {region || city || bei ? " · Vimechaguliwa" : ""}
+          {showLocationFilters ? "Hide filters" : "Location, price & sort"}
+          {region || city || bei ? " · Selected" : ""}
         </span>
         <span aria-hidden="true">{showLocationFilters ? "−" : "+"}</span>
       </button>
@@ -172,7 +172,7 @@ export function CatalogFilters({ counts, categories }: { counts: ProductFilterCo
         <label className="block text-sm">
           <span className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
             <MapPinIcon className="h-3.5 w-3.5" />
-            Mkoa
+        Region
           </span>
           <select
             value={region}
@@ -181,7 +181,7 @@ export function CatalogFilters({ counts, categories }: { counts: ProductFilterCo
             }
             className={`${field} w-full`}
           >
-            <option value="">Miko yote</option>
+            <option value="">All regions</option>
             {tanzaniaRegions.map((r) => (
               <option key={r} value={r}>
                 {r}
@@ -194,7 +194,7 @@ export function CatalogFilters({ counts, categories }: { counts: ProductFilterCo
         <label className="block text-sm">
           <span className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
             <MapPinIcon className="h-3.5 w-3.5" />
-            Mji
+        City
           </span>
           <select
             value={city}
@@ -203,7 +203,7 @@ export function CatalogFilters({ counts, categories }: { counts: ProductFilterCo
             className={`${field} w-full disabled:opacity-50`}
           >
             <option value="">
-              {region ? "Mji wote" : "Chagua mkoa kwanza"}
+              {region ? "All cities" : "Select a region first"}
             </option>
             {cities.map((c) => (
               <option key={c} value={c}>
@@ -215,14 +215,14 @@ export function CatalogFilters({ counts, categories }: { counts: ProductFilterCo
 
         <label className="block text-sm">
           <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-400">
-            Bei
+        Price
           </span>
           <select
             value={bei}
             onChange={(e) => update({ bei: e.target.value || null })}
             className={`${field} w-full`}
           >
-            <option value="">Bei zote</option>
+            <option value="">All prices</option>
             {priceRanges.map((r) => (
               <option key={r.value} value={r.value}>
                 {r.label}
@@ -233,7 +233,7 @@ export function CatalogFilters({ counts, categories }: { counts: ProductFilterCo
 
         <label className="block text-sm">
           <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-400">
-            Panga kwa
+            Sort by
           </span>
           <select
             value={sort}
@@ -253,7 +253,7 @@ export function CatalogFilters({ counts, categories }: { counts: ProductFilterCo
       {hasActive ? (
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-semibold uppercase tracking-wide text-ink-400">
-            Vinavyotumika:
+            Active filters:
           </span>
           {activeLabels.map((item) => (
             <button
@@ -261,7 +261,7 @@ export function CatalogFilters({ counts, categories }: { counts: ProductFilterCo
               type="button"
               onClick={() => update(item.clear)}
               className="badge border border-brand-300 bg-brand-50 text-accent transition-colors hover:border-brand-500"
-              aria-label={`Ondoa ${item.label}`}
+              aria-label={`Remove ${item.label}`}
             >
               {item.label} ×
             </button>
@@ -273,7 +273,7 @@ export function CatalogFilters({ counts, categories }: { counts: ProductFilterCo
             }
             className="text-xs font-semibold text-ink-500 underline transition-colors hover:text-accent"
           >
-            Ondoa zote
+            Clear all
           </button>
         </div>
       ) : null}

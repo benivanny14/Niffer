@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   await connection();
   try {
     if (!(await isAdminRequest())) {
-      return fail("Ingia kama admin kuona ujumbe.", 401);
+      return fail("Sign in as an administrator to view messages.", 401);
     }
     const limit = intParam(req.nextUrl.searchParams.get("limit"), 100, 500);
     return json({
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-/** Hifadhi ujumbe wa fomu (wasiliana / jumla). */
+/** Save ujumbe wa fomu (wasiliana / jumla). */
 export async function POST(req: NextRequest) {
   try {
     const limited = rateLimit(req, "message-create", 5, 600);
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
       email?: string;
       body?: Record<string, string>;
     }>(req);
-    if (!body) return fail("Ujumbe haujajazwa vizuri.");
+    if (!body) return fail("Please complete the message form.");
     const message = await addMessage(body);
     return json({ ok: true, message }, 201);
   } catch (error) {
@@ -50,18 +50,18 @@ export async function POST(req: NextRequest) {
   }
 }
 
-/** Weka ujumbe kuwa umesomwa (admin) — mmoja ({ id }) au wote ({ all: true }). */
+/** Enter ujumbe kuwa umesomwa (admin) — mmoja ({ id }) au wote ({ all: true }). */
 export async function PATCH(req: NextRequest) {
   try {
     if (!(await isAdminRequest())) {
-      return fail("Ingia kama admin.", 401);
+      return fail("Sign in as an administrator.", 401);
     }
     const body = await readBody<{ id?: string; all?: boolean }>(req);
     if (body?.all) {
       const updated = await markAllMessagesRead();
       return json({ ok: true, updated });
     }
-    if (!body?.id) return fail("Ujumbe haupatikani.");
+    if (!body?.id) return fail("Message not found.");
     const updated = await markMessageRead(body.id);
     return json({ ok: true, updated });
   } catch (error) {

@@ -36,7 +36,7 @@ export function ReviewForm({
     e.preventDefault();
     if (sending) return;
     if (comment.trim().length < 10) {
-      setError("Andika hakiki ya angalau herufi 10.");
+      setError("Please write a review of at least 10 characters.");
       return;
     }
     setSending(true);
@@ -67,8 +67,8 @@ export function ReviewForm({
           <CheckIcon className="h-5 w-5" />
         </span>
         <p className="text-sm text-ink-700">
-          Asante kwa hakiki yako! Imewasilishwa na itaonekana kwenye ukurasa
-          huu baada ya kukaguliwa na timu yetu.
+          Thank you for your review! It has been submitted and will appear here
+          after our team has reviewed it.
         </p>
       </div>
     );
@@ -79,30 +79,30 @@ export function ReviewForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium text-ink-700">
-            Jina lako *
+            Your name *
           </span>
           <input
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
             className={field}
-            placeholder="Jina lako"
+            placeholder="Your name"
           />
         </label>
         <label className="block text-sm">
-          <span className="mb-1.5 block font-medium text-ink-700">Mji</span>
+          <span className="mb-1.5 block font-medium text-ink-700">City</span>
           <input
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             className={field}
-            placeholder="Mfano: Dar es Salaam"
+            placeholder="e.g. Dar es Salaam"
           />
         </label>
       </div>
 
       {defaultSlug ? (
         <p className="rounded-xl bg-cream-100 px-4 py-3 text-sm text-ink-500">
-          Hakiki kwa:{" "}
+          Reviewing:{" "}
           <span className="font-semibold text-ink-900">
             {defaultName ??
               products.find((p) => p.slug === defaultSlug)?.name ??
@@ -111,7 +111,7 @@ export function ReviewForm({
         </p>
       ) : (
         <label className="block text-sm">
-          <span className="mb-1.5 block font-medium text-ink-700">Bidhaa</span>
+          <span className="mb-1.5 block font-medium text-ink-700">Product</span>
           <select
             value={productSlug}
             onChange={(e) => setProductSlug(e.target.value)}
@@ -128,7 +128,7 @@ export function ReviewForm({
 
       <div>
         <span className="mb-1.5 block text-sm font-medium text-ink-700">
-          Ukadiriaji
+          Rating
         </span>
         <div className="flex items-center gap-1">
           {[1, 2, 3, 4, 5].map((value) => (
@@ -136,7 +136,7 @@ export function ReviewForm({
               key={value}
               type="button"
               onClick={() => setRating(value)}
-              aria-label={`Ukadiriaji ${value}`}
+              aria-label={`Rating ${value}`}
               className={`rounded-full p-1 transition-colors ${
                 value <= rating ? "text-gold-500" : "text-ink-300"
               }`}
@@ -149,7 +149,7 @@ export function ReviewForm({
 
       <label className="block text-sm">
         <span className="mb-1.5 block font-medium text-ink-700">
-          Hakiki yako *
+          Your review *
         </span>
         <textarea
           required
@@ -158,7 +158,7 @@ export function ReviewForm({
           rows={4}
           minLength={10}
           className={field}
-          placeholder="Eleza uzoefu wako na bidhaa hii…"
+          placeholder="Tell us about your experience with this product…"
         />
       </label>
 
@@ -173,10 +173,10 @@ export function ReviewForm({
         disabled={sending}
         className="btn-primary w-full disabled:opacity-60"
       >
-        {sending ? "Inahifadhi…" : "Tuma Hakiki"}
+        {sending ? "Submitting…" : "Submit review"}
       </button>
       <p className="text-center text-xs text-ink-400">
-        Hakiki yako huhifadhiwa kwenye seva na kuonekana na wateja wengine.
+        Your review is saved securely and shared with other customers.
       </p>
     </form>
   );

@@ -91,7 +91,7 @@ const VALID_STATUSES: OrderStatus[] = [
 
 function validPayment(id: string): PaymentId {
   const found = paymentMethods.find((m) => m.id === id);
-  if (!found) throw new InputError("Njia ya malipo si sahihi.");
+  if (!found) throw new InputError("Invalid payment method.");
   return found.id;
 }
 
@@ -135,7 +135,7 @@ async function pricedCatalog(): Promise<CatalogItem[]> {
   }));
 }
 
-/** Weka stoo ya bidhaa moja (admin). */
+/** Enter stoo ya bidhaa moja (admin). */
 export async function setStockValue(slug: string, qty: number): Promise<number> {
   const safe = Math.max(0, Math.floor(qty));
   await getDb()
@@ -166,26 +166,26 @@ export async function createOrder(input: CreateOrderInput): Promise<{
     email: input.customer?.email?.trim() || undefined,
   };
 
-  if (customer.name.length < 2) throw new InputError("Jina halisi linahitajika.");
+  if (customer.name.length < 2) throw new InputError("Please enter your name.");
   if (!/^[0-9+\s]{9,15}$/.test(customer.phone)) {
-    throw new InputError("Weka namba sahihi ya simu (mfano 0754 000 000).");
+    throw new InputError("Enter a valid phone number (for example, 0754 000 000).");
   }
-  if (!isRegion(customer.region)) throw new InputError("Chagua mkoa sahihi.");
+  if (!isRegion(customer.region)) throw new InputError("Choose a valid region.");
   if (!customer.city || !isCityInRegion(customer.region, customer.city)) {
-    throw new InputError("Chagua mji / wilaya sahihi ndani ya mkoa uliochagua.");
+    throw new InputError("Choose a valid city or district within the selected region.");
   }
   if (!customer.street || customer.street.length < 2) {
-    throw new InputError("Weka mtaa / kata yako.");
+    throw new InputError("Enter your street or ward.");
   }
   if (customer.address.length < 5) {
-    throw new InputError("Weka anwani kamili ya kuwasilishwa.");
+    throw new InputError("Enter the full delivery address.");
   }
 
   const payment = validPayment(input.payment ?? "cod");
 
   const rawLines = input.lines ?? [];
-  if (rawLines.length === 0) throw new InputError("Kikapu chako ni tupu.");
-  if (rawLines.length > 30) throw new InputError("Oda imezidi kiwango.");
+  if (rawLines.length === 0) throw new InputError("Your cart is empty.");
+  if (rawLines.length > 30) throw new InputError("The order exceeds the allowed limit.");
 
   // Pooza kiasi na bidhaa.
   const catalog = await pricedCatalog();
@@ -193,10 +193,10 @@ export async function createOrder(input: CreateOrderInput): Promise<{
   for (const line of rawLines) {
     const qty = Math.floor(Number(line.qty));
     if (!line.slug || !Number.isFinite(qty) || qty < 1 || qty > 99) {
-      throw new InputError("Kiasi cha bidhaa si sahihi.");
+      throw new InputError("Invalid product quantity.");
     }
     const product = catalog.find((p) => p.slug === line.slug);
-    if (!product) throw new InputError(`Bidhaa "${line.slug}" haipo.`);
+    if (!product) throw new InputError(`Product "${line.slug}" was not found.`);
     if (!lines.some((l) => l.slug === line.slug)) {
       lines.push({ slug: line.slug, qty });
     }
@@ -209,8 +209,8 @@ export async function createOrder(input: CreateOrderInput): Promise<{
       const name = catalog.find((p) => p.slug === line.slug)?.name ?? line.slug;
       throw new InputError(
         available === 0
-          ? `${name} imeisha stoo. Ondoa kutoka kikapu.`
-          : `Stoo ya ${name} imebaki ${available} tu.`,
+          ? `${name} is out of stock. Remove it from your cart.`
+          : `Only ${available} of ${name} remain in stock.`,
         409,
       );
     }
@@ -237,13 +237,13 @@ export async function createOrder(input: CreateOrderInput): Promise<{
     : 0;
   const shippingTsh = applied?.freeShipping ? 0 : shippingBase;
 
-  // Kadi ya zawadi: thibitisha na hesabu (haiwezi kuzidi jumla).
+  // Gift card: thibitisha na hesabu (haiwezi kuzidi jumla).
   let giftCard = null as Awaited<ReturnType<typeof getGiftCard>> | null;
   let giftDiscountTsh = 0;
   if (input.giftCardCode?.trim()) {
     giftCard = await getGiftCard(input.giftCardCode.trim());
     if (!giftCard || giftCard.status !== "issued") {
-      throw new InputError("Kadi ya zawadi si sahihi au tayari imetumika.");
+      throw new InputError("The gift card is invalid or has already been used.");
     }
     const beforeGift = Math.max(
       0,
@@ -262,7 +262,7 @@ export async function createOrder(input: CreateOrderInput): Promise<{
   const exists = db.prepare("SELECT 1 FROM orders WHERE code = ?");
   let code = makeOrderCode();
   for (let i = 0; i < 8 && await exists.get(code); i += 1) code = makeOrderCode();
-  if (await exists.get(code)) throw new InputError("Jaribu tena (msisitizo wa nambari).", 500);
+  if (await exists.get(code)) throw new InputError("Please try again.", 500);
 
   const createdAt = nowIso();
   const history: StatusEvent[] = [
@@ -307,7 +307,7 @@ export async function createOrder(input: CreateOrderInput): Promise<{
       const result = await dec.run(line.qty, createdAt, line.slug, line.qty);
       if (Number(result.changes) !== 1) {
         throw new InputError(
-          `Stoo ya ${line.slug} haitoshi. Jaribu tena.`,
+          `There is not enough stock for ${line.slug}. Please try again.`,
           409,
         );
       }
@@ -318,7 +318,7 @@ export async function createOrder(input: CreateOrderInput): Promise<{
       const redeemed = await redeemGiftCard(giftCard.code, code, tx);
       if (!redeemed) {
         throw new InputError(
-          "Kadi ya zawadi tayari imetumika na mtu mwingine.",
+          "This gift card has already been redeemed by someone else.",
           409,
         );
       }
@@ -328,15 +328,15 @@ export async function createOrder(input: CreateOrderInput): Promise<{
   } catch (error) {
     throw error instanceof InputError
       ? error
-      : new InputError("Imeshindikana kuhifadhi oda. Jaribu tena.", 500);
+      : new InputError("Could not save the order. Please try again.", 500);
   }
 
   // Arifa kwa admin (DB + barua pepe nyepesi).
   const location = [customer.city, customer.region].filter(Boolean).join(", ");
   await notifyAdmin({
     kind: "oda",
-    title: `Oda mpya ${code}`,
-    body: `${customer.name} (${customer.phone}) — ${formatTsh(totalTsh)}. Bidhaa: ${lines.map((l) => `${l.slug} ×${l.qty}`).join(", ")}. Eneo: ${location}, ${customer.street}`,
+    title: `New order ${code}`,
+    body: `${customer.name} (${customer.phone}) ? ${formatTsh(totalTsh)}. Products: ${lines.map((l) => `${l.slug} x${l.qty}`).join(", ")}. Location: ${location}, ${customer.street}`,
     ref: `/admin`,
   });
 
@@ -346,12 +346,12 @@ export async function createOrder(input: CreateOrderInput): Promise<{
     phone: customer.phone,
     orderCode: code,
     kind: "oda",
-    title: `Oda yako ${code} imepokelewa`,
-    body: `Tumepokea oda yako ya ${formatTsh(totalTsh)}. Tutakuarifu unapoanza kuandaliwa. Fuatilia hali yake kwenye ukurasa wa oda.`,
+    title: `Order ${code} received`,
+    body: `We received your order for ${formatTsh(totalTsh)}. We will notify you when preparation begins. Track its status on the order page.`,
   });
 
   const order = await getOrder(code);
-  if (!order) throw new InputError("Imeshindikana kuhifadhi oda.", 500);
+  if (!order) throw new InputError("Could not save the order.", 500);
 
   return { order, stock: await getStockMap() };
 }
@@ -380,13 +380,13 @@ export async function updateOrderStatus(
   status: OrderStatus,
 ): Promise<Order | undefined> {
   if (!VALID_STATUSES.includes(status)) {
-    throw new InputError("Hatua ya oda si sahihi.");
+    throw new InputError("Invalid order status.");
   }
   // Kughairiwa — hudumisha stoo na kadi ya zawadi.
   if (status === "ghairiwa") return cancelOrder(code);
   const key = code.trim().toUpperCase();
   const existing = await getOrder(key);
-  if (!existing) throw new InputError("Oda haipatikani.", 404);
+  if (!existing) throw new InputError("Order not found.", 404);
 
   const at = nowIso();
   const history = [...(existing.history ?? [])];
@@ -414,14 +414,14 @@ export async function updateOrderStatus(
 export async function cancelOrder(code: string): Promise<Order | undefined> {
   const key = code.trim().toUpperCase();
   const existing = await getOrder(key);
-  if (!existing) throw new InputError("Oda haipatikani.", 404);
+  if (!existing) throw new InputError("Order not found.", 404);
   if (existing.demo) {
-    throw new InputError("Oda ya majaribio haiwezi kughairiwa.");
+    throw new InputError("Demo orders cannot be cancelled.");
   }
   if (existing.status === "ghairiwa") return existing;
   if (existing.status !== "imapokelewa") {
     throw new InputError(
-      "Oda hii tayari imeanza kuandaliwa — haiwezi kughairiwa. Tupigie simu kwa msaada.",
+      "This order is already being prepared and cannot be cancelled. Contact us for help.",
       409,
     );
   }
@@ -462,8 +462,8 @@ export async function cancelOrder(code: string): Promise<Order | undefined> {
 
   await notifyAdmin({
     kind: "oda",
-    title: `Oda ${key} imeghairishwa`,
-    body: `Oda ${key} ya ${existing.customer.name} (${existing.customer.phone}) imeghairishwa. Stoo imerudishwa.`,
+    title: `Order ${key} cancelled`,
+    body: `Order ${key} for ${existing.customer.name} (${existing.customer.phone}) was cancelled. Stock has been restored.`,
     ref: "/admin",
   });
   await notifyCustomer({
@@ -471,8 +471,8 @@ export async function cancelOrder(code: string): Promise<Order | undefined> {
     phone: existing.customer.phone,
     orderCode: key,
     kind: "status",
-    title: `Oda ${key} imeghairiwa`,
-    body: `Oda yako ${key} imeghairishwa kama ulivyoomba. Stoo imerudishwa; ikiwa ulilipa tayari, tutakuarifu kuhusu marejesho.`,
+    title: `Order ${key} cancelled`,
+    body: `Your order ${key} was cancelled as requested. Stock has been restored. If you already paid, we will contact you about the refund.`,
   });
 
   return getOrder(key);

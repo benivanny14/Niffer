@@ -24,14 +24,14 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const article = getArticleBySlug(slug);
-  if (!article) return { title: "Makala haipo" };
+  if (!article) return { title: "Article not found" };
   return {
     title: article.title,
     description: article.excerpt,
     alternates: { canonical: `/makala/${article.slug}` },
     openGraph: {
       type: "article",
-      locale: "sw_TZ",
+      locale: "en_TZ",
       siteName: "Niffer Cosmetics",
       title: article.title,
       description: article.excerpt,
@@ -66,24 +66,24 @@ export default async function ArticlePage({ params }: PageProps) {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(
             breadcrumbJsonLd([
-              { name: "Nyumbani", path: "/" },
-              { name: "Makala", path: "/makala" },
+              { name: "Home", path: "/" },
+              { name: "Journal", path: "/makala" },
               { name: article.title, path: `/makala/${article.slug}` },
             ]),
           ),
         }}
       />
-      <nav aria-label="Njia" className="text-sm text-ink-400">
+      <nav aria-label="Breadcrumb" className="text-sm text-ink-400">
         <ol className="flex flex-wrap items-center gap-1.5">
           <li>
             <Link href="/" className="hover:text-accent">
-              Nyumbani
+              Home
             </Link>
           </li>
           <li aria-hidden>›</li>
           <li>
             <Link href="/makala" className="hover:text-accent">
-              Makala
+              Articles
             </Link>
           </li>
           <li aria-hidden>›</li>
@@ -97,7 +97,7 @@ export default async function ArticlePage({ params }: PageProps) {
         </p>
         <h1 className="heading-display mt-2">{article.title}</h1>
         <p className="mt-3 text-sm text-ink-400">
-          {article.author} · dakika {article.readMinutes} za kusoma
+          {article.author} · {article.readMinutes} min read
         </p>
 
         <div className="relative mt-8 aspect-video overflow-hidden rounded-2xl border border-cream-300 bg-cream-200">
@@ -123,11 +123,11 @@ export default async function ArticlePage({ params }: PageProps) {
         </div>
       </article>
 
-      {/* Bidhaa zinazohusiana */}
+      {/* Related products */}
       {related.length > 0 ? (
         <section className="mt-14 border-t border-cream-300 pt-10">
           <h2 className="font-display text-2xl text-ink-900">
-            Bidhaa zinazohusiana na makala hii
+            Products mentioned in this article
           </h2>
           <ul className="mt-6 grid gap-4 sm:grid-cols-2">
             {related.map((product) => (
@@ -168,17 +168,17 @@ export default async function ArticlePage({ params }: PageProps) {
         </section>
       ) : null}
 
-      {/* Makala nyingine */}
+      {/* More articles */}
       <section className="mt-14 border-t border-cream-300 pt-10">
         <div className="flex items-end justify-between gap-4">
           <h2 className="font-display text-2xl text-ink-900">
-            Makala nyingine
+            More articles
           </h2>
           <Link
             href="/makala"
             className="group inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent"
           >
-            Zote
+                  All articles
             <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>

@@ -12,7 +12,7 @@ import type { Order } from "@/lib/orders";
  * - `mock`    — AZAMPAY_MOCK=1 → mzunguko kamili wa ndani (bila malipo halisi)
  *   ili kila kitu kiweze kuhakikiwa local.
  * - `disabled` — hakuna kitu kimejazwa → oda inabaki na malipo ya kawaida
- *   (lipa baada ya kupokea) kama ilivyokuwa awali.
+ *   (pay on delivery) kama ilivyokuwa awali.
  *
  * `.env.example` ina orodha ya kila kitu kinachohitajika.
  */
@@ -27,7 +27,7 @@ export type PaymentStart = {
 
 const env = (name: string): string => process.env[name]?.trim() || "";
 
-/** Njia za malipo ya mtandaoni (mobile money) — si "lipa baada ya kupokea". */
+/** Njia za malipo ya mtandaoni (mobile money) — si "pay on delivery". */
 const ONLINE_METHODS = ["mpesa", "mixx", "airtel"];
 
 export function isOnlinePayment(payment: string): boolean {
@@ -92,7 +92,7 @@ async function azamPayCheckout(
   const token =
     (tokenData.access_token as string | undefined) ??
     (tokenData.accessToken as string | undefined);
-  if (!token) throw new Error("hakuna access token");
+  if (!token) throw new Error("No access token is configured.");
 
   // 2) Checkout session
   const res = await fetch(`${cfg.baseUrl}/azampay/checkout`, {
@@ -108,7 +108,7 @@ async function azamPayCheckout(
       currency: "TZS",
       countryCode: "TZ",
       merchantTransactionId: order.code,
-      paymentDescription: `Niffer Cosmetics oda ${order.code}`,
+      paymentDescription: `Niffer Cosmetics order ${order.code}`,
       returnUrl: `${cfg.appUrl}/malipo/inayosubiri?reference=${order.code}`,
       failureUrl: `${cfg.appUrl}/malipo/imeshindikana?reference=${order.code}`,
       successUrl: `${cfg.appUrl}/malipo/inayosubiri?reference=${order.code}`,
@@ -160,7 +160,7 @@ export async function getPaymentStatus(code: string): Promise<PaymentStatus | nu
   return (row.payment_status as PaymentStatus) ?? "pending";
 }
 
-/** Hifadhi salama ya callback ya gateway (hakikisha ni token sahihi). */
+/** Save salama ya callback ya gateway (hakikisha ni token sahihi). */
 export function validCallbackToken(token: string | null): boolean {
   const expected = env("PAYMENT_CALLBACK_TOKEN");
   if (!expected) {

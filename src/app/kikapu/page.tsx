@@ -18,9 +18,9 @@ export default function CartPage() {
 
   return (
     <div className="cart-page container-x max-w-5xl py-12 lg:py-16">
-      <p className="eyebrow">Ununuzi wako</p>
+      <p className="eyebrow">Your shopping bag</p>
       <h1 className="heading-display mt-2">
-        Kikapu chako{count > 0 ? ` (${count})` : ""}
+        Your bag{count > 0 ? ` (${count})` : ""}
       </h1>
 
       {!ready ? (
@@ -33,17 +33,17 @@ export default function CartPage() {
         <div className="card mt-10 p-12 text-center">
           <BagIcon className="mx-auto h-14 w-14 text-ink-300" />
           <p className="font-display mt-4 text-lg text-ink-900">
-            Kikapu chako ni tupu
+            Your bag is empty
           </p>
           <p className="mt-2 text-sm text-ink-500">
-            Ongeza bidhaa unazopenda ili kuanza oda yako.
+            Add products to your bag to get started.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link href="/bidhaa" className="btn-primary">
-              Vinjari bidhaa
+              Browse products
             </Link>
             <Link href="/upendwa" className="btn-outline">
-              Bidhaa zako za upendwa
+              Your wishlist
             </Link>
           </div>
         </div>
@@ -51,12 +51,11 @@ export default function CartPage() {
         <>
           {freeShippingLeft > 0 ? (
             <p className="mt-6 rounded-xl bg-brand-100 px-4 py-3 text-sm text-accent">
-              Ongeza bidhaa {formatTsh(freeShippingLeft)} upate usafirishaji
-              bure Dar es Salaam.
+              Add {formatTsh(freeShippingLeft)} to qualify for free delivery in Dar es Salaam.
             </p>
           ) : (
             <p className="mt-6 rounded-xl bg-success-100 px-4 py-3 text-sm text-success-600">
-              Hongera! Umepata usafirishaji bure Dar es Salaam.
+              You qualify for free delivery in Dar es Salaam.
             </p>
           )}
 
@@ -84,21 +83,21 @@ export default function CartPage() {
                     <button
                       type="button"
                       onClick={() => remove(product.slug)}
-                      aria-label={`Ondoa ${product.name}`}
+                      aria-label={`Remove ${product.name}`}
                       className="text-xs text-ink-400 underline hover:text-danger-600"
                     >
-                      Ondoa
+                      Remove
                     </button>
                   </div>
                   <p className="mt-1 text-sm text-ink-500">
-                    {formatTsh(product.priceTsh)} kwa kila moja
+                    {formatTsh(product.priceTsh)} each
                   </p>
                   <div className="mt-auto flex flex-wrap items-center gap-3 pt-2">
                     <div className="flex items-center rounded-full border border-cream-300 bg-surface">
                       <button
                         type="button"
                         onClick={() => setQty(product.slug, qty - 1)}
-                        aria-label="Punguza"
+                        aria-label="Decrease quantity"
                         className="px-3.5 py-1.5 text-ink-500 hover:text-accent"
                       >
                         −
@@ -110,7 +109,7 @@ export default function CartPage() {
                         type="button"
                         onClick={() => setQty(product.slug, qty + 1)}
                         disabled={qty >= product.stock}
-                        aria-label="Ongeza"
+                        aria-label="Increase quantity"
                         className="px-3.5 py-1.5 text-ink-500 hover:text-accent disabled:opacity-40"
                       >
                         +
@@ -118,7 +117,7 @@ export default function CartPage() {
                     </div>
                     {qty >= product.stock ? (
                       <span className="text-xs text-warning-600">
-                        Stoo imebaki {product.stock}
+                        Only {product.stock} left in stock
                       </span>
                     ) : null}
                     <span className="ml-auto text-base font-semibold text-ink-900">
@@ -132,20 +131,20 @@ export default function CartPage() {
 
           <div className="card mt-6 p-5">
             <div className="flex items-baseline justify-between">
-              <span className="text-ink-500">Jumla ndogo</span>
+              <span className="text-ink-500">Subtotal</span>
               <span className="font-display text-2xl text-ink-900">
                 {formatTsh(subtotalTsh)}
               </span>
             </div>
             <p className="mt-1 text-xs text-ink-400">
-              Usafirishaji huhesabiwa kwenye hatua ya malipo.
+              Delivery is calculated at checkout.
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
               <Link href="/ukoko" className="btn-primary flex-1">
-                Endelea na Malipo
+                Continue to checkout
               </Link>
               <Link href="/bidhaa" className="btn-outline">
-                Endelea Kununua
+                Continue shopping
               </Link>
             </div>
             <button
@@ -153,7 +152,7 @@ export default function CartPage() {
               onClick={() => {
                 if (
                   window.confirm(
-                    "Ondoa bidhaa ZOTE kwenye kikapu? Hatua hii haiwezi kurudishwa.",
+                    "Remove ALL products from your bag? This cannot be undone.",
                   )
                 ) {
                   clear();
@@ -161,7 +160,7 @@ export default function CartPage() {
               }}
               className="mt-3 w-full text-center text-sm text-ink-400 transition-colors hover:text-danger-600"
             >
-              Onda kikapu chote
+              Empty your bag
             </button>
           </div>
         </>

@@ -43,7 +43,7 @@ export function getProduct(slug: string): Product | undefined {
   return hydrated?.find((p) => p.slug === slug) ?? getProductBySlug(slug);
 }
 
-/** Bidhaa zote — DB (ikiwa ipo) au katalogi ya ndani. */
+/** All products — DB (ikiwa ipo) au katalogi ya ndani. */
 export function catalogProducts(): Product[] {
   return hydrated ?? staticProducts;
 }

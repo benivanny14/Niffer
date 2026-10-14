@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       return fail(rateLimitMessage(limited.retryAfterSec), 429);
     }
     const body = await readBody<{ phone?: string; password?: string }>(req);
-    if (!body) return fail("Taarifa za kuingia hazisahihi.");
+    if (!body) return fail("The sign-in details are invalid.");
 
     const customer = await loginCustomer(body);
     const { token, maxAge } = await createCustomerSession(customer.id);
