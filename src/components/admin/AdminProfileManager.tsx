@@ -39,7 +39,7 @@ export function AdminProfileManager() {
 
   return (
     <section className="card mt-7 flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:p-6" aria-labelledby="store-profile-title">
-      <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-2xl border border-brand-300/50 bg-gradient-to-br from-brand-100 via-surface-raised to-gold-100 p-1 shadow-lg shadow-black/20 sm:h-32 sm:w-32">
+      <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-2xl border border-brand-300/50 bg-gradient-to-br from-brand-100 via-cream-200 to-gold-100 p-1 shadow-lg shadow-black/20 sm:h-32 sm:w-32">
         {image ? (
           <Image src={image} alt="Picha ya profile ya duka" fill unoptimized sizes="128px" className="rounded-[0.8rem] object-cover" />
         ) : (
@@ -57,7 +57,7 @@ export function AdminProfileManager() {
           <button type="button" onClick={() => inputRef.current?.click()} disabled={busy} className="btn-primary min-w-36 disabled:opacity-60">
             {busy ? "Inapakia picha…" : image ? "Badili picha" : "Weka picha"}
           </button>
-          <span className="text-xs text-ink-400">JPG, PNG, WebP au AVIF · hadi 5MB</span>
+          <span className="text-xs text-ink-400">JPG, PNG, WebP au AVIF · hadi 4MB</span>
         </div>
         {message ? <p role="status" className="mt-3 text-sm text-ink-500">{message}</p> : null}
       </div>

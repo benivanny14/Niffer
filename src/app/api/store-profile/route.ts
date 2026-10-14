@@ -4,7 +4,8 @@ import { isAdminRequest } from "@/lib/server/auth";
 import { getDb, nowIso } from "@/lib/server/db";
 import { uploadAdminProfileImage } from "@/lib/server/cloudinary";
 
-const MAX_SIZE = 5 * 1024 * 1024;
+// Keep comfortably below Vercel Functions' 4.5 MB total request payload limit.
+const MAX_SIZE = 4 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 const PROFILE_KEY = "store_admin_profile_image";
 
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
     if (!ALLOWED_TYPES.has(file.type)) {
       return fail("Tumia picha ya JPG, PNG, WebP au AVIF.");
     }
-    if (file.size > MAX_SIZE) return fail("Picha isizidi 5MB.");
+    if (file.size > MAX_SIZE) return fail("Picha isizidi 4MB.");
 
     const image = await uploadAdminProfileImage(file);
     await getDb().prepare(
