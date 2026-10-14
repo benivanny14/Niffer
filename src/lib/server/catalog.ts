@@ -68,30 +68,26 @@ function rowToProduct(row: ProductRow): Product {
 
 /** Bidhaa zote (DB) pamoja na stoo halisi — mpangilio wa asili wa katalogi. */
 export async function listProducts(): Promise<Product[]> {
-  let rows: ProductRow[] = [];
-  try {
-    rows = await getDb()
-      .prepare("SELECT * FROM products ORDER BY updated_at, slug")
-      .all() as ProductRow[];
-  } catch {
-    rows = [];
-  }
-
-  const base = rows.length > 0 ? rows.map(rowToProduct) : catalogProducts;
-  const stock = await getStockMap();
+  // Bidhaa na stoo ni huru — ZIP pamoja (kila round-trip ~250ms).
+  const [stock, rows] = await Promise.all([
+    getStockMap().catch(() => ({} as Record<string, number>)),
+    getDb().prepare("SELECT * FROM products ORDER BY updated_at, slug").all().catch(() => []),
+  ]);
+  const productRows = rows as ProductRow[];
+  const base = productRows.length > 0 ? productRows.map(rowToProduct) : catalogProducts;
   return base.map((p) => ({ ...p, stock: stock[p.slug] ?? p.stock }));
 }
 
 /** Bidhaa moja kutoka DB. */
 export async function findProduct(slug: string): Promise<Product | undefined> {
   try {
-    const row = await getDb()
-      .prepare("SELECT * FROM products WHERE slug = ?")
-      .get(slug) as ProductRow | undefined;
+    const [row, stock] = await Promise.all([
+      getDb().prepare("SELECT * FROM products WHERE slug = ?").get(slug) as Promise<ProductRow | undefined>,
+      getStockMap(),
+    ]);
     if (row) {
-      const stock = (await getStockMap())[slug];
       const product = rowToProduct(row);
-      return { ...product, stock: stock ?? product.stock };
+      return { ...product, stock: stock[slug] ?? product.stock };
     }
   } catch {
     /* DB haijasoma — angalia fallback */

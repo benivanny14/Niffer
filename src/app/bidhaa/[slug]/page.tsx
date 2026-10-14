@@ -98,16 +98,18 @@ export default async function ProductPage({ params }: PageProps) {
 async function ProductDetail({ params }: PageProps) {
   await connection();
   const { slug } = await params;
-  const all = await listProducts();
+  // Bidhaa + haziki huru — ZIP pamoja (kila round-trip ~250ms).
+  const [all, rawReviews] = await Promise.all([
+    listProducts(),
+    listReviews(300),
+  ]);
   const product = all.find((p) => p.slug === slug);
   if (!product) notFound();
 
   const discount = discountPercent(product.priceTsh, product.compareAtTsh);
-  // Hakiki zote (pamoja na mpya kutoka DB) kwa bidhaa hii.
-  const productReviews = (await listReviews(300)).filter(
-    (r) => r.productSlug === product.slug,
-  );
-  // Bidhaa zinazohusiana kutoka DB (kategoria ile ile).
+  // Hakiki za bidhaa hii tu.
+  const productReviews = rawReviews.filter((r) => r.productSlug === product.slug);
+  // Bidhaa zinazohusiana (kategoria ile ile).
   const related = all
     .filter((p) => p.slug !== product.slug && p.category === product.category)
     .slice(0, 4);

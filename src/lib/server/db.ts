@@ -283,6 +283,9 @@ export class NeonDatabase {
   }
 }
 
+/** Ongeza mara SCHEMA inapobadilishwa (DDL ni polepole: ~14s kwenye Neon). */
+const SCHEMA_VERSION = "1";
+
 type DbGlobals = typeof globalThis & {
   __nifferPool?: Pool;
   __nifferDb?: NeonDatabase;
@@ -294,7 +297,7 @@ function getPool(): Pool {
   if (globals.__nifferPool) return globals.__nifferPool;
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) throw new Error('DATABASE_URL haijawekwa.');
-  const pool = new Pool({ connectionString, max: 5, idleTimeoutMillis: 60_000, connectionTimeoutMillis: 10_000 });
+  const pool = new Pool({ connectionString, max: 5, idleTimeoutMillis: 60_000, connectionTimeoutMillis: 30_000 });
   globals.__nifferPool = pool;
   return pool;
 }
@@ -311,17 +314,41 @@ export function getDb(): NeonDatabase {
   return globals.__nifferDb;
 }
 
+/** DDL imekwisha (version kwenye meta) — rukia DDL ya dakika ~14. */
+async function schemaApplied(pool: Pool): Promise<boolean> {
+  try {
+    const result = await pool.query("SELECT value FROM meta WHERE key = $1", ["schema_version"]);
+    return result.rows[0]?.value === SCHEMA_VERSION;
+  } catch {
+    return false; // meta haipo au DB mpya
+  }
+}
+
 /** Create PostgreSQL schema and seed once per warm serverless instance. */
 export async function ensureDatabaseReady(): Promise<void> {
   const globals = globalThis as DbGlobals;
   if (globals.__nifferDbReady) return globals.__nifferDbReady;
   const pool = getPool();
   globals.__nifferDbReady = (async () => {
-    // Moja query nyingi kwa mzunguko mmoja — kila round-trip ya Neon ni ~250ms.
-    await pool.query(SCHEMA);
+    const started = Date.now();
+    if (!(await schemaApplied(pool))) {
+      // Dima kwa vipande — batch kubwa moja huchukua ~14s na kivuko cha
+      // muunganisho (10-30s) kinaua ombi. Kila kipande <3s.
+      const statements = SCHEMA.split(";").map((sql) => sql.trim()).filter(Boolean);
+      const CHUNK = 8;
+      for (let i = 0; i < statements.length; i += CHUNK) {
+        await pool.query(`${statements.slice(i, i + CHUNK).join(";")};`);
+      }
+      await pool.query(
+        "INSERT INTO meta (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+        ["schema_version", SCHEMA_VERSION],
+      );
+    }
     await migrate(pool);
     await seed(pool);
+    console.log(`[db] schema ready in ${Date.now() - started}ms`);
   })().catch((error) => {
+    console.error("[db] schema init failed:", error);
     globals.__nifferDbReady = undefined;
     throw error;
   });
