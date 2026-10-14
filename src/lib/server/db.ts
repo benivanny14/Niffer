@@ -301,7 +301,14 @@ function getPool(): Pool {
 
 export function getDb(): NeonDatabase {
   const globals = globalThis as DbGlobals;
-  return (globals.__nifferDb ??= new NeonDatabase(getPool()));
+  // Next dev HMR can retain a NeonDatabase instance created from an older
+  // module version on globalThis. Recreate it if a newly added method is
+  // missing from that stale instance.
+  if (globals.__nifferDb && typeof globals.__nifferDb.transaction === "function") {
+    return globals.__nifferDb;
+  }
+  globals.__nifferDb = new NeonDatabase(getPool());
+  return globals.__nifferDb;
 }
 
 /** Create PostgreSQL schema and seed once per warm serverless instance. */
