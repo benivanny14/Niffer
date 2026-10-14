@@ -16,7 +16,7 @@ export default async function PaymentSuccessPage({ searchParams }: PageProps) {
   const { reference = "" } = await searchParams;
   const code = reference.trim().toUpperCase();
   await connection();
-  const order = code ? getOrder(code) : undefined;
+  const order = code ? await getOrder(code) : undefined;
 
   return (
     <div className="container-x max-w-xl py-16 text-center">

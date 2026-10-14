@@ -3,6 +3,7 @@ import { json, fail, readBody, toErrorResponse } from "@/lib/server/http";
 import { listProducts, catalogStats } from "@/lib/server/catalog";
 import { isAdminRequest } from "@/lib/server/auth";
 import { getDb, nowIso } from "@/lib/server/db";
+import { optimizeCloudinaryUrl } from "@/lib/server/cloudinary";
 import { categories } from "@/lib/data/catalog";
 import {
   filterProducts,
@@ -29,8 +30,8 @@ export async function GET(req: NextRequest) {
     query: params.get("q"),
     sort: isSortKey(sortParam) ? sortParam : "maarufu",
   };
-  const products = filterProducts(listProducts(), filters);
-  return json({ ok: true, count: products.length, products, ...catalogStats() });
+  const products = filterProducts(await listProducts(), filters);
+  return json({ ok: true, count: products.length, products, ...(await catalogStats()) });
 }
 
 function slugify(value: string): string {
@@ -84,11 +85,11 @@ export async function POST(req: NextRequest) {
     }
 
     const db = getDb();
-    const exists = db.prepare("SELECT 1 FROM products WHERE slug = ?").get(slug);
+    const exists = await db.prepare("SELECT 1 FROM products WHERE slug = ?").get(slug);
     if (exists) return fail("Bidhaa kwa slug hii tayari ipo.", 409);
 
     const now = nowIso();
-    db.prepare(
+    await db.prepare(
       `INSERT INTO products (
          slug, id, name, category, price_tsh, compare_at_tsh,
          short_description, description, ingredients, how_to_use,
@@ -108,7 +109,7 @@ export async function POST(req: NextRequest) {
       (body.howToUse ?? "").trim(),
       Math.max(0, Math.floor(Number(body.stock ?? 10))),
       JSON.stringify(Array.isArray(body.badges) ? body.badges : []),
-      body.image?.trim() || "",
+      optimizeCloudinaryUrl(body.image?.trim() || ""),
       (body.imageAlt ?? name).trim(),
       (body.region ?? "").trim(),
       (body.city ?? "").trim(),
@@ -116,11 +117,11 @@ export async function POST(req: NextRequest) {
     );
 
     const stock = Math.max(0, Math.floor(Number(body.stock ?? 10)));
-    db.prepare(
-      "INSERT INTO stock (slug, qty, updated_at) VALUES (?, ?, ?) ON CONFLICT(slug) DO NOTHING",
+    await db.prepare(
+      "INSERT INTO stock (slug, qty, updated_at) VALUES (?, ?, ?) ON CONFLICT (slug) DO NOTHING",
     ).run(slug, stock, now);
 
-    const product = listProducts().find((p) => p.slug === slug);
+    const product = (await listProducts()).find((p) => p.slug === slug);
     return json({ ok: true, product }, 201);
   } catch (error) {
     return toErrorResponse(error);

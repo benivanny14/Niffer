@@ -44,7 +44,7 @@ export async function GET(
     }
     const { code } = await ctx.params;
     const order =
-      getOrder(code) ??
+      (await getOrder(code)) ??
       demoOrders().find(
         (o) => o.code.toLowerCase() === code.trim().toLowerCase(),
       );
@@ -68,13 +68,13 @@ export async function PATCH(
     const { code } = await ctx.params;
     const body = await readBody<{ status?: OrderStatus }>(req);
     if (!body?.status) return fail("Hatua mpya haijawekwa.");
-    const order = updateOrderStatus(code, body.status);
+    const order = await updateOrderStatus(code, body.status);
     if (!order) return fail("Oda haipatikani.", 404);
     // Arifu mteja kwa mkupuo wa hatua mpya (kughairiwa: cancelOrder tayari
     // imetuma arifa kwa mteja na admin).
     if (body.status !== "ghairiwa") {
       const stepLabel = statusSteps.find((s) => s.id === body.status)?.label ?? body.status;
-      notifyCustomer({
+      await notifyCustomer({
         customerId: order.customerId,
         phone: order.customer.phone,
         orderCode: order.code,

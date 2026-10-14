@@ -24,10 +24,10 @@ import {
 
 type PageProps = { params: Promise<{ slug: string }> };
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
   // Union ya katalogi ya ndani + DB (bidhaa za admin).
   try {
-    const fromDb = listProducts().map((p) => ({ slug: p.slug }));
+    const fromDb = (await listProducts()).map((p) => ({ slug: p.slug }));
     const seen = new Set<string>();
     const merged: { slug: string }[] = [];
     for (const { slug } of [...products.map((p) => ({ slug: p.slug })), ...fromDb]) {
@@ -45,8 +45,9 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
+  await connection();
   const { slug } = await params;
-  const product = findProduct(slug);
+  const product = await findProduct(slug);
   if (!product) return { title: "Bidhaa haipo" };
 
   return {
@@ -72,7 +73,7 @@ const badgeLabels: Record<Product["badges"][number], string> = {
   "low-stock": "Zimebaki kidogo",
 };
 
-export default function ProductPage({ params }: PageProps) {
+export default async function ProductPage({ params }: PageProps) {
   // params ni URL data — Suspense hukuruhusu instant navigation (App Shell).
   return (
     <div className="container-x py-10 lg:py-14">
@@ -95,18 +96,18 @@ export default function ProductPage({ params }: PageProps) {
 }
 
 async function ProductDetail({ params }: PageProps) {
+  await connection();
   const { slug } = await params;
-  const product = findProduct(slug);
+  const product = await findProduct(slug);
   if (!product) notFound();
 
   const discount = discountPercent(product.priceTsh, product.compareAtTsh);
   // Hakiki zote (pamoja na mpya kutoka DB) kwa bidhaa hii.
-  await connection();
-  const productReviews = listReviews(300).filter(
+  const productReviews = (await listReviews(300)).filter(
     (r) => r.productSlug === product.slug,
   );
   // Bidhaa zinazohusiana kutoka DB (kategoria ile ile).
-  const related = listProducts()
+  const related = (await listProducts())
     .filter((p) => p.slug !== product.slug && p.category === product.category)
     .slice(0, 4);
 
@@ -149,9 +150,9 @@ async function ProductDetail({ params }: PageProps) {
         </ol>
       </nav>
 
-      <div className="mt-6 grid gap-10 lg:grid-cols-2">
+      <div className="product-detail mt-6 grid gap-10 lg:grid-cols-2">
         {/* Gallery — picha halisi ya bidhaa */}
-        <div className="relative aspect-[4/5] animate-fade-in overflow-hidden rounded-2xl border border-cream-300 bg-cream-200">
+        <div className="product-detail__gallery relative aspect-[4/5] animate-fade-in overflow-hidden rounded-2xl border border-cream-300 bg-cream-200">
           <ProductImage
             src={product.image}
             alt={product.imageAlt}
@@ -174,7 +175,7 @@ async function ProductDetail({ params }: PageProps) {
         </div>
 
         {/* Info */}
-        <div className="animate-fade-up">
+        <div className="product-detail__info animate-fade-up">
           <p className="eyebrow">{product.category}</p>
           <h1 className="heading-display mt-2">{product.name}</h1>
 

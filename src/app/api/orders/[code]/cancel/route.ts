@@ -22,7 +22,7 @@ export async function POST(
       return fail(rateLimitMessage(limited.retryAfterSec), 429);
     }
     const { code } = await ctx.params;
-    const order = getOrder(code);
+    const order = await getOrder(code);
     if (!order) return fail("Oda hiyo haipatikani.", 404);
     if (order.demo) return fail("Oda ya majaribio haiwezi kughairiwa.");
 
@@ -43,7 +43,7 @@ export async function POST(
       );
     }
 
-    const updated = cancelOrder(order.code);
+    const updated = await cancelOrder(order.code);
     return json({ ok: true, order: updated });
   } catch (error) {
     return toErrorResponse(error);

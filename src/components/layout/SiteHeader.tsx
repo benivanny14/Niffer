@@ -32,18 +32,15 @@ export function SiteHeader() {
   }, [open]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-cream-300 bg-cream-50/90 backdrop-blur-xl">
-      <div className="bg-brand-800 text-white">
-        <div className="container-x flex min-h-9 items-center justify-center gap-2 py-1.5 text-xs leading-snug">
-          <SparkleIcon className="hidden h-3.5 w-3.5 shrink-0 text-gold-500 sm:block" />
-          <p className="text-center">
-            Usafirishaji bure Dar es Salaam kwa oda zaidi ya TSh 50,000 ·
-            Malipo salama: M-Pesa, Mixx by Yas, Airtel Money
-          </p>
+    <header className="site-header sticky top-0 z-40">
+      <div className="site-header__announcement">
+        <div className="container-x flex min-h-8 items-center justify-center gap-2 py-1 text-[11px] leading-snug">
+          <SparkleIcon className="h-3.5 w-3.5 shrink-0 text-gold-500" />
+          <p className="text-center">Usafirishaji bure Dar es Salaam kwa oda zaidi ya TSh 50,000 <span>·</span> Lipa kwa M-Pesa, Mixx, Airtel au baada ya kupokea</p>
         </div>
       </div>
 
-      <div className="container-x flex h-16 items-center justify-between gap-4">
+      <div className="site-header__main container-x flex h-[4.5rem] items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-accent shadow-sm ring-1 ring-brand-200">
             <SparkleIcon className="h-5 w-5" />
@@ -66,7 +63,7 @@ export function SiteHeader() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm font-medium text-ink-700 transition-colors hover:text-accent"
+                    className="site-header__nav-link text-sm font-medium text-ink-700 transition-colors hover:text-accent"
                   >
                     {link.label}
                   </Link>
@@ -75,7 +72,7 @@ export function SiteHeader() {
           </ul>
         </nav>
 
-        <div className="flex items-center gap-1">
+        <div className="site-header__actions flex items-center gap-1">
           <HeaderControls />
           <button
             type="button"
@@ -91,7 +88,7 @@ export function SiteHeader() {
       </div>
 
       {open ? (
-        <div id="mobile-menu" className="border-t border-cream-300 bg-cream-50 lg:hidden">
+          <div id="mobile-menu" className="site-header__mobile border-t border-cream-300 bg-cream-50 lg:hidden">
           <nav aria-label="Menyu ya simu" className="container-x py-4">
             <ul className="flex flex-col gap-1">
               {navLinks.map((link) => (

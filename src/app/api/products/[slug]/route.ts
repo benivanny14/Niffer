@@ -3,6 +3,7 @@ import { json, fail, readBody, toErrorResponse } from "@/lib/server/http";
 import { findProduct, listProducts } from "@/lib/server/catalog";
 import { isAdminRequest } from "@/lib/server/auth";
 import { getDb, nowIso } from "@/lib/server/db";
+import { optimizeCloudinaryUrl } from "@/lib/server/cloudinary";
 import { setStockValue } from "@/lib/server/orders";
 
 /** Bidhaa moja kwa slug. */
@@ -13,7 +14,7 @@ export async function GET(
   await connection();
   try {
     const { slug } = await ctx.params;
-    const product = findProduct(slug);
+    const product = await findProduct(slug);
     if (!product) return fail("Bidhaa haipatikani.", 404);
     return json({ ok: true, product });
   } catch (error) {
@@ -33,7 +34,7 @@ export async function PATCH(
     }
     const { slug } = await ctx.params;
     const db = getDb();
-    if (!db.prepare("SELECT 1 FROM products WHERE slug = ?").get(slug)) {
+    if (!await db.prepare("SELECT 1 FROM products WHERE slug = ?").get(slug)) {
       return fail("Bidhaa haipatikani.", 404);
     }
 
@@ -72,7 +73,7 @@ export async function PATCH(
     }
     if (Array.isArray(body.badges)) push("badges", JSON.stringify(body.badges));
     if (typeof body.image === "string" && body.image.trim()) {
-      push("image", body.image.trim());
+      push("image", optimizeCloudinaryUrl(body.image.trim()));
     }
     if (typeof body.imageAlt === "string") push("image_alt", body.imageAlt.trim());
     if (typeof body.region === "string") push("region", body.region.trim());
@@ -84,14 +85,14 @@ export async function PATCH(
 
     if (cols.length > 0) {
       push("updated_at", nowIso());
-      db.prepare(`UPDATE products SET ${cols.join(", ")} WHERE slug = ?`).run(
+      await db.prepare(`UPDATE products SET ${cols.join(", ")} WHERE slug = ?`).run(
         ...vals,
         slug,
       );
     }
-    if (typeof body.stock === "number") setStockValue(slug, body.stock);
+    if (typeof body.stock === "number") await setStockValue(slug, body.stock);
 
-    return json({ ok: true, product: findProduct(slug) });
+    return json({ ok: true, product: await findProduct(slug) });
   } catch (error) {
     return toErrorResponse(error);
   }
@@ -109,21 +110,16 @@ export async function DELETE(
     }
     const { slug } = await ctx.params;
     const db = getDb();
-    const exists = db.prepare("SELECT 1 FROM products WHERE slug = ?").get(slug);
+    const exists = await db.prepare("SELECT 1 FROM products WHERE slug = ?").get(slug);
     if (!exists) return fail("Bidhaa haipatikani.", 404);
 
-    db.exec("BEGIN");
-    try {
-      db.prepare("DELETE FROM products WHERE slug = ?").run(slug);
-      db.prepare("DELETE FROM stock WHERE slug = ?").run(slug);
-      db.prepare("DELETE FROM reviews WHERE product_slug = ?").run(slug);
-      db.exec("COMMIT");
-    } catch (error) {
-      db.exec("ROLLBACK");
-      throw error;
-    }
+    await db.transaction(async (tx) => {
+      await tx.prepare("DELETE FROM products WHERE slug = ?").run(slug);
+      await tx.prepare("DELETE FROM stock WHERE slug = ?").run(slug);
+      await tx.prepare("DELETE FROM reviews WHERE product_slug = ?").run(slug);
+    });
 
-    return json({ ok: true, count: listProducts().length });
+    return json({ ok: true, count: (await listProducts()).length });
   } catch (error) {
     return toErrorResponse(error);
   }

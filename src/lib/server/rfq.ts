@@ -103,7 +103,7 @@ export type CreateRfqInput = {
 };
 
 /** Hifadhi ombi la bei ya jumla na urudishe nambari ya kufuatilia. */
-export function createRfq(input: CreateRfqInput): Rfq {
+export async function createRfq(input: CreateRfqInput): Promise<Rfq> {
   const business = (input.business ?? "").trim();
   const name = (input.name ?? "").trim();
   const phone = (input.phone ?? "").trim();
@@ -126,13 +126,13 @@ export function createRfq(input: CreateRfqInput): Rfq {
   const db = getDb();
   const exists = db.prepare("SELECT 1 FROM rfqs WHERE code = ?");
   let code = makeRfqCode();
-  for (let i = 0; i < 10 && exists.get(code); i += 1) code = makeRfqCode();
-  if (exists.get(code)) {
+  for (let i = 0; i < 10 && await exists.get(code); i += 1) code = makeRfqCode();
+  if (await exists.get(code)) {
     throw new InputError("Jaribu tena (msisitizo wa nambari ya RFQ).", 500);
   }
 
   const at = nowIso();
-  db.prepare(
+  await db.prepare(
     `INSERT INTO rfqs (
        code, business, name, phone, email, region,
        product_slug, product_name, qty, note, status,
@@ -155,7 +155,7 @@ export function createRfq(input: CreateRfqInput): Rfq {
 
   // Rekodi pia kwenye ujumbe wa fomu ili uonekane kwenye inbox ya admin.
   try {
-    db.prepare(
+    await db.prepare(
       `INSERT INTO messages (id, kind, name, phone, email, body, status, created_at)
        VALUES (?, 'rfq', ?, ?, ?, ?, 'new', ?)`,
     ).run(
@@ -177,35 +177,35 @@ export function createRfq(input: CreateRfqInput): Rfq {
     /* ujumbe ni nyongeza tu — RFQ tayari imehifadhiwa */
   }
 
-  const created = getRfq(code);
+  const created = await getRfq(code);
   if (!created) throw new InputError("Imeshindikana kuhifadhi ombi. Jaribu tena.", 500);
   return created;
 }
 
 /** Oda mpya kwanza. */
-export function listRfqs(limit = 200): Rfq[] {
-  const rows = getDb()
+export async function listRfqs(limit = 200): Promise<Rfq[]> {
+  const rows = await getDb()
     .prepare("SELECT * FROM rfqs ORDER BY created_at DESC LIMIT ?")
     .all(limit) as unknown as RfqRow[];
   return rows.map(rowToRfq);
 }
 
 /** Ombi moja kwa nambari. */
-export function getRfq(code: string): Rfq | undefined {
+export async function getRfq(code: string): Promise<Rfq | undefined> {
   const key = code.trim().toUpperCase();
   if (!key) return undefined;
-  const row = getDb()
+  const row = await getDb()
     .prepare("SELECT * FROM rfqs WHERE code = ?")
     .get(key) as RfqRow | undefined;
   return row ? rowToRfq(row) : undefined;
 }
 
 /** Ombi za biashara moja (portali — kwa simu iliyosajiliwa). */
-export function listRfqsByPhone(phone: string, limit = 50): Rfq[] {
+export async function listRfqsByPhone(phone: string, limit = 50): Promise<Rfq[]> {
   const digits = normalizePhone(phone);
   if (digits.length < 9) return [];
   // Tafuta kwa nambari zilizoandikwa (0754… / 255754… ni sawa).
-  const rows = getDb()
+  const rows = await getDb()
     .prepare("SELECT * FROM rfqs ORDER BY created_at DESC LIMIT 500")
     .all() as unknown as RfqRow[];
   return rows
@@ -228,12 +228,12 @@ function normalizePhone(value: string): string {
 const VALID_STATUS = rfqStatusSteps.map((s) => s.id);
 
 /** Sasisha hali na bei ya wito (admin). */
-export function updateRfq(
+export async function updateRfq(
   code: string,
   patch: { status?: string; quoteTsh?: number | null; unitQuoteTsh?: number | null },
-): Rfq {
+): Promise<Rfq> {
   const key = code.trim().toUpperCase();
-  const existing = getRfq(key);
+  const existing = await getRfq(key);
   if (!existing) throw new InputError("Ombi la RFQ halipatikani.", 404);
 
   const cols: string[] = [];
@@ -271,11 +271,11 @@ export function updateRfq(
   cols.push("updated_at = ?");
   vals.push(nowIso());
 
-  getDb()
+  await getDb()
     .prepare(`UPDATE rfqs SET ${cols.join(", ")} WHERE code = ?`)
     .run(...vals, key);
 
-  const updated = getRfq(key);
+  const updated = await getRfq(key);
   if (!updated) throw new InputError("Imeshindikana kusasisha ombi.", 500);
   return updated;
 }
@@ -289,8 +289,8 @@ export function rfqTierPreview(retailPriceTsh: number, qty: number) {
   };
 }
 
-export function rfqStats(): { total: number; newCount: number; quoted: number } {
-  const row = getDb()
+export async function rfqStats(): Promise<{ total: number; newCount: number; quoted: number }> {
+  const row = await getDb()
     .prepare(
       `SELECT COUNT(*) AS total,
               COALESCE(SUM(CASE WHEN status = 'new' THEN 1 ELSE 0 END), 0) AS newCount,

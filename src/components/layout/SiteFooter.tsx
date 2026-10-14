@@ -33,8 +33,8 @@ const exploreLinks = [
 
 export function SiteFooter() {
   return (
-    <footer id="wasiliana" className="border-t border-cream-300 bg-cream-100/80">
-      <div className="container-x grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+    <footer id="wasiliana" className="site-footer border-t border-cream-300">
+        <div className="site-footer__main container-x grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <div className="max-w-xs">
           <Link href="/" className="flex items-center gap-2.5">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-accent ring-1 ring-brand-200">
@@ -169,7 +169,7 @@ export function SiteFooter() {
         </div>
       </div>
 
-      <div className="border-t border-cream-300">
+      <div className="site-footer__bottom border-t border-cream-300">
         <div className="container-x flex flex-col items-center justify-between gap-2 py-5 text-xs text-ink-400 sm:flex-row">
           <p>© 2026 Niffer Cosmetics. Haki zote zimehifadhiwa.</p>
           <div className="flex items-center gap-4">

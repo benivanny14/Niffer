@@ -23,8 +23,8 @@ export async function POST(req: NextRequest) {
     }>(req);
     if (!body) return fail("Taarifa za akaunti hazisahihi.");
 
-    const customer = registerCustomer(body);
-    const { token, maxAge } = createCustomerSession(customer.id);
+    const customer = await registerCustomer(body);
+    const { token, maxAge } = await createCustomerSession(customer.id);
     const res = json({ ok: true, customer }, 201);
     res.cookies.set(CUSTOMER_COOKIE, token, {
       path: "/",

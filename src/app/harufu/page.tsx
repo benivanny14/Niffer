@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default async function ScentFinderPage() {
   // Bidhaa za DB (perfumes/body mist halisi kutoka duka).
   await connection();
-  const products = listProducts();
+  const products = await listProducts();
 
   return (
     <div className="container-x max-w-3xl py-12 lg:py-16">

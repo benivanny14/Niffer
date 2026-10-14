@@ -11,7 +11,7 @@ export async function GET() {
     if (!(await isAdminRequest())) {
       return fail("Ingia kama admin.", 401);
     }
-    return json({ ok: true, giftCards: listGiftCards() });
+    return json({ ok: true, giftCards: await listGiftCards() });
   } catch (error) {
     return toErrorResponse(error);
   }
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       message?: string;
     }>(req);
     if (!body) return fail("Taarifa za kadi hazisahihi.");
-    const giftCard = issueGiftCard(body);
+    const giftCard = await issueGiftCard(body);
     return json({ ok: true, giftCard }, 201);
   } catch (error) {
     return toErrorResponse(error);

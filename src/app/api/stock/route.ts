@@ -7,7 +7,7 @@ import { isAdminRequest } from "@/lib/server/auth";
 export async function GET() {
   await connection();
   try {
-    return json({ ok: true, stock: getStockMap() });
+    return json({ ok: true, stock: await getStockMap() });
   } catch (error) {
     return toErrorResponse(error);
   }
@@ -23,8 +23,8 @@ export async function PATCH(req: NextRequest) {
     if (!body?.slug || typeof body.qty !== "number") {
       return fail("Taarifa za stoo hazisahihi.");
     }
-    const qty = setStockValue(String(body.slug), Number(body.qty));
-    return json({ ok: true, slug: body.slug, qty, stock: getStockMap() });
+    const qty = await setStockValue(String(body.slug), Number(body.qty));
+    return json({ ok: true, slug: body.slug, qty, stock: await getStockMap() });
   } catch (error) {
     return toErrorResponse(error);
   }

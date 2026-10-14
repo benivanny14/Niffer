@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
         return fail(rateLimitMessage(limited.retryAfterSec), 429);
       }
       // Rudisha taarifa za msingi + bei — si PII kamili (biashara, simu, barua pepe).
-      const rfqs = listRfqsByPhone(phone).map((r) => ({
+      const rfqs = (await listRfqsByPhone(phone)).map((r) => ({
         code: r.code,
         productName: r.productName,
         qty: r.qty,
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
       return fail("Ingia kama admin kuona ombi zote za RFQ.", 401);
     }
     const limit = intParam(req.nextUrl.searchParams.get("limit"), 200, 500);
-    return json({ ok: true, rfqs: listRfqs(limit), stats: rfqStats() });
+    return json({ ok: true, rfqs: await listRfqs(limit), stats: await rfqStats() });
   } catch (error) {
     return toErrorResponse(error);
   }
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
       note?: string;
     }>(req);
     if (!body) return fail("Taarifa za ombi hazisahihi.");
-    const rfq = createRfq(body);
+    const rfq = await createRfq(body);
     return json({ ok: true, rfq }, 201);
   } catch (error) {
     return toErrorResponse(error);

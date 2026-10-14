@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     }
     const body = await readBody<{ code?: string }>(req);
     if (!body?.code) return fail("Weka msimbo wa kadi.");
-    const card = getGiftCard(String(body.code));
+    const card = await getGiftCard(String(body.code));
     if (!card) return json({ ok: false, error: "Kadi haipatikani." }, 404);
     if (card.status !== "issued") {
       return json(

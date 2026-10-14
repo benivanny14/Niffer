@@ -29,10 +29,10 @@ export async function GET(req: NextRequest) {
     // Mock haijawashwa au ni production — rudisha kwenye oda.
     return NextResponse.redirect(new URL(back, url.origin), 302);
   }
-  if (!reference || !getOrder(reference)) {
+  if (!reference || !(await getOrder(reference))) {
     return NextResponse.redirect(new URL("/", url.origin), 302);
   }
 
-  setPaymentStatus(reference, "paid", "mock");
+  await setPaymentStatus(reference, "paid", "mock");
   return NextResponse.redirect(new URL(back, url.origin), 302);
 }

@@ -15,7 +15,7 @@ export async function PATCH(
     const { code } = await ctx.params;
     const body = await readBody<{ active?: boolean }>(req);
     if (!body) return fail("Taarifa hazisahihi.");
-    const promo = setPromoActive(code, body.active !== false);
+    const promo = await setPromoActive(code, body.active !== false);
     return json({ ok: true, promo });
   } catch (error) {
     return toErrorResponse(error);

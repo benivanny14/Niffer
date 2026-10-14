@@ -19,8 +19,8 @@ export async function GET(req: NextRequest) {
       .toUpperCase();
     if (!reference) return fail("Nambari ya oda inahitajika.");
 
-    const status = getPaymentStatus(reference);
-    const order = getOrder(reference);
+    const status = await getPaymentStatus(reference);
+    const order = await getOrder(reference);
     if (!order || !status) return fail("Oda haipatikani.", 404);
 
     // Rudisha tu taarifa zinazohitajika — si PII kamili ya mteja.

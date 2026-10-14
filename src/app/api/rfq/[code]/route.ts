@@ -16,7 +16,7 @@ export async function GET(
       return fail(rateLimitMessage(limited.retryAfterSec), 429);
     }
     const { code } = await ctx.params;
-    const rfq = getRfq(code);
+    const rfq = await getRfq(code);
     if (!rfq) return fail("Ombi la RFQ halipatikani.", 404);
     // Rudisha tu taarifa za msingi + bei (si PII kamili).
     return json({
@@ -53,7 +53,7 @@ export async function PATCH(
       unitQuoteTsh?: number | null;
     }>(req);
     if (!body) return fail("Taarifa za mabadiliko hazisahihi.");
-    const rfq = updateRfq(code, body);
+    const rfq = await updateRfq(code, body);
     return json({ ok: true, rfq });
   } catch (error) {
     return toErrorResponse(error);

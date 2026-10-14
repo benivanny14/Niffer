@@ -28,22 +28,22 @@ function rowToRule(row: PromoRow): PromoRule {
 }
 
 /** Promo zote (pamoja na zilizozimwa — admin). */
-export function listPromoRules(): PromoRule[] {
-  const rows = getDb()
+export async function listPromoRules(): Promise<PromoRule[]> {
+  const rows = await getDb()
     .prepare("SELECT * FROM promo_codes ORDER BY code")
     .all() as unknown as PromoRow[];
   return rows.map(rowToRule);
 }
 
 /** Tathmini msimbo dhidi ya oda (DB ndio mwanzo wa ukweli). */
-export function applyPromoFromDb(
+export async function applyPromoFromDb(
   rawCode: string,
   subtotalTsh: number,
-): PromoResult {
+): Promise<PromoResult> {
   const code = rawCode.trim().toUpperCase();
   if (!code) return { ok: false, reason: "Weka msimbo wa punguzo." };
 
-  const row = getDb()
+  const row = await getDb()
     .prepare("SELECT * FROM promo_codes WHERE code = ?")
     .get(code) as PromoRow | undefined;
   const rule = row ? rowToRule(row) : undefined;
@@ -78,13 +78,13 @@ export function applyPromoFromDb(
 
 /* ============ Usimamizi (admin) ============ */
 
-export function createPromoRule(input: {
+export async function createPromoRule(input: {
   code?: string;
   label?: string;
   percentOff?: number;
   freeShipping?: boolean;
   minSubtotalTsh?: number;
-}): PromoRule {
+}): Promise<PromoRule> {
   const code = (input.code ?? "").trim().toUpperCase();
   const label = (input.label ?? "").trim();
   if (!/^[A-Z0-9_-]{3,24}$/.test(code)) {
@@ -103,10 +103,10 @@ export function createPromoRule(input: {
   }
 
   const db = getDb();
-  const exists = db.prepare("SELECT 1 FROM promo_codes WHERE code = ?").get(code);
+  const exists = await db.prepare("SELECT 1 FROM promo_codes WHERE code = ?").get(code);
   if (exists) throw new InputError("Msimbo huo tayari upo.", 409);
 
-  db.prepare(
+  await db.prepare(
     `INSERT INTO promo_codes (
        code, label, percent_off, free_shipping, min_subtotal_tsh, active, created_at
      ) VALUES (?, ?, ?, ?, ?, 1, ?)`,
@@ -119,21 +119,21 @@ export function createPromoRule(input: {
     nowIso(),
   );
 
-  const row = db
+  const row = await db
     .prepare("SELECT * FROM promo_codes WHERE code = ?")
     .get(code) as PromoRow;
   return rowToRule(row);
 }
 
 /** Weka/ondoa uzima wa msimbo (admin). */
-export function setPromoActive(code: string, active: boolean): PromoRule {
+export async function setPromoActive(code: string, active: boolean): Promise<PromoRule> {
   const key = code.trim().toUpperCase();
   const db = getDb();
-  const result = db
+  const result = await db
     .prepare("UPDATE promo_codes SET active = ? WHERE code = ?")
     .run(active ? 1 : 0, key);
   if (result.changes === 0) throw new InputError("Msimbo haupatikani.", 404);
-  const row = db
+  const row = await db
     .prepare("SELECT * FROM promo_codes WHERE code = ?")
     .get(key) as PromoRow;
   return rowToRule(row);

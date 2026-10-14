@@ -17,8 +17,8 @@ export async function GET() {
     }
     return json({
       ok: true,
-      total: countSubscribers(),
-      subscribers: listSubscribers(),
+      total: await countSubscribers(),
+      subscribers: await listSubscribers(),
     });
   } catch (error) {
     return toErrorResponse(error);
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     }
     const body = await readBody<{ email?: string; source?: string }>(req);
     if (!body?.email) return fail("Weka anwani ya barua pepe.");
-    const result = subscribeNewsletter(
+    const result = await subscribeNewsletter(
       String(body.email),
       String(body.source ?? "site"),
     );

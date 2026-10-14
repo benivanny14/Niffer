@@ -77,7 +77,7 @@ async function ProductGrid({ searchParams }: PageProps) {
   const params = await searchParams;
   const filters = parseFilters(params);
   await connection();
-  const all = listProducts();
+  const all = await listProducts();
   const filtered = filterProducts(all, filters);
   const counts = filterCounts(all, filters);
 
@@ -99,7 +99,7 @@ async function ProductGrid({ searchParams }: PageProps) {
 
   return (
     <>
-      <div className="mt-6 rounded-[2rem] border border-cream-300 bg-cream-100 p-6 shadow-[0_18px_40px_-32px_rgba(38,28,22,0.35)] sm:p-8">
+      <div className="store-hero mt-6 rounded-[2rem] border border-cream-300 p-6 sm:p-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Duka letu</p>
@@ -116,12 +116,12 @@ async function ProductGrid({ searchParams }: PageProps) {
         </div>
       </div>
 
-      <div className="mt-8">
+      <div className="catalog-controls mt-8">
         <CatalogFilters counts={counts} />
       </div>
 
       {filtered.length > 0 ? (
-        <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <ul className="product-grid mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filtered.map((product) => (
             <li key={product.id}>
               <ProductCard product={product} />

@@ -17,7 +17,7 @@ export default function CartPage() {
   );
 
   return (
-    <div className="container-x max-w-3xl py-12 lg:py-16">
+    <div className="cart-page container-x max-w-5xl py-12 lg:py-16">
       <p className="eyebrow">Ununuzi wako</p>
       <h1 className="heading-display mt-2">
         Kikapu chako{count > 0 ? ` (${count})` : ""}

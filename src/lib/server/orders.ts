@@ -96,8 +96,8 @@ function validPayment(id: string): PaymentId {
 }
 
 /** Stoo halisi ya bidhaa zote (DB). */
-export function getStockMap(): Record<string, number> {
-  const rows = getDb()
+export async function getStockMap(): Promise<Record<string, number>> {
+  const rows = await getDb()
     .prepare("SELECT slug, qty FROM stock")
     .all() as { slug: string; qty: number }[];
   const map: Record<string, number> = {};
@@ -113,9 +113,9 @@ type CatalogItem = { slug: string; name: string; priceTsh: number };
  * Katalogi ya bei kutoka DB (bidhaa za admin zikiwemo) na fallback ya
  * katalogi ya ndani. Inatumika kuhesabu upya bei salama kwenye oda.
  */
-function pricedCatalog(): CatalogItem[] {
+async function pricedCatalog(): Promise<CatalogItem[]> {
   try {
-    const rows = getDb()
+    const rows = await getDb()
       .prepare("SELECT slug, name, price_tsh FROM products")
       .all() as { slug: string; name: string; price_tsh: number }[];
     if (rows.length > 0) {
@@ -136,9 +136,9 @@ function pricedCatalog(): CatalogItem[] {
 }
 
 /** Weka stoo ya bidhaa moja (admin). */
-export function setStockValue(slug: string, qty: number): number {
+export async function setStockValue(slug: string, qty: number): Promise<number> {
   const safe = Math.max(0, Math.floor(qty));
-  getDb()
+  await getDb()
     .prepare(
       `INSERT INTO stock (slug, qty, updated_at) VALUES (?, ?, ?)
        ON CONFLICT(slug) DO UPDATE SET qty = excluded.qty, updated_at = excluded.updated_at`,
@@ -151,10 +151,10 @@ export function setStockValue(slug: string, qty: number): number {
  * Tengeneza oda — hesabu upya bei kutoka katalogi (kuzuia udanganyifu),
  * thibitisha stoo, punguza stoo na hifadhi oda kwenye DB.
  */
-export function createOrder(input: CreateOrderInput): {
+export async function createOrder(input: CreateOrderInput): Promise<{
   order: Order;
   stock: Record<string, number>;
-} {
+}> {
   const customer = {
     name: (input.customer?.name ?? "").trim(),
     phone: (input.customer?.phone ?? "").trim(),
@@ -188,7 +188,7 @@ export function createOrder(input: CreateOrderInput): {
   if (rawLines.length > 30) throw new InputError("Oda imezidi kiwango.");
 
   // Pooza kiasi na bidhaa.
-  const catalog = pricedCatalog();
+  const catalog = await pricedCatalog();
   const lines: CartLine[] = [];
   for (const line of rawLines) {
     const qty = Math.floor(Number(line.qty));
@@ -202,7 +202,7 @@ export function createOrder(input: CreateOrderInput): {
     }
   }
 
-  const stock = getStockMap();
+  const stock = await getStockMap();
   for (const line of lines) {
     const available = stock[line.slug] ?? 0;
     if (line.qty > available) {
@@ -229,7 +229,7 @@ export function createOrder(input: CreateOrderInput): {
       : 0;
 
   const promo = input.promoCode
-    ? applyPromoFromDb(input.promoCode, subtotalTsh)
+    ? await applyPromoFromDb(input.promoCode, subtotalTsh)
     : null;
   const applied = promo && promo.ok ? promo : null;
   const discountTsh = applied
@@ -238,10 +238,10 @@ export function createOrder(input: CreateOrderInput): {
   const shippingTsh = applied?.freeShipping ? 0 : shippingBase;
 
   // Kadi ya zawadi: thibitisha na hesabu (haiwezi kuzidi jumla).
-  let giftCard = null as ReturnType<typeof getGiftCard> | null;
+  let giftCard = null as Awaited<ReturnType<typeof getGiftCard>> | null;
   let giftDiscountTsh = 0;
   if (input.giftCardCode?.trim()) {
-    giftCard = getGiftCard(input.giftCardCode.trim());
+    giftCard = await getGiftCard(input.giftCardCode.trim());
     if (!giftCard || giftCard.status !== "issued") {
       throw new InputError("Kadi ya zawadi si sahihi au tayari imetumika.");
     }
@@ -260,19 +260,18 @@ export function createOrder(input: CreateOrderInput): {
 
   const db = getDb();
   const exists = db.prepare("SELECT 1 FROM orders WHERE code = ?");
-
   let code = makeOrderCode();
-  for (let i = 0; i < 8 && exists.get(code); i += 1) code = makeOrderCode();
-  if (exists.get(code)) throw new InputError("Jaribu tena (msisitizo wa nambari).", 500);
+  for (let i = 0; i < 8 && await exists.get(code); i += 1) code = makeOrderCode();
+  if (await exists.get(code)) throw new InputError("Jaribu tena (msisitizo wa nambari).", 500);
 
   const createdAt = nowIso();
   const history: StatusEvent[] = [
     { status: "imapokelewa", at: createdAt },
   ];
 
-  db.exec("BEGIN");
   try {
-    db.prepare(
+    await db.transaction(async (tx) => {
+    await tx.prepare(
       `INSERT INTO orders (
          code, created_at, status, customer, payment, lines,
          subtotal_tsh, shipping_tsh, total_tsh, promo_code, discount_tsh, history, demo, customer_id,
@@ -296,16 +295,16 @@ export function createOrder(input: CreateOrderInput): {
       giftDiscountTsh > 0 ? giftDiscountTsh : null,
     );
 
-    db.prepare(
+    await tx.prepare(
       "INSERT INTO order_events (code, status, at) VALUES (?, ?, ?)",
     ).run(code, "imapokelewa", createdAt);
 
     // Punguza stoo — thibitisha kwamba kuna kutosha (si MAX(0, …)).
-    const dec = db.prepare(
+    const dec = tx.prepare(
       "UPDATE stock SET qty = qty - ?, updated_at = ? WHERE slug = ? AND qty >= ?",
     );
     for (const line of lines) {
-      const result = dec.run(line.qty, createdAt, line.slug, line.qty);
+      const result = await dec.run(line.qty, createdAt, line.slug, line.qty);
       if (Number(result.changes) !== 1) {
         throw new InputError(
           `Stoo ya ${line.slug} haitoshi. Jaribu tena.`,
@@ -316,7 +315,7 @@ export function createOrder(input: CreateOrderInput): {
 
     // Redeem kadi ya zawadi ndani ya transaction (haiwezi kutumika tena).
     if (giftCard) {
-      const redeemed = redeemGiftCard(giftCard.code, code);
+      const redeemed = await redeemGiftCard(giftCard.code, code, tx);
       if (!redeemed) {
         throw new InputError(
           "Kadi ya zawadi tayari imetumika na mtu mwingine.",
@@ -325,9 +324,8 @@ export function createOrder(input: CreateOrderInput): {
       }
     }
 
-    db.exec("COMMIT");
+    });
   } catch (error) {
-    db.exec("ROLLBACK");
     throw error instanceof InputError
       ? error
       : new InputError("Imeshindikana kuhifadhi oda. Jaribu tena.", 500);
@@ -335,7 +333,7 @@ export function createOrder(input: CreateOrderInput): {
 
   // Arifa kwa admin (DB + barua pepe nyepesi).
   const location = [customer.city, customer.region].filter(Boolean).join(", ");
-  notifyAdmin({
+  await notifyAdmin({
     kind: "oda",
     title: `Oda mpya ${code}`,
     body: `${customer.name} (${customer.phone}) — ${formatTsh(totalTsh)}. Bidhaa: ${lines.map((l) => `${l.slug} ×${l.qty}`).join(", ")}. Eneo: ${location}, ${customer.street}`,
@@ -343,7 +341,7 @@ export function createOrder(input: CreateOrderInput): {
   });
 
   // Arifa kwa mteja: oda yako imepokelewa.
-  notifyCustomer({
+  await notifyCustomer({
     customerId: input.customerId,
     phone: customer.phone,
     orderCode: code,
@@ -352,42 +350,42 @@ export function createOrder(input: CreateOrderInput): {
     body: `Tumepokea oda yako ya ${formatTsh(totalTsh)}. Tutakuarifu unapoanza kuandaliwa. Fuatilia hali yake kwenye ukurasa wa oda.`,
   });
 
-  const order = getOrder(code);
+  const order = await getOrder(code);
   if (!order) throw new InputError("Imeshindikana kuhifadhi oda.", 500);
 
-  return { order, stock: getStockMap() };
+  return { order, stock: await getStockMap() };
 }
 
 /** Oda zote (mpya kwanza). */
-export function listOrders(limit = 200): Order[] {
-  const rows = getDb()
+export async function listOrders(limit = 200): Promise<Order[]> {
+  const rows = await getDb()
     .prepare("SELECT * FROM orders ORDER BY created_at DESC LIMIT ?")
     .all(limit) as unknown as OrderRow[];
   return rows.map(rowToOrder);
 }
 
 /** Oda moja kwa nambari. */
-export function getOrder(code: string): Order | undefined {
+export async function getOrder(code: string): Promise<Order | undefined> {
   const key = code.trim().toUpperCase();
   if (!key) return undefined;
-  const row = getDb()
+  const row = await getDb()
     .prepare("SELECT * FROM orders WHERE code = ?")
     .get(key) as OrderRow | undefined;
   return row ? rowToOrder(row) : undefined;
 }
 
 /** Badilisha hatua ya oda (admin). */
-export function updateOrderStatus(
+export async function updateOrderStatus(
   code: string,
   status: OrderStatus,
-): Order | undefined {
+): Promise<Order | undefined> {
   if (!VALID_STATUSES.includes(status)) {
     throw new InputError("Hatua ya oda si sahihi.");
   }
   // Kughairiwa — hudumisha stoo na kadi ya zawadi.
   if (status === "ghairiwa") return cancelOrder(code);
   const key = code.trim().toUpperCase();
-  const existing = getOrder(key);
+  const existing = await getOrder(key);
   if (!existing) throw new InputError("Oda haipatikani.", 404);
 
   const at = nowIso();
@@ -397,12 +395,12 @@ export function updateOrderStatus(
   }
 
   const db = getDb();
-  db.prepare("UPDATE orders SET status = ?, history = ? WHERE code = ?").run(
+  await db.prepare("UPDATE orders SET status = ?, history = ? WHERE code = ?").run(
     status,
     JSON.stringify(history),
     key,
   );
-  db.prepare(
+  await db.prepare(
     "INSERT INTO order_events (code, status, at) VALUES (?, ?, ?)",
   ).run(key, status, at);
 
@@ -413,9 +411,9 @@ export function updateOrderStatus(
  * Ghairi oda — kurudisha stoo na (ikiwa kupo) kadi ya zawadi.
  * Inaruhusiwa tu wakati oda bado "imapokelewa" (hajanza kuandaliwa).
  */
-export function cancelOrder(code: string): Order | undefined {
+export async function cancelOrder(code: string): Promise<Order | undefined> {
   const key = code.trim().toUpperCase();
-  const existing = getOrder(key);
+  const existing = await getOrder(key);
   if (!existing) throw new InputError("Oda haipatikani.", 404);
   if (existing.demo) {
     throw new InputError("Oda ya majaribio haiwezi kughairiwa.");
@@ -430,18 +428,18 @@ export function cancelOrder(code: string): Order | undefined {
 
   const at = nowIso();
   const db = getDb();
-  db.exec("BEGIN");
   try {
+    await db.transaction(async (tx) => {
     // Rudisha stoo ya kila bidhaa.
-    const inc = db.prepare(
+    const inc = tx.prepare(
       "UPDATE stock SET qty = qty + ?, updated_at = ? WHERE slug = ?",
     );
     for (const line of existing.lines) {
-      inc.run(line.qty, at, line.slug);
+      await inc.run(line.qty, at, line.slug);
     }
     // Rudisha kadi ya zawadi (kama ilikuwa imetumika na oda hii).
     if (existing.giftCardCode) {
-      db.prepare(
+      await tx.prepare(
         `UPDATE gift_cards SET status = 'issued', redeemed_at = NULL, order_code = NULL
          WHERE code = ? AND status = 'redeemed' AND order_code = ?`,
       ).run(existing.giftCardCode, key);
@@ -451,25 +449,24 @@ export function cancelOrder(code: string): Order | undefined {
     if (!history.some((h) => h.status === "ghairiwa")) {
       history.push({ status: "ghairiwa", at });
     }
-    db.prepare(
+    await tx.prepare(
       "UPDATE orders SET status = 'ghairiwa', history = ? WHERE code = ?",
     ).run(JSON.stringify(history), key);
-    db.prepare(
+    await tx.prepare(
       "INSERT INTO order_events (code, status, at) VALUES (?, 'ghairiwa', ?)",
     ).run(key, at);
-    db.exec("COMMIT");
+    });
   } catch (error) {
-    db.exec("ROLLBACK");
     throw error;
   }
 
-  notifyAdmin({
+  await notifyAdmin({
     kind: "oda",
     title: `Oda ${key} imeghairishwa`,
     body: `Oda ${key} ya ${existing.customer.name} (${existing.customer.phone}) imeghairishwa. Stoo imerudishwa.`,
     ref: "/admin",
   });
-  notifyCustomer({
+  await notifyCustomer({
     customerId: existing.customerId,
     phone: existing.customer.phone,
     orderCode: key,
@@ -482,12 +479,12 @@ export function cancelOrder(code: string): Order | undefined {
 }
 
 /** Takwimu za dashibodi. */
-export function orderStats(): {
+export async function orderStats(): Promise<{
   orderCount: number;
   revenueTsh: number;
   pendingCount: number;
-} {
-  const row = getDb()
+}> {
+  const row = await getDb()
     .prepare(
       `SELECT COUNT(*) AS orderCount,
               COALESCE(SUM(CASE WHEN status != 'ghairiwa' THEN total_tsh ELSE 0 END), 0) AS revenueTsh,

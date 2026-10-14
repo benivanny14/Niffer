@@ -5,7 +5,7 @@ import { getDb } from "@/lib/server/db";
 /** Afya ya mfumo: DB, muda na idadi ya bidhaa. */
 export async function GET() {
   await connection();
-  const row = getDb()
+  const row = await getDb()
     .prepare("SELECT COUNT(*) AS n FROM products")
     .get() as { n?: number } | undefined;
 
@@ -13,7 +13,7 @@ export async function GET() {
     ok: true,
     service: "niffer-api",
     time: new Date().toISOString(),
-    database: "sqlite",
+    database: "postgresql",
     products: Number(row?.n ?? 0),
   });
 }

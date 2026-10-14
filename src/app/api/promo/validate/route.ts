@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       0,
       Math.floor(Number(body.shippingTsh ?? 0)),
     );
-    const result = applyPromoFromDb(String(body.code ?? ""), subtotal);
+    const result = await applyPromoFromDb(String(body.code ?? ""), subtotal);
     if (!result.ok) return json({ ok: false, error: result.reason }, 400);
     return json({
       ok: true,

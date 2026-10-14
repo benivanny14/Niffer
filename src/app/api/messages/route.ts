@@ -20,8 +20,8 @@ export async function GET(req: NextRequest) {
     const limit = intParam(req.nextUrl.searchParams.get("limit"), 100, 500);
     return json({
       ok: true,
-      messages: listMessages(limit),
-      unread: countUnreadMessages(),
+      messages: await listMessages(limit),
+      unread: await countUnreadMessages(),
     });
   } catch (error) {
     return toErrorResponse(error);
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       body?: Record<string, string>;
     }>(req);
     if (!body) return fail("Ujumbe haujajazwa vizuri.");
-    const message = addMessage(body);
+    const message = await addMessage(body);
     return json({ ok: true, message }, 201);
   } catch (error) {
     return toErrorResponse(error);
@@ -58,11 +58,11 @@ export async function PATCH(req: NextRequest) {
     }
     const body = await readBody<{ id?: string; all?: boolean }>(req);
     if (body?.all) {
-      const updated = markAllMessagesRead();
+      const updated = await markAllMessagesRead();
       return json({ ok: true, updated });
     }
     if (!body?.id) return fail("Ujumbe haupatikani.");
-    const updated = markMessageRead(body.id);
+    const updated = await markMessageRead(body.id);
     return json({ ok: true, updated });
   } catch (error) {
     return toErrorResponse(error);

@@ -16,12 +16,12 @@ export async function GET() {
     if (!customer) return fail("Ingia kwenye akaunti yako.", 401);
     return json({
       ok: true,
-      notifications: listCustomerNotifications({
+      notifications: await listCustomerNotifications({
         customerId: customer.id,
         phone: customer.phone,
         limit: 50,
       }),
-      unread: countUnreadCustomerNotifications(customer.id, customer.phone),
+      unread: await countUnreadCustomerNotifications(customer.id, customer.phone),
     });
   } catch (error) {
     return toErrorResponse(error);
@@ -39,11 +39,11 @@ export async function PATCH(req: NextRequest) {
 
     const body = await readBody<{ id?: string; all?: boolean }>(req);
     if (body?.all) {
-      const n = markAllCustomerNotificationsRead(customer.id, customer.phone);
+      const n = await markAllCustomerNotificationsRead(customer.id, customer.phone);
       return json({ ok: true, updated: n });
     }
     if (!body?.id) return fail("Arifa haijachaguliwa.");
-    const updated = markCustomerNotificationRead(body.id);
+    const updated = await markCustomerNotificationRead(body.id);
     return json({ ok: true, updated });
   } catch (error) {
     return toErrorResponse(error);

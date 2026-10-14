@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     )
       .trim()
       .toUpperCase();
-    if (!reference || !getOrder(reference)) {
+    if (!reference || !(await getOrder(reference))) {
       return fail("Oda haipatikani.", 404);
     }
 
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
           ? "failed"
           : "pending";
 
-    setPaymentStatus(reference, status, body.transactionId);
+    await setPaymentStatus(reference, status, body.transactionId);
     return json({ ok: true, reference, status });
   } catch {
     return fail("Hitilafu ya seva.", 500);

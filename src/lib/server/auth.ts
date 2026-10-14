@@ -29,18 +29,18 @@ export function checkPassword(input: string): boolean {
   return timingSafeEqual(expected, candidate);
 }
 
-function purgeExpired(): void {
-  getDb()
+async function purgeExpired(): Promise<void> {
+  await getDb()
     .prepare("DELETE FROM admin_sessions WHERE expires_at < ?")
     .run(nowIso());
 }
 
 /** Fungua session mpya; rudisha token. */
-export function createSession(): { token: string; maxAge: number } {
-  purgeExpired();
+export async function createSession(): Promise<{ token: string; maxAge: number }> {
+  await purgeExpired();
   const token = randomBytes(24).toString("hex");
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString();
-  getDb()
+  await getDb()
     .prepare(
       "INSERT INTO admin_sessions (token, expires_at) VALUES (?, ?)",
     )
@@ -53,7 +53,7 @@ export async function destroySession(): Promise<void> {
   const store = await cookies();
   const token = store.get(ADMIN_COOKIE)?.value;
   if (!token) return;
-  getDb().prepare("DELETE FROM admin_sessions WHERE token = ?").run(token);
+  await getDb().prepare("DELETE FROM admin_sessions WHERE token = ?").run(token);
   // Pia futa cookie (kupitia header) — inafanywa na route handler.
 }
 
@@ -62,8 +62,8 @@ export async function isAdminRequest(): Promise<boolean> {
   const store = await cookies();
   const token = store.get(ADMIN_COOKIE)?.value;
   if (!token) return false;
-  purgeExpired();
-  const row = getDb()
+  await purgeExpired();
+  const row = await getDb()
     .prepare("SELECT token FROM admin_sessions WHERE token = ?")
     .get(token) as { token?: string } | undefined;
   return !!row?.token;

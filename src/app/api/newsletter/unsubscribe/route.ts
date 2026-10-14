@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     }
     const body = await readBody<{ email?: string }>(req);
     if (!body?.email) return fail("Weka anwani ya barua pepe.");
-    const removed = unsubscribeNewsletter(String(body.email));
+    const removed = await unsubscribeNewsletter(String(body.email));
     return json({
       ok: true,
       removed,

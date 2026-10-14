@@ -62,7 +62,7 @@ export async function startPayment(order: Order): Promise<PaymentStart> {
   try {
     const url = await azamPayCheckout(order, cfg);
     if (url) {
-      setPaymentRef(order.code, `azam-${order.code}`);
+      await setPaymentRef(order.code, `azam-${order.code}`);
       return { mode: "gateway", redirectUrl: url };
     }
   } catch (error) {
@@ -127,8 +127,8 @@ async function azamPayCheckout(
 
 /* ============ Hali ya malipo ============ */
 
-function setPaymentRef(code: string, ref: string): void {
-  getDb()
+async function setPaymentRef(code: string, ref: string): Promise<void> {
+  await getDb()
     .prepare(
       "UPDATE orders SET payment_ref = COALESCE(payment_ref, ?) WHERE code = ?",
     )
@@ -136,12 +136,12 @@ function setPaymentRef(code: string, ref: string): void {
 }
 
 /** Badilisha hali ya malipo (pending / paid / failed). */
-export function setPaymentStatus(
+export async function setPaymentStatus(
   code: string,
   status: PaymentStatus,
   providerRef?: string,
-): boolean {
-  const result = getDb()
+): Promise<boolean> {
+  const result = await getDb()
     .prepare(
       `UPDATE orders
          SET payment_status = ?,
@@ -152,8 +152,8 @@ export function setPaymentStatus(
   return result.changes > 0;
 }
 
-export function getPaymentStatus(code: string): PaymentStatus | null {
-  const row = getDb()
+export async function getPaymentStatus(code: string): Promise<PaymentStatus | null> {
+  const row = await getDb()
     .prepare("SELECT payment_status FROM orders WHERE code = ?")
     .get(code) as { payment_status?: string | null } | undefined;
   if (!row) return null;

@@ -15,9 +15,9 @@ export async function GET(req: NextRequest) {
       if (!(await isAdminRequest())) {
         return fail("Ingia kama admin.", 401);
       }
-      return json({ ok: true, reviews: listAllReviews(limit) });
+      return json({ ok: true, reviews: await listAllReviews(limit) });
     }
-    return json({ ok: true, reviews: listReviews(limit) });
+    return json({ ok: true, reviews: await listReviews(limit) });
   } catch (error) {
     return toErrorResponse(error);
   }
@@ -38,8 +38,8 @@ export async function POST(req: NextRequest) {
       productSlug?: string;
     }>(req);
     if (!body) return fail("Hakiki haijajazwa vizuri.");
-    const review = addReview(body);
-    notifyAdmin({
+    const review = await addReview(body);
+    await notifyAdmin({
       kind: "hakiki",
       title: "Hakiki mpya inasubiri",
       body: `${review.customerName} (${review.rating}★): ${review.comment.slice(0, 120)}…`,

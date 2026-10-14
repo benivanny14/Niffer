@@ -14,9 +14,9 @@ export async function POST(req: NextRequest) {
     const reference = (body?.reference ?? "").trim().toUpperCase();
     if (!reference) return fail("Nambari ya oda inahitajika.");
 
-    const order = getOrder(reference);
+    const order = await getOrder(reference);
     if (!order) return fail("Oda haipatikani.", 404);
-    if (getPaymentStatus(reference) === "paid") {
+    if (await getPaymentStatus(reference) === "paid") {
       return fail("Malipo tayari yamefanikiwa kwa oda hii.", 409);
     }
 

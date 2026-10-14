@@ -33,7 +33,7 @@ const benefits = [
 export default async function WholesalePage() {
   // Bidhaa za DB kwa kikokotoo na fomu ya RFQ.
   await connection();
-  const products = listProducts();
+  const products = await listProducts();
 
   return (
     <div className="container-x py-12 lg:py-16">

@@ -234,7 +234,7 @@ export default function CheckoutPage() {
     "w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
 
   return (
-    <div className="container-x py-10 lg:py-14">
+    <div className="checkout-page container-x py-10 lg:py-14">
       <h1 className="heading-display">Malipo</h1>
       <p className="mt-2 text-ink-500">
         Jaza taarifa zako ili tukuletee bidhaa haraka iwezekanavyo.

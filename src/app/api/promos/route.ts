@@ -9,7 +9,7 @@ export async function GET() {
     if (!(await isAdminRequest())) {
       return fail("Ingia kama admin.", 401);
     }
-    return json({ ok: true, promos: listPromoRules() });
+    return json({ ok: true, promos: await listPromoRules() });
   } catch (error) {
     return toErrorResponse(error);
   }
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       minSubtotalTsh?: number;
     }>(req);
     if (!body) return fail("Taarifa za msimbo hazisahihi.");
-    const promo = createPromoRule(body);
+    const promo = await createPromoRule(body);
     return json({ ok: true, promo }, 201);
   } catch (error) {
     return toErrorResponse(error);

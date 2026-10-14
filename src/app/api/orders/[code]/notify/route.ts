@@ -18,7 +18,7 @@ export async function POST(
       return fail("Ingia kama admin kutuma ujumbe.", 401);
     }
     const { code } = await ctx.params;
-    const order = getOrder(code);
+    const order = await getOrder(code);
     if (!order) return fail("Oda haipatikani.", 404);
 
     const body = await readBody<{
@@ -31,7 +31,7 @@ export async function POST(
       throw new InputError("Weka kichwa cha ujumbe.");
     }
 
-    notifyCustomer({
+    await notifyCustomer({
       customerId: order.customerId,
       phone: order.customer.phone,
       orderCode: order.code,

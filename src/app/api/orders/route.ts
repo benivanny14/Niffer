@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
       return fail("Ingia kama admin kuona oda zote.", 401);
     }
     const limit = intParam(req.nextUrl.searchParams.get("limit"), 200, 1000);
-    return json({ ok: true, orders: listOrders(limit) });
+    return json({ ok: true, orders: await listOrders(limit) });
   } catch (error) {
     return toErrorResponse(error);
   }
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     if (!body) return fail("Taarifa za oda hazisahihi.");
     // Ikiwa mteja ameingia,unganisha oda na akaunti yake.
     const customer = await currentCustomer();
-    const { order, stock } = createOrder({
+    const { order, stock } = await createOrder({
       ...body,
       customerId: customer?.id,
     });

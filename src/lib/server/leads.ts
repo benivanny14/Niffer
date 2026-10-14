@@ -24,13 +24,13 @@ export type MessageRecord = {
   createdAt: string;
 };
 
-export function addMessage(input: {
+export async function addMessage(input: {
   kind?: MessageKind;
   name?: string;
   phone?: string;
   email?: string;
   body?: Record<string, string>;
-}): MessageRecord {
+}): Promise<MessageRecord> {
   const name = (input.name ?? "").trim();
   const phone = (input.phone ?? "").trim();
   const email = (input.email ?? "").trim();
@@ -60,7 +60,7 @@ export function addMessage(input: {
     createdAt: nowIso(),
   };
 
-  getDb()
+  await getDb()
     .prepare(
       `INSERT INTO messages (id, kind, name, phone, email, body, status, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -79,8 +79,8 @@ export function addMessage(input: {
   return record;
 }
 
-export function listMessages(limit = 100): MessageRecord[] {
-  const rows = getDb()
+export async function listMessages(limit = 100): Promise<MessageRecord[]> {
+  const rows = await getDb()
     .prepare("SELECT * FROM messages ORDER BY created_at DESC LIMIT ?")
     .all(limit) as unknown as {
     id: string;
@@ -105,48 +105,48 @@ export function listMessages(limit = 100): MessageRecord[] {
   }));
 }
 
-export function countUnreadMessages(): number {
-  const row = getDb()
+export async function countUnreadMessages(): Promise<number> {
+  const row = await getDb()
     .prepare("SELECT COUNT(*) AS n FROM messages WHERE status = 'new'")
     .get() as { n?: number } | undefined;
   return Number(row?.n ?? 0);
 }
 
 /** Weka ujumbe kuwa umesomwa (admin). Rudisha true kama umebadilika. */
-export function markMessageRead(messageId: string): boolean {
-  const result = getDb()
+export async function markMessageRead(messageId: string): Promise<boolean> {
+  const result = await getDb()
     .prepare(
       "UPDATE messages SET status = 'read' WHERE id = ? AND status = 'new'",
     )
     .run(messageId);
-  return Number(result.changes) > 0;
+  return Number((await result).changes) > 0;
 }
 
 /** Weka ujumbe WOTE kuwa wamesomwa (admin bulk). Rudisha idadi. */
-export function markAllMessagesRead(): number {
-  const result = getDb()
+export async function markAllMessagesRead(): Promise<number> {
+  const result = await getDb()
     .prepare("UPDATE messages SET status = 'read' WHERE status = 'new'")
     .run();
-  return Number(result.changes);
+  return Number((await result).changes);
 }
 
 /* ============ Jarida (newsletter) ============ */
 
-export function subscribeNewsletter(
+export async function subscribeNewsletter(
   rawEmail: string,
   source = "site",
-): { email: string; created: boolean } {
+): Promise<{ email: string; created: boolean }> {
   const email = rawEmail.trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
     throw new InputError("Weka anwani sahihi ya barua pepe.");
   }
-  const existing = getDb()
+  const existing = await getDb()
     .prepare("SELECT email FROM newsletter WHERE email = ?")
     .get(email) as { email?: string } | undefined;
 
   if (existing?.email) return { email, created: false };
 
-  getDb()
+  await getDb()
     .prepare(
       "INSERT INTO newsletter (id, email, source, created_at) VALUES (?, ?, ?, ?)",
     )
@@ -155,31 +155,31 @@ export function subscribeNewsletter(
   return { email, created: true };
 }
 
-export function listSubscribers(limit = 500): {
+export async function listSubscribers(limit = 500): Promise<{
   email: string;
   createdAt: string;
-}[] {
-  const rows = getDb()
+}[]> {
+  const rows = await getDb()
     .prepare("SELECT email, created_at FROM newsletter ORDER BY created_at DESC LIMIT ?")
     .all(limit) as unknown as { email: string; created_at: string }[];
   return rows.map((r) => ({ email: r.email, createdAt: r.created_at }));
 }
 
-export function countSubscribers(): number {
-  const row = getDb()
+export async function countSubscribers(): Promise<number> {
+  const row = await getDb()
     .prepare("SELECT COUNT(*) AS n FROM newsletter")
     .get() as { n?: number } | undefined;
   return Number(row?.n ?? 0);
 }
 
 /** Ondoa barua pepe kutoka jarida (jiondoe). Rudisha true kama ilifutwa. */
-export function unsubscribeNewsletter(rawEmail: string): boolean {
+export async function unsubscribeNewsletter(rawEmail: string): Promise<boolean> {
   const email = rawEmail.trim().toLowerCase();
   if (!email) return false;
-  const result = getDb()
+  const result = await getDb()
     .prepare("DELETE FROM newsletter WHERE email = ?")
     .run(email);
-  return Number(result.changes) > 0;
+  return Number((await result).changes) > 0;
 }
 
 /* ============ Kadi za zawadi ============ */
@@ -224,11 +224,11 @@ function giftCode(): string {
   return out;
 }
 
-export function issueGiftCard(input: {
+export async function issueGiftCard(input: {
   amountTsh?: number;
   recipient?: string;
   message?: string;
-}): GiftCard {
+}): Promise<GiftCard> {
   const amount = Math.floor(Number(input.amountTsh ?? 0));
   if (!Number.isFinite(amount) || amount < 1000 || amount > 1_000_000) {
     throw new InputError("Chagua thamani sahihi ya kadi.");
@@ -237,11 +237,11 @@ export function issueGiftCard(input: {
   const db = getDb();
   const exists = db.prepare("SELECT 1 FROM gift_cards WHERE code = ?");
   let code = giftCode();
-  for (let i = 0; i < 10 && exists.get(code); i += 1) code = giftCode();
+  for (let i = 0; i < 10 && await exists.get(code); i += 1) code = giftCode();
 
   const createdAt = nowIso();
   const expiresAt = giftExpiresAt(createdAt);
-  db.prepare(
+  await db.prepare(
     `INSERT INTO gift_cards (code, amount_tsh, recipient, message, status, created_at, expires_at)
      VALUES (?, ?, ?, ?, 'issued', ?, ?)`,
   ).run(
@@ -264,8 +264,8 @@ export function issueGiftCard(input: {
   };
 }
 
-export function listGiftCards(limit = 100): GiftCard[] {
-  const rows = getDb()
+export async function listGiftCards(limit = 100): Promise<GiftCard[]> {
+  const rows = await getDb()
     .prepare("SELECT * FROM gift_cards ORDER BY created_at DESC LIMIT ?")
     .all(limit) as unknown as {
     code: string;
@@ -295,10 +295,10 @@ export function listGiftCards(limit = 100): GiftCard[] {
 }
 
 /** Kadi moja kwa msimbo (redeem). Hurudisha "expired" kama muda imeisha. */
-export function getGiftCard(code: string): GiftCard | undefined {
+export async function getGiftCard(code: string): Promise<GiftCard | undefined> {
   const key = code.trim().toUpperCase();
   if (!key) return undefined;
-  const row = getDb()
+  const row = await getDb()
     .prepare("SELECT * FROM gift_cards WHERE code = ?")
     .get(key) as
     | {
@@ -317,7 +317,7 @@ export function getGiftCard(code: string): GiftCard | undefined {
   if (isGiftExpired(status, row.created_at, row.expires_at)) {
     // Weka "expired" kwenye DB kwa kudumu (lazy persist).
     status = "expired";
-    getDb()
+    await getDb()
       .prepare(
         "UPDATE gift_cards SET status = 'expired' WHERE code = ? AND status = 'issued'",
       )
@@ -336,8 +336,8 @@ export function getGiftCard(code: string): GiftCard | undefined {
 }
 
 /** Weka kadi kuwa imetumika (ndani ya transaction ya oda). Rudisha true kama imefanikiwa. */
-export function redeemGiftCard(code: string, orderCode: string): boolean {
-  const result = getDb()
+export async function redeemGiftCard(code: string, orderCode: string, tx?: ReturnType<typeof getDb>): Promise<boolean> {
+  const result = await (tx ?? getDb())
     .prepare(
       `UPDATE gift_cards
          SET status = 'redeemed', redeemed_at = ?, order_code = ?
@@ -345,7 +345,7 @@ export function redeemGiftCard(code: string, orderCode: string): boolean {
          AND (expires_at IS NULL OR expires_at > ?)`,
     )
     .run(nowIso(), orderCode, code.trim().toUpperCase(), nowIso());
-  return Number(result.changes) > 0;
+  return Number((await result).changes) > 0;
 }
 
 /* ============ Hakiki ============ */
@@ -361,13 +361,13 @@ export type StoredReview = {
   createdAt: string | null;
 };
 
-export function addReview(input: {
+export async function addReview(input: {
   customerName?: string;
   location?: string;
   rating?: number;
   comment?: string;
   productSlug?: string;
-}): StoredReview {
+}): Promise<StoredReview> {
   const customerName = (input.customerName ?? "").trim();
   const comment = (input.comment ?? "").trim();
   const rating = Math.min(5, Math.max(1, Math.floor(Number(input.rating ?? 5))));
@@ -389,7 +389,7 @@ export function addReview(input: {
     createdAt: nowIso(),
   };
 
-  getDb()
+  await getDb()
     .prepare(
       `INSERT INTO reviews (id, customer_name, location, rating, comment, product_slug, status, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -408,8 +408,8 @@ export function addReview(input: {
   return record;
 }
 
-export function listReviews(limit = 200): StoredReview[] {
-  const rows = getDb()
+export async function listReviews(limit = 200): Promise<StoredReview[]> {
+  const rows = await getDb()
     .prepare(
       `SELECT * FROM reviews WHERE status = 'approved'
        ORDER BY COALESCE(created_at, '') DESC, id DESC LIMIT ?`,
@@ -460,8 +460,8 @@ function mapReviewRows(rows: {
 }
 
 /** Hakiki zote — admin (pamoja na pending/rejected). */
-export function listAllReviews(limit = 300): StoredReview[] {
-  const rows = getDb()
+export async function listAllReviews(limit = 300): Promise<StoredReview[]> {
+  const rows = await getDb()
     .prepare(
       `SELECT * FROM reviews
        ORDER BY COALESCE(created_at, '') DESC, id DESC LIMIT ?`,
@@ -471,9 +471,9 @@ export function listAllReviews(limit = 300): StoredReview[] {
 }
 
 /** Sukuma upya rating/jumla ya hakiki kwenye bidhaa (DB). */
-function recomputeProductRating(productSlug: string): void {
+async function recomputeProductRating(productSlug: string): Promise<void> {
   if (!productSlug) return;
-  const row = getDb()
+  const row = await getDb()
     .prepare(
       `SELECT AVG(rating) AS avg_rating, COUNT(*) AS n FROM reviews
        WHERE product_slug = ? AND status = 'approved'`,
@@ -483,36 +483,36 @@ function recomputeProductRating(productSlug: string): void {
     | undefined;
   const count = Number(row?.n ?? 0);
   const avg = count > 0 ? Math.round(((row?.avg_rating ?? 0) + Number.EPSILON) * 10) / 10 : 0;
-  getDb()
+  await getDb()
     .prepare("UPDATE products SET rating = ?, review_count = ? WHERE slug = ?")
     .run(avg, count, productSlug);
 }
 
 /** Idhisha/kataa hakiki (admin). */
-export function setReviewStatus(
+export async function setReviewStatus(
   reviewId: string,
   status: "approved" | "rejected",
-): StoredReview {
-  const existing = getDb()
+): Promise<StoredReview> {
+  const existing = await getDb()
     .prepare("SELECT product_slug FROM reviews WHERE id = ?")
     .get(reviewId) as { product_slug?: string } | undefined;
-  const result = getDb()
+  const result = await getDb()
     .prepare("UPDATE reviews SET status = ? WHERE id = ?")
     .run(status, reviewId);
-  if (result.changes === 0) {
+  if ((await result).changes === 0) {
     throw new InputError("Hakiki haipatikani.", 404);
   }
   // Sasisha rating ya bidhaa kutoka hakiki zilizoidhishwa.
-  recomputeProductRating(existing?.product_slug ?? "");
-  const row = getDb()
+  await recomputeProductRating(existing?.product_slug ?? "");
+  const row = await getDb()
     .prepare("SELECT * FROM reviews WHERE id = ?")
     .get(reviewId) as Parameters<typeof mapReviewRows>[0][number];
   return mapReviewRows([row])[0];
 }
 
 /** Idadi ya hakiki zinazosubiri uidhinishaji (admin badge). */
-export function countPendingReviews(): number {
-  const row = getDb()
+export async function countPendingReviews(): Promise<number> {
+  const row = await getDb()
     .prepare("SELECT COUNT(*) AS n FROM reviews WHERE status = 'pending'")
     .get() as { n?: number } | undefined;
   return Number(row?.n ?? 0);

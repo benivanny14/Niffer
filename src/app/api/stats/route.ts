@@ -21,7 +21,7 @@ export async function GET() {
       return fail("Ingia kama admin kuona takwimu.", 401);
     }
 
-    const stock = getStockMap();
+    const stock = await getStockMap();
     const lowStock = Object.entries(stock)
       .filter(([, qty]) => qty <= 10)
       .map(([slug, qty]) => ({ slug, qty }))
@@ -30,7 +30,7 @@ export async function GET() {
     // Bidhaa zilizouzwa (jumla ya qty kwenye oda zote).
     const soldBySlug: Record<string, number> = {};
     try {
-      const rows = getDb()
+      const rows = await getDb()
         .prepare(
           `SELECT lines FROM orders WHERE demo = 0`,
         )
@@ -51,18 +51,18 @@ export async function GET() {
 
     return json({
       ok: true,
-      orders: orderStats(),
-      catalog: catalogStats(),
+      orders: await orderStats(),
+      catalog: await catalogStats(),
       messages: {
-        total: listMessages(500).length,
-        unread: countUnreadMessages(),
+        total: (await listMessages(500)).length,
+        unread: await countUnreadMessages(),
       },
-      subscribers: countSubscribers(),
-      giftCards: listGiftCards(200).length,
+      subscribers: await countSubscribers(),
+      giftCards: (await listGiftCards(200)).length,
       lowStock,
       soldBySlug,
-      reviews: { pending: countPendingReviews() },
-      notifications: { unread: countUnreadNotifications() },
+      reviews: { pending: await countPendingReviews() },
+      notifications: { unread: await countUnreadNotifications() },
     });
   } catch (error) {
     return toErrorResponse(error);

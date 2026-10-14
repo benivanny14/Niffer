@@ -1,6 +1,6 @@
 # Niffer Cosmetics
 
-Tovuti ya e-commerce ya Niffer Cosmetics — Next.js 16 (App Router, Turbopack), React 19, Tailwind 4, SQLite (`node:sqlite`). Kiolesura chote ni Kiswahili.
+Tovuti ya e-commerce ya Niffer Cosmetics — Next.js 16 (App Router, Turbopack), React 19, Tailwind 4, PostgreSQL kupitia Neon. Kiolesura chote ni Kiswahili.
 
 ## Anza Hapa
 
@@ -18,7 +18,7 @@ Weka faili `.env.local` (ona `.env.example`):
 | Kiableu | Maelezo |
 | --- | --- |
 | `ADMIN_PASSWORD` | Nenosiri la admin. **Lazima liwekwe** kwa `/admin`. |
-| `DATABASE_URL` | Njia ya DB ya SQLite. Chaguomsingi: `.data/niffer.db`. |
+| `DATABASE_URL` | Connection string ya Neon PostgreSQL (tumia pooled hostname kwa Vercel). |
 | `RESEND_API_KEY` | (Hiari) Ujumbe wa barua pepe — akaunti & reset ya nywila. |
 | `EMAIL_FROM` | (Hiari) Anwani ya mtumaji wa barua pepe. |
 
@@ -41,7 +41,18 @@ Nenda `/admin` kisha ingia kwa `ADMIN_PASSWORD`. Unaweza kusimamia bidhaa, oda, 
 ## muundo / teknolojia
 
 - **Next.js 16.4** — App Router, `cacheComponents`, Partial Prerendering
-- **SQLite** (`node:sqlite`) — DB ndio mwanzo wa ukweli (bidhaa, oda, stoo, kadi, wateja)
+- **Neon PostgreSQL** (`@neondatabase/serverless`) — schema huundwa na kuwekwa seed wakati app inaanza kuunganisha DB.
 - **Tailwind CSS 4** — muundo wa kiolesura
 - **Vitest** — majaribio ya kipengele
 - Malipo: **AzamPay** (malipo ya mtandaoni) + COD
+
+## Neon na Vercel
+
+1. Tengeneza PostgreSQL project kwenye Neon, nakili pooled connection string, na uiweke kama `DATABASE_URL` kwenye `.env.local` kwa local development.
+2. Kwenye Vercel, ongeza `DATABASE_URL` kwenye Project Settings → Environment Variables kwa Production (na Preview ikiwa unaitumia).
+3. Deploy. App huunda tables na indexes kwa `ensureDatabaseReady()` na huingiza bidhaa, hakiki na promo za awali mara ya kwanza.
+4. Ukitaka kuhamisha data ya SQLite ya zamani, export/import yake ni hatua tofauti; schema initialization haileti oda, wateja au data nyingine zilizopo kutoka faili la SQLite.
+
+## Cloudinary
+
+Admin uploads use signed uploads through the server-side `cloudinary` SDK. Set `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` in `.env.local` and Vercel Environment Variables. The upload preset is not used. Product image delivery URLs are stored with `f_auto,q_auto`; the frontend renders those URLs directly.

@@ -17,7 +17,7 @@ export default async function PaymentFailedPage({ searchParams }: PageProps) {
   const { reference = "" } = await searchParams;
   const code = reference.trim().toUpperCase();
   await connection();
-  const order = code ? getOrder(code) : undefined;
+  const order = code ? await getOrder(code) : undefined;
 
   const waText = order
     ? `Habari ${site.name}, malipo ya oda ${order.code} yameshindikana. Ninaomba msaada.`

@@ -24,14 +24,14 @@ const id = (prefix: string) =>
   `${prefix}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
 /** Hifadhi arifa (dashboard) — hairudishi hitilafu kwa msikilizaji. */
-export function notify(input: {
+export async function notify(input: {
   kind?: NotificationKind;
   title: string;
   body?: string;
   ref?: string;
-}): void {
+}): Promise<void> {
   try {
-    getDb()
+    await getDb()
       .prepare(
         `INSERT INTO notifications (id, kind, title, body, ref, status, created_at)
          VALUES (?, ?, ?, ?, ?, 'new', ?)`,
@@ -49,8 +49,8 @@ export function notify(input: {
   }
 }
 
-export function listNotifications(limit = 100): Notification[] {
-  const rows = getDb()
+export async function listNotifications(limit = 100): Promise<Notification[]> {
+  const rows = await getDb()
     .prepare("SELECT * FROM notifications ORDER BY created_at DESC LIMIT ?")
     .all(limit) as unknown as {
     id: string;
@@ -72,19 +72,19 @@ export function listNotifications(limit = 100): Notification[] {
   }));
 }
 
-export function countUnreadNotifications(): number {
-  const row = getDb()
+export async function countUnreadNotifications(): Promise<number> {
+  const row = await getDb()
     .prepare("SELECT COUNT(*) AS n FROM notifications WHERE status = 'new'")
     .get() as { n?: number } | undefined;
   return Number(row?.n ?? 0);
 }
 
 /** Weka arifa kuwa imesomwa (admin). */
-export function markNotificationRead(notificationId: string): boolean {
-  const result = getDb()
+export async function markNotificationRead(notificationId: string): Promise<boolean> {
+  const result = await getDb()
     .prepare("UPDATE notifications SET status = 'read' WHERE id = ?")
     .run(notificationId);
-  return result.changes > 0;
+  return (await result).changes > 0;
 }
 
 /* ============ Barua pepe (Resend — nyepesi, hiari) ============ */
@@ -115,13 +115,13 @@ async function sendAdminEmail(title: string, body: string): Promise<void> {
 }
 
 /** Tuma arifa: DB + (nyepesi) barua pepe kwa admin. */
-export function notifyAdmin(input: {
+export async function notifyAdmin(input: {
   kind?: NotificationKind;
   title: string;
   body?: string;
   ref?: string;
-}): void {
-  notify(input);
+}): Promise<void> {
+  await notify(input);
   void sendAdminEmail(input.title, [input.body, input.ref ? `Ref: ${input.ref}` : ""].filter(Boolean).join("\n"));
 }
 

@@ -41,7 +41,7 @@ const bundles = [
 export default async function OffersPage() {
   // Ofa kutoka DB (bei za admin) — dynamic render.
   await connection();
-  const products = listProducts();
+  const products = await listProducts();
   const onSale = products.filter((p) => p.compareAtTsh);
   const fresh = products.filter((p) => p.badges.includes("new"));
 

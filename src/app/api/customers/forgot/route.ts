@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     const body = await readBody<{ phone?: string }>(req);
     if (!body?.phone?.trim()) return fail("Weka namba yako ya simu.");
 
-    const result = createPasswordReset(body.phone);
+    const result = await createPasswordReset(body.phone);
     if (result?.customer.email) {
       const sent = await sendCustomerEmail(
         result.customer.email,
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       );
       if (!sent) {
         // Barua pepe haijaweza kutumwa — arifu admin ili amuite mteja.
-        notifyAdmin({
+        await notifyAdmin({
           kind: "info",
           title: "Ombi la kubadili nywila",
           body: `${result.customer.name} (${result.customer.phone}) anaomba kubadili nywila. Barua pepe haijatumwa — piga simu kumsaidia. Msimbo: ${result.code}`,

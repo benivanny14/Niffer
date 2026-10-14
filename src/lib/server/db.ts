@@ -1,6 +1,4 @@
-import fs from "node:fs";
-import path from "node:path";
-import { DatabaseSync } from "node:sqlite";
+﻿import { Pool, type PoolClient, type QueryResultRow } from "@neondatabase/serverless";
 import {
   products as catalogProducts,
   reviews as catalogReviews,
@@ -8,11 +6,8 @@ import {
 import { promoCodes } from "@/lib/promo";
 
 /**
- * Database (SQLite kupitia `node:sqlite` ya Node 22+ — hakuna dependency ya ziada).
- *
- * - Faili: `.data/niffer.db` (au kutoka `NIFFER_DB_FILE`)
- * - Muunganiko mmoja umehifadhiwa kwenye `globalThis` uvumilie hot-reload.
- * - Kila moduli ya server inapiga `getDb()` kupata muunganiko huo.
+ * Neon PostgreSQL connection pool. All query methods are asynchronous.
+ * Runtime requires DATABASE_URL; schema initialization runs once per instance.
  */
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS products (
@@ -65,7 +60,7 @@ CREATE TABLE IF NOT EXISTS orders (
 );
 
 CREATE TABLE IF NOT EXISTS order_events (
-  id       INTEGER PRIMARY KEY AUTOINCREMENT,
+  id       BIGSERIAL PRIMARY KEY,
   code     TEXT NOT NULL,
   status   TEXT NOT NULL,
   at       TEXT NOT NULL
@@ -230,176 +225,136 @@ export function nul<T>(value: T | undefined | null): T | null {
   return value === undefined ? null : value;
 }
 
-function openDatabase(): DatabaseSync {
-  const file =
-    process.env.NIFFER_DB_FILE ||
-    path.join(process.cwd(), ".data", "niffer.db");
+type DbRow = Record<string, unknown>;
 
-  fs.mkdirSync(path.dirname(file), { recursive: true });
+type DbResult<T extends DbRow = DbRow> = { rows: T[]; rowCount: number | null };
 
-  const db = new DatabaseSync(file);
-  db.exec("PRAGMA journal_mode = WAL;");
-  db.exec("PRAGMA foreign_keys = ON;");
-  db.exec(SCHEMA);
-  migrate(db);
-  seed(db);
-  return db;
+function toPostgresPlaceholders(statement: string): string {
+  let index = 0;
+  return statement.replace(/\?/g, () => `$${++index}`);
 }
 
-/** Ongeza safu mpya kwa jedwali lililokuwepo (hatua ya usalama kwa DB za zamani). */
-function migrate(db: DatabaseSync): void {
-  const columns = (table: string) =>
-    (db.prepare(`PRAGMA table_info(${table})`).all() as unknown as {
-      name: string;
-    }[]).map((c) => c.name);
+export class NeonDatabase {
+  constructor(
+    private readonly pool: Pool,
+    private readonly client?: PoolClient,
+    private readonly skipReady = false,
+  ) {}
 
-  const orders = columns("orders");
-  if (!orders.includes("customer_id")) {
-    db.exec("ALTER TABLE orders ADD COLUMN customer_id TEXT");
-  }
-  if (!orders.includes("payment_status")) {
-    db.exec("ALTER TABLE orders ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'pending'");
-  }
-  if (!orders.includes("payment_ref")) {
-    db.exec("ALTER TABLE orders ADD COLUMN payment_ref TEXT");
-  }
-  if (!orders.includes("gift_card_code")) {
-    db.exec("ALTER TABLE orders ADD COLUMN gift_card_code TEXT");
-  }
-  if (!orders.includes("gift_discount_tsh")) {
-    db.exec("ALTER TABLE orders ADD COLUMN gift_discount_tsh INTEGER");
+  private async ready() {
+    if (!this.skipReady) await ensureDatabaseReady();
   }
 
-  const productCols = columns("products");
-  if (!productCols.includes("region")) {
-    db.exec("ALTER TABLE products ADD COLUMN region TEXT NOT NULL DEFAULT ''");
-  }
-  if (!productCols.includes("city")) {
-    db.exec("ALTER TABLE products ADD COLUMN city TEXT NOT NULL DEFAULT ''");
+  async query<T extends DbRow = DbRow>(statement: string, values: unknown[] = []): Promise<DbResult<T>> {
+    await this.ready();
+    return (this.client ?? this.pool).query<T>(toPostgresPlaceholders(statement), values);
   }
 
-  const giftCols = columns("gift_cards");
-  if (!giftCols.includes("redeemed_at")) {
-    db.exec("ALTER TABLE gift_cards ADD COLUMN redeemed_at TEXT");
-  }
-  if (!giftCols.includes("order_code")) {
-    db.exec("ALTER TABLE gift_cards ADD COLUMN order_code TEXT");
-  }
-  if (!giftCols.includes("expires_at")) {
-    db.exec("ALTER TABLE gift_cards ADD COLUMN expires_at TEXT");
+  prepare(statement: string) {
+    return {
+      all: async (...values: unknown[]) => (await this.query(statement, values)).rows,
+      get: async (...values: unknown[]) => (await this.query(statement, values)).rows[0],
+      run: async (...values: unknown[]) => {
+        const result = await this.query(statement, values);
+        return { changes: result.rowCount ?? 0 };
+      },
+    };
   }
 
-  // Kadi zilizotolewa kabla ya kipengele cha kuisha muda — wapa miaka 1.
-  db.exec(
-    `UPDATE gift_cards SET expires_at = datetime(created_at, '+1 year')
-     WHERE expires_at IS NULL`,
-  );
+  async exec(statement: string): Promise<void> {
+    await this.ready();
+    await (this.client ?? this.pool).query(statement);
+  }
 
-  // Promo codes: ingiza katalogi ya ndani mara moja (seed) — DB ndio mwanzo
-  // wa ukweli baada ya admin kubadilisha au kuzima msimbo.
-  const promoInsert = db.prepare(
-    `INSERT INTO promo_codes (
-       code, label, percent_off, free_shipping, min_subtotal_tsh, active, created_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?)
-     ON CONFLICT(code) DO NOTHING`,
-  );
-  for (const p of promoCodes) {
-    promoInsert.run(
-      p.code,
-      p.label,
-      p.percentOff ?? null,
-      p.freeShipping ? 1 : 0,
-      p.minSubtotalTsh ?? null,
-      p.active ? 1 : 0,
-      nowIso(),
+  async transaction<T>(work: (tx: NeonDatabase) => Promise<T>): Promise<T> {
+    await this.ready();
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      const result = await work(new NeonDatabase(this.pool, client, true));
+      await client.query('COMMIT');
+      return result;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+}
+
+type DbGlobals = typeof globalThis & {
+  __nifferPool?: Pool;
+  __nifferDb?: NeonDatabase;
+  __nifferDbReady?: Promise<void>;
+};
+
+function getPool(): Pool {
+  const globals = globalThis as DbGlobals;
+  if (globals.__nifferPool) return globals.__nifferPool;
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) throw new Error('DATABASE_URL haijawekwa.');
+  const pool = new Pool({ connectionString, max: 5, idleTimeoutMillis: 5_000, connectionTimeoutMillis: 10_000 });
+  globals.__nifferPool = pool;
+  return pool;
+}
+
+export function getDb(): NeonDatabase {
+  const globals = globalThis as DbGlobals;
+  return (globals.__nifferDb ??= new NeonDatabase(getPool()));
+}
+
+/** Create PostgreSQL schema and seed once per warm serverless instance. */
+export async function ensureDatabaseReady(): Promise<void> {
+  const globals = globalThis as DbGlobals;
+  if (globals.__nifferDbReady) return globals.__nifferDbReady;
+  const pool = getPool();
+  globals.__nifferDbReady = (async () => {
+    const statements = SCHEMA.split(';').map((sql) => sql.trim()).filter(Boolean);
+    for (const statement of statements) await pool.query(statement);
+    await migrate(pool);
+    await seed(pool);
+  })().catch((error) => {
+    globals.__nifferDbReady = undefined;
+    throw error;
+  });
+  return globals.__nifferDbReady;
+}
+
+async function migrate(pool: Pool): Promise<void> {
+  await pool.query(`UPDATE gift_cards
+    SET expires_at = (created_at::timestamptz + INTERVAL '1 year')::text
+    WHERE expires_at IS NULL`);
+  for (const promo of promoCodes) {
+    await pool.query(
+      `INSERT INTO promo_codes (code, label, percent_off, free_shipping, min_subtotal_tsh, active, created_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (code) DO NOTHING`,
+      [promo.code, promo.label, promo.percentOff ?? null, promo.freeShipping ? 1 : 0, promo.minSubtotalTsh ?? null, promo.active ? 1 : 0, nowIso()],
     );
   }
 }
 
-/** Muunganiko wa pamoja (singleton). */
-export function getDb(): DatabaseSync {
-  const store = globalThis as unknown as { __nifferDb?: DatabaseSync };
-  if (store.__nifferDb) return store.__nifferDb;
-  const db = openDatabase();
-  store.__nifferDb = db;
-  return db;
-}
-
-/** Weka katalogi ndani ya DB (sync kila kuanza — repo ndio mwanzo wa ukweli). */
-function seed(db: DatabaseSync) {
+async function seed(pool: Pool): Promise<void> {
   const now = nowIso();
-  const upsert = db.prepare(`
-    INSERT INTO products (
-      slug, id, name, category, price_tsh, compare_at_tsh,
-      short_description, description, ingredients, how_to_use,
-      rating, review_count, stock_base, badges, image, image_alt,
-      region, city, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    /* Usibadilishe bidhaa zilizopo — DB ndio mwanzo wa ukweli baada ya
-       admin kuhariri (bei/jina/picha). Bidhaa mpya zinaingizwa mara moja. */
-    ON CONFLICT(slug) DO NOTHING
-  `);
-
   for (const p of catalogProducts) {
-    upsert.run(
-      p.slug,
-      p.id,
-      p.name,
-      p.category,
-      p.priceTsh,
-      nul(p.compareAtTsh),
-      p.shortDescription,
-      p.description,
-      p.ingredients,
-      p.howToUse,
-      p.rating,
-      p.reviewCount,
-      p.stock,
-      JSON.stringify(p.badges ?? []),
-      p.image,
-      p.imageAlt,
-      p.region ?? "",
-      p.city ?? "",
-      now,
+    await pool.query(
+      `INSERT INTO products (slug,id,name,category,price_tsh,compare_at_tsh,short_description,description,ingredients,how_to_use,rating,review_count,stock_base,badges,image,image_alt,region,city,updated_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
+       ON CONFLICT (slug) DO NOTHING`,
+      [p.slug,p.id,p.name,p.category,p.priceTsh,nul(p.compareAtTsh),p.shortDescription,p.description,p.ingredients,p.howToUse,p.rating,p.reviewCount,p.stock,JSON.stringify(p.badges ?? []),p.image,p.imageAlt,p.region ?? '',p.city ?? '',now],
     );
+    if (p.region) await pool.query("UPDATE products SET region=$1,city=$2 WHERE slug=$3 AND region=''", [p.region,p.city ?? '',p.slug]);
+    await pool.query('INSERT INTO stock (slug,qty,updated_at) VALUES ($1,$2,$3) ON CONFLICT (slug) DO NOTHING', [p.slug,p.stock,now]);
   }
-
-  // Rejesha eneo kwa bidhaa za zamani zilizokuwa bila mkoa/mji.
-  const backfillLocation = db.prepare(
-    `UPDATE products SET region = ?, city = ? WHERE slug = ? AND region = ''`,
-  );
-  for (const p of catalogProducts) {
-    if (p.region) backfillLocation.run(p.region, p.city ?? "", p.slug);
-  }
-  // Stoo: hazibadiliki kwa kila kuanza — marekebisho ya admin na manunuzi ndio yanayoamua.
-  const stockInsert = db.prepare(
-    `INSERT INTO stock (slug, qty, updated_at) VALUES (?, ?, ?)
-     ON CONFLICT(slug) DO NOTHING`,
-  );
-  for (const p of catalogProducts) {
-    stockInsert.run(p.slug, p.stock, now);
-  }
-
-  // Hakiki mfano (seed) — mara moja tu.
-  const reviewInsert = db.prepare(
-    `INSERT OR IGNORE INTO reviews
-       (id, customer_name, location, rating, comment, product_slug, status, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, 'approved', ?)`,
-  );
-  for (const r of catalogReviews) {
-    reviewInsert.run(
-      r.id,
-      r.customerName,
-      r.location,
-      r.rating,
-      r.comment,
-      r.productSlug,
-      now,
+  for (const review of catalogReviews) {
+    await pool.query(
+      `INSERT INTO reviews (id,customer_name,location,rating,comment,product_slug,status,created_at)
+       VALUES ($1,$2,$3,$4,$5,$6,'approved',$7) ON CONFLICT (id) DO NOTHING`,
+      [review.id,review.customerName,review.location,review.rating,review.comment,review.productSlug,now],
     );
   }
 }
-
-/** Safisha oda za demo (haipo kwenye DB — zinatokana na `demoOrders()`). */
+/** Safisha oda za demo (haipo kwenye DB â€” zinatokana na `demoOrders()`). */
 export function isDemoCode(code: string): boolean {
   return /^NCF-[A-Z0-9]{4}$/.test(code.trim().toUpperCase());
 }

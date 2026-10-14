@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { token, maxAge } = createSession();
+    const { token, maxAge } = await createSession();
     const res = NextResponse.json({ ok: true });
     res.cookies.set(ADMIN_COOKIE, token, {
       httpOnly: true,

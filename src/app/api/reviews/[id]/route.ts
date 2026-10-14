@@ -16,7 +16,7 @@ export async function PATCH(
     const body = await readBody<{ status?: string }>(req);
     if (!body) return fail("Hakiki haijajazwa vizuri.");
     const status = body.status === "approved" ? "approved" : "rejected";
-    const review = setReviewStatus(id, status);
+    const review = await setReviewStatus(id, status);
     return json({ ok: true, review });
   } catch (error) {
     return toErrorResponse(error);

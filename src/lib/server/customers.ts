@@ -59,12 +59,12 @@ function toCustomer(row: CustomerRow): Customer {
 
 /* ============ Register / Login ============ */
 
-export function registerCustomer(input: {
+export async function registerCustomer(input: {
   name?: string;
   phone?: string;
   email?: string;
   password?: string;
-}): Customer {
+}): Promise<Customer> {
   const name = (input.name ?? "").trim();
   const phone = (input.phone ?? "").trim();
   const email = (input.email ?? "").trim();
@@ -82,7 +82,7 @@ export function registerCustomer(input: {
   }
 
   const db = getDb();
-  const exists = db
+  const exists = await db
     .prepare("SELECT id FROM customers WHERE phone = ?")
     .get(phone) as { id?: string } | undefined;
   if (exists) {
@@ -94,7 +94,7 @@ export function registerCustomer(input: {
 
   const id = `cus-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
   const createdAt = nowIso();
-  db.prepare(
+  await db.prepare(
     `INSERT INTO customers (id, name, phone, email, password_hash, created_at)
      VALUES (?, ?, ?, ?, ?, ?)`,
   ).run(id, name, phone, email || null, hashPassword(password), createdAt);
@@ -102,14 +102,14 @@ export function registerCustomer(input: {
   return { id, name, phone, email: email || null, createdAt };
 }
 
-export function loginCustomer(input: {
+export async function loginCustomer(input: {
   phone?: string;
   password?: string;
-}): Customer {
+}): Promise<Customer> {
   const phone = (input.phone ?? "").trim();
   const password = input.password ?? "";
 
-  const row = getDb()
+  const row = await getDb()
     .prepare("SELECT * FROM customers WHERE phone = ?")
     .get(phone) as CustomerRow | undefined;
 
@@ -139,27 +139,27 @@ function resetCode(): string {
  * Rudisha { customer, code } ikiwa akaunti ipo; null ikiwa hakuna.
  * (Mwombaji hajapata taarifa — route hujibu ujumbe wa jumla.)
  */
-export function createPasswordReset(phoneRaw: string): {
+export async function createPasswordReset(phoneRaw: string): Promise<{
   customer: Customer;
   code: string;
-} | null {
+} | null> {
   const phone = phoneRaw.trim();
   if (!phone) return null;
-  const row = getDb()
+  const row = await getDb()
     .prepare("SELECT * FROM customers WHERE phone = ?")
     .get(phone) as CustomerRow | undefined;
   if (!row) return null;
 
   const db = getDb();
   // Ondoa msimbo wowote wa awali wa akaunti hii.
-  db.prepare(
+  await db.prepare(
     "DELETE FROM password_reset_tokens WHERE customer_id = ? AND used = 0",
   ).run(row.id);
 
   const code = resetCode();
   const createdAt = nowIso();
   const expiresAt = new Date(Date.now() + RESET_TTL_MS).toISOString();
-  db.prepare(
+  await db.prepare(
     `INSERT INTO password_reset_tokens (token, customer_id, expires_at, used, created_at)
      VALUES (?, ?, ?, 0, ?)`,
   ).run(code, row.id, expiresAt, createdAt);
@@ -168,10 +168,10 @@ export function createPasswordReset(phoneRaw: string): {
 }
 
 /** Thibitisha msimbo na weka nywila mpya; invalidate sessions zote. */
-export function resetPasswordWithToken(
+export async function resetPasswordWithToken(
   codeRaw: string,
   newPassword: string,
-): Customer {
+): Promise<Customer> {
   const code = codeRaw.trim();
   if (!/^[0-9]{6}$/.test(code)) {
     throw new InputError("Msimbo wa tarakimu 6 unahitajika.");
@@ -181,7 +181,7 @@ export function resetPasswordWithToken(
   }
 
   const db = getDb();
-  const row = db
+  const row = await db
     .prepare(
       "SELECT * FROM password_reset_tokens WHERE token = ? AND used = 0",
     )
@@ -192,27 +192,26 @@ export function resetPasswordWithToken(
     throw new InputError("Msimbo si sahihi au umeisha muda wake.", 400);
   }
 
-  const customerRow = db
+  const customerRow = await db
     .prepare("SELECT * FROM customers WHERE id = ?")
     .get(row.customer_id) as CustomerRow | undefined;
   if (!customerRow) throw new InputError("Akaunti haipatikani.", 404);
 
-  db.exec("BEGIN");
   try {
-    db.prepare("UPDATE customers SET password_hash = ? WHERE id = ?").run(
+    await db.transaction(async (tx) => {
+    await tx.prepare("UPDATE customers SET password_hash = ? WHERE id = ?").run(
       hashPassword(newPassword),
       customerRow.id,
     );
-    db.prepare(
+    await tx.prepare(
       "UPDATE password_reset_tokens SET used = 1 WHERE token = ?",
     ).run(code);
     // Futa session zote — mteja aliyepo aingie upya na nywila mpya.
-    db.prepare(
+    await tx.prepare(
       "DELETE FROM customer_sessions WHERE customer_id = ?",
     ).run(customerRow.id);
-    db.exec("COMMIT");
+    });
   } catch (error) {
-    db.exec("ROLLBACK");
     throw error;
   }
 
@@ -221,21 +220,21 @@ export function resetPasswordWithToken(
 
 /* ============ Sessions ============ */
 
-function purgeExpired(): void {
-  getDb()
+async function purgeExpired(): Promise<void> {
+  await getDb()
     .prepare("DELETE FROM customer_sessions WHERE expires_at < ?")
     .run(nowIso());
 }
 
 /** Fungua session mpya; rudisha token na muda wa kuishi (sekunde). */
-export function createCustomerSession(customerId: string): {
+export async function createCustomerSession(customerId: string): Promise<{
   token: string;
   maxAge: number;
-} {
-  purgeExpired();
+}> {
+  await purgeExpired();
   const token = randomBytes(24).toString("hex");
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString();
-  getDb()
+  await getDb()
     .prepare(
       "INSERT INTO customer_sessions (token, customer_id, expires_at) VALUES (?, ?, ?)",
     )
@@ -247,7 +246,7 @@ export async function destroyCustomerSession(): Promise<void> {
   const store = await cookies();
   const token = store.get(CUSTOMER_COOKIE)?.value;
   if (!token) return;
-  getDb()
+  await getDb()
     .prepare("DELETE FROM customer_sessions WHERE token = ?")
     .run(token);
 }
@@ -257,9 +256,9 @@ export async function currentCustomer(): Promise<Customer | null> {
   const store = await cookies();
   const token = store.get(CUSTOMER_COOKIE)?.value;
   if (!token) return null;
-  purgeExpired();
+  await purgeExpired();
 
-  const row = getDb()
+  const row = await getDb()
     .prepare(
       `SELECT c.* FROM customer_sessions s
        JOIN customers c ON c.id = s.customer_id
@@ -271,8 +270,8 @@ export async function currentCustomer(): Promise<Customer | null> {
 
 /* ============ Admin: wateja wote ============ */
 
-export function listAllCustomers(limit = 500): Customer[] {
-  const rows = getDb()
+export async function listAllCustomers(limit = 500): Promise<Customer[]> {
+  const rows = await getDb()
     .prepare(
       "SELECT * FROM customers ORDER BY created_at DESC LIMIT ?",
     )
@@ -286,14 +285,14 @@ export function listAllCustomers(limit = 500): Customer[] {
  * Oda za mteja — zile alizoweka akiwa ameingia pamoja na zile za namba
  * ile ile ya simu (mteja aliyetangulia kuingia kabla ya akaunti).
  */
-export function listCustomerOrders(customer: Customer): Order[] {
+export async function listCustomerOrders(customer: Customer): Promise<Order[]> {
   const db = getDb();
   try {
-    const rows = db
+    const rows = await db
       .prepare(
         `SELECT * FROM orders
          WHERE customer_id = ?
-            OR json_extract(customer, '$.phone') = ?
+            OR customer::jsonb ->> 'phone' = ?
          ORDER BY created_at DESC LIMIT 100`,
       )
       .all(customer.id, customer.phone) as unknown as Parameters<
@@ -302,7 +301,7 @@ export function listCustomerOrders(customer: Customer): Order[] {
     return rows.map(rowToOrder);
   } catch {
     // json1 isiyopatikana — tumia customer_id pekee.
-    const rows = db
+    const rows = await db
       .prepare(
         "SELECT * FROM orders WHERE customer_id = ? ORDER BY created_at DESC LIMIT 100",
       )

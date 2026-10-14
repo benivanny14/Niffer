@@ -9,7 +9,7 @@ export async function GET() {
     const customer = await currentCustomer();
     if (!customer) return fail("Ingia kwenye akaunti yako.", 401);
 
-    const rows = getDb()
+    const rows = await getDb()
       .prepare(
         "SELECT slug FROM wishlists WHERE customer_id = ? ORDER BY created_at DESC",
       )
@@ -35,12 +35,12 @@ export async function PUT(req: NextRequest) {
 
     const db = getDb();
     const upsert = db.prepare(
-      `INSERT OR IGNORE INTO wishlists (customer_id, slug, created_at)
-       VALUES (?, ?, ?)`,
+      `INSERT INTO wishlists (customer_id, slug, created_at)
+       VALUES (?, ?, ?) ON CONFLICT (customer_id, slug) DO NOTHING`,
     );
-    for (const slug of slugs) upsert.run(customer.id, slug, nowIso());
+    for (const slug of slugs) await upsert.run(customer.id, slug, nowIso());
 
-    const rows = db
+    const rows = await db
       .prepare(
         "SELECT slug FROM wishlists WHERE customer_id = ? ORDER BY created_at DESC",
       )
@@ -59,7 +59,7 @@ export async function DELETE(req: NextRequest) {
 
     const body = await readBody<{ slug?: string }>(req);
     if (!body?.slug) return fail("Weka bidhaa ya kuondoa.");
-    getDb()
+    await getDb()
       .prepare(
         "DELETE FROM wishlists WHERE customer_id = ? AND slug = ?",
       )

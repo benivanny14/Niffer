@@ -11,6 +11,7 @@ import { VideoGallery } from "@/components/media/VideoGallery";
 import { InstagramShowcase } from "@/components/instagram/InstagramShowcase";
 import { RatingStars } from "@/components/ui/RatingStars";
 import { NewsletterForm } from "@/components/ui/NewsletterForm";
+import { waLink } from "@/lib/site";
 import {
   ArrowRightIcon,
   ChatIcon,
@@ -46,10 +47,10 @@ const trustPoints = [
 
 export default async function Home() {
   await connection();
-  const products = listProducts();
+  const products = await listProducts();
   const onSale = products.filter((p) => p.compareAtTsh);
   const freshIn = products.filter((p) => p.badges.includes("new"));
-  const reviews = listReviews(8);
+  const reviews = await listReviews(8);
   const latest = latestArticles(3);
   const categoryCounts = new Map<string, number>();
   for (const p of products) {
@@ -58,74 +59,54 @@ export default async function Home() {
 
   return (
     <>
-      <section className="relative overflow-hidden pb-8 pt-10 sm:pt-12">
-        <div className="container-x grid items-center gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:gap-12 lg:py-12">
-          <div className="animate-fade-up">
-            <p className="editorial-tag">Urembo halisi · Tanzania</p>
-            <h1 className="mt-4 max-w-xl font-display text-4xl leading-[0.98] tracking-[-0.04em] text-ink-900 sm:text-5xl lg:text-[4.2rem]">
-              Urembo wako, ubora wetu — <span className="text-accent">Niffer Cosmetics</span>
-            </h1>
-            <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-500">
-              Bidhaa za skincare, makeup na nywele zilizochaguliwa kwa makini. Bei nafuu,
-              malipo salama ya mobile money, na usafirishaji wa haraka hadi mlangoni kwako.
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/bidhaa" className="btn-primary">
-                Nunua sasa
-                <ArrowRightIcon className="h-4 w-4" />
-              </Link>
-              <Link href="#video" className="btn-outline">
-                <PlayIcon className="h-3.5 w-3.5" />
-                Angalia video za urembo
-              </Link>
-            </div>
-
-            <dl className="mt-10 flex flex-wrap gap-x-10 gap-y-4">
-              {[
-                ["10k+", "Wateja wenye kuridhika"],
-                ["100+", "Bidhaa zilizochaguliwa"],
-                ["4.8", "Ukadiriaji wa wateja"],
-              ].map(([value, label]) => (
-                <div key={label}>
-                  <dt className="sr-only">{label}</dt>
-                  <dd className="font-display text-3xl font-semibold text-ink-900">{value}</dd>
-                  <dd className="mt-1 text-xs uppercase tracking-wide text-ink-400">{label}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-
-          <div className="relative mx-auto w-full max-w-[31rem] animate-fade-in">
-            <div className="editorial-panel p-3 sm:p-4">
-              <div className="overflow-hidden rounded-[1.5rem] border border-cream-300 bg-cream-100">
-                <ProductImage src="/images/packs/pack-135k-qe.jpg" alt="Bidhaa za Niffer Cosmetics — Purest Glow Pack" priority className="h-[32rem] w-full object-cover sm:h-[36rem]" />
-              </div>
-            </div>
-
-            <div className="card absolute -bottom-2 left-4 w-[72%] max-w-[18rem] p-4 sm:left-6 sm:p-5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-600">
-                Inayouzwa zaidi
+      <section className="hero-editorial relative overflow-hidden py-8 sm:py-12 lg:py-16">
+        <div className="container-x">
+          <div className="hero-editorial__frame">
+            <div className="hero-editorial__copy animate-fade-up">
+              <p className="hero-editorial__kicker"><span /> Urembo uliochaguliwa kwa ajili yako</p>
+              <h1 className="mt-6 max-w-xl font-display text-4xl leading-[0.98] tracking-[-0.04em] sm:text-5xl lg:text-[4.4rem]">
+                Jitunze kwa <em>upendo.</em><br />Ang&apos;aa kwa uhakika.
+              </h1>
+              <p className="mt-6 max-w-lg text-base leading-relaxed text-white/75 sm:text-lg">
+                Skincare, makeup na bidhaa za nywele tulizochagua kwa uangalifu. Ubora unaouamini, huduma iliyo karibu nawe.
               </p>
-              <div className="mt-2 flex items-baseline justify-between gap-3">
-                <p className="font-display text-lg leading-snug text-ink-900">Purest Glow Pack</p>
-                <p className="text-sm font-semibold text-accent">{formatTsh(135000)}</p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link href="/bidhaa" className="hero-editorial__button">
+                  Gundua bidhaa <ArrowRightIcon className="h-4 w-4" />
+                </Link>
+                <Link href="#video" className="hero-editorial__text-link">
+                  <PlayIcon className="h-3.5 w-3.5" /> Vidokezo vya urembo
+                </Link>
+              </div>
+              <div className="hero-editorial__proof mt-10">
+                <span className="hero-editorial__proof-mark"><SparkleIcon className="h-4 w-4" /></span>
+                <p><strong>Chaguo lako, huduma yetu.</strong><br /><span>Malipo salama · Tunafikisha Tanzania nzima</span></p>
               </div>
             </div>
-
-            <div className="absolute -left-3 top-8 hidden w-40 rounded-2xl border border-cream-300 bg-surface p-3 shadow-lg sm:block">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-600">Best seller</p>
-              <p className="mt-2 font-display text-base text-ink-900">Mwanachuo Pack</p>
-              <p className="mt-1 text-sm font-semibold text-accent">{formatTsh(45000)}</p>
+            <div className="hero-editorial__visual animate-fade-in">
+              <div className="hero-editorial__image-wrap">
+                <ProductImage src="/images/packs/pack-135k-qe.jpg" alt="Purest Glow Pack ya Niffer Cosmetics" priority className="hero-editorial__image" />
+                <div className="hero-editorial__image-caption"><span>Ritual ya kila siku</span><strong>Purest Glow Pack</strong></div>
+              </div>
+              <Link href="/bidhaa/mwanachuo-pack-45k" className="hero-editorial__float-card">
+                <span className="hero-editorial__float-icon"><SparkleIcon className="h-4 w-4" /></span>
+                <span><small>Inayopendwa</small><strong>Mwanachuo Pack</strong><b>{formatTsh(45000)}</b></span>
+                <ArrowRightIcon className="ml-auto h-4 w-4" />
+              </Link>
+              <span className="hero-editorial__seal" aria-hidden="true">Niffer<br /><i>beauty</i></span>
             </div>
+          </div>
+          <div className="hero-editorial__bottomline">
+            <span>Skincare</span><i /> <span>Makeup</span><i /> <span>Body care</span><i /> <span>Nywele</span>
+            <Link href="/bidhaa">Tazama duka lote <ArrowRightIcon className="h-3.5 w-3.5" /></Link>
           </div>
         </div>
       </section>
 
-      <section className="border-y border-cream-300 bg-cream-100/80">
-        <div className="container-x grid gap-8 py-12 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="trust-strip border-y border-cream-300 bg-cream-100/80">
+        <div className="container-x grid gap-5 py-7 sm:grid-cols-2 lg:grid-cols-4">
           {trustPoints.map(({ icon: Icon, title, description }) => (
-            <div key={title} className="flex items-start gap-3 rounded-2xl border border-transparent bg-white/30 p-2">
+            <div key={title} className="trust-strip__item flex items-start gap-3 rounded-2xl border border-transparent p-2">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-accent ring-1 ring-brand-200">
                 <Icon className="h-5 w-5" />
               </span>
@@ -138,7 +119,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section id="kategoria" className="container-x scroll-mt-24 py-16 lg:py-24">
+      <section id="kategoria" className="category-section container-x scroll-mt-24 py-16 lg:py-24">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Vinjari</p>
@@ -150,14 +131,15 @@ export default async function Home() {
           </Link>
         </div>
 
-        <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="category-grid mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {categories.map((category) => (
             <li key={category.slug}>
-              <Link href={`/bidhaa?kategoria=${category.slug}`} className="card group flex h-full flex-col justify-between overflow-hidden p-6">
-                <div className={`-mx-6 -mt-6 mb-5 h-24 border-b border-cream-300 ${category.swatch}`} aria-hidden />
+              <Link href={`/bidhaa?kategoria=${category.slug}`} className="category-tile card group flex h-full flex-col justify-between overflow-hidden p-6">
+                <div className={`category-tile__swatch -mx-6 -mt-6 mb-5 h-28 border-b border-cream-300 ${category.swatch}`} aria-hidden />
                 <div>
-                  <h3 className="font-display text-xl text-ink-900">{category.name}</h3>
-                  <p className="mt-1.5 text-sm text-ink-500">{category.description}</p>
+                  <span className="eyebrow">Niffer edit</span>
+                  <h3 className="mt-2 font-display text-2xl text-ink-900">{category.name}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-ink-500">{category.description}</p>
                 </div>
                 <div className="mt-5 flex items-center justify-between">
                   <span className="text-xs font-semibold uppercase tracking-wide text-ink-400">
@@ -173,7 +155,7 @@ export default async function Home() {
 
       <InstagramShowcase />
 
-      <section id="bidhaa" className="scroll-mt-24 bg-cream-100 py-16 lg:py-24">
+      <section id="bidhaa" className="product-showcase scroll-mt-24 bg-cream-100 py-16 lg:py-24">
         <div className="container-x">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -353,7 +335,7 @@ export default async function Home() {
               Nunua sasa
               <ArrowRightIcon className="h-4 w-4" />
             </Link>
-            <a href="https://wa.me/255754000000" target="_blank" rel="noopener noreferrer" className="btn-outline">
+            <a href={waLink("Habari Niffer Cosmetics, naomba msaada wa kuchagua bidhaa.")} target="_blank" rel="noopener noreferrer" className="btn-outline">
               <ChatIcon className="h-4 w-4" />
               WhatsApp oda
             </a>

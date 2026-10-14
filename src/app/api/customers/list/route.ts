@@ -10,7 +10,7 @@ export async function GET() {
     if (!(await isAdminRequest())) {
       return fail("Ingia kama admin kuona wateja.", 401);
     }
-    const customers = listAllCustomers();
+    const customers = await listAllCustomers();
     return json({ ok: true, count: customers.length, customers });
   } catch (error) {
     return toErrorResponse(error);

@@ -16,8 +16,8 @@ export async function GET() {
     }
     return json({
       ok: true,
-      notifications: listNotifications(100),
-      unread: countUnreadNotifications(),
+      notifications: await listNotifications(100),
+      unread: await countUnreadNotifications(),
     });
   } catch (error) {
     return toErrorResponse(error);
@@ -34,7 +34,7 @@ export async function PATCH(req: NextRequest) {
       id?: string;
     } | null;
     if (!body?.id) return fail("Arifa haipatikani.");
-    const updated = markNotificationRead(body.id);
+    const updated = await markNotificationRead(body.id);
     return json({ ok: true, updated });
   } catch (error) {
     return toErrorResponse(error);

@@ -67,29 +67,29 @@ function rowToProduct(row: ProductRow): Product {
 }
 
 /** Bidhaa zote (DB) pamoja na stoo halisi — mpangilio wa asili wa katalogi. */
-export function listProducts(): Product[] {
+export async function listProducts(): Promise<Product[]> {
   let rows: ProductRow[] = [];
   try {
-    rows = getDb()
-      .prepare("SELECT * FROM products ORDER BY rowid")
-      .all() as unknown as ProductRow[];
+    rows = await getDb()
+      .prepare("SELECT * FROM products ORDER BY updated_at, slug")
+      .all() as ProductRow[];
   } catch {
     rows = [];
   }
 
   const base = rows.length > 0 ? rows.map(rowToProduct) : catalogProducts;
-  const stock = getStockMap();
+  const stock = await getStockMap();
   return base.map((p) => ({ ...p, stock: stock[p.slug] ?? p.stock }));
 }
 
 /** Bidhaa moja kutoka DB. */
-export function findProduct(slug: string): Product | undefined {
+export async function findProduct(slug: string): Promise<Product | undefined> {
   try {
-    const row = getDb()
+    const row = await getDb()
       .prepare("SELECT * FROM products WHERE slug = ?")
       .get(slug) as ProductRow | undefined;
     if (row) {
-      const stock = getStockMap()[slug];
+      const stock = (await getStockMap())[slug];
       const product = rowToProduct(row);
       return { ...product, stock: stock ?? product.stock };
     }
@@ -98,7 +98,7 @@ export function findProduct(slug: string): Product | undefined {
   }
   const fallback = catalogProducts.find((p) => p.slug === slug);
   if (!fallback) return undefined;
-  const stock = getStockMap()[fallback.slug];
+  const stock = (await getStockMap())[fallback.slug];
   return { ...fallback, stock: stock ?? fallback.stock };
 }
 
@@ -109,7 +109,7 @@ export type SearchResult =
 const norm = (value: string) => value.toLowerCase().trim();
 
 /** Utafitaji kwenye bidhaa (DB) na makala (kupitia API). */
-export function searchCatalog(query: string, limit = 24): SearchResult[] {
+export async function searchCatalog(query: string, limit = 24): Promise<SearchResult[]> {
   const q = norm(query);
   if (!q) return [];
 
@@ -124,7 +124,7 @@ export function searchCatalog(query: string, limit = 24): SearchResult[] {
     return total;
   };
 
-  const productHits = listProducts()
+  const productHits = (await listProducts())
     .map((p) => ({
       p,
       value: score(
@@ -162,11 +162,11 @@ export function searchCatalog(query: string, limit = 24): SearchResult[] {
 }
 
 /** Takwimu za haraka kwa dashibodi. */
-export function catalogStats(): {
+export async function catalogStats(): Promise<{
   productCount: number;
   articleCount: number;
-} {
-  return { productCount: listProducts().length, articleCount: articles.length };
+}> {
+  return { productCount: (await listProducts()).length, articleCount: articles.length };
 }
 
 export type { Article };

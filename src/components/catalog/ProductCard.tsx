@@ -33,8 +33,8 @@ export function ProductCard({ product }: { product: Product }) {
   const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
 
   return (
-    <article className="card group flex h-full flex-col overflow-hidden">
-      <div className="relative aspect-[4/5] overflow-hidden bg-cream-200">
+    <article className="product-card card group flex h-full flex-col overflow-hidden">
+      <div className="product-card__media relative aspect-[4/5] overflow-hidden bg-cream-200">
         <Link href={`/bidhaa/${product.slug}`} className="block h-full w-full" aria-label={product.name}>
           <ProductImage
             src={product.image}
@@ -63,7 +63,7 @@ export function ProductCard({ product }: { product: Product }) {
         <WishlistButton slug={product.slug} className="absolute right-3 top-3" />
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 p-4">
+      <div className="product-card__body flex flex-1 flex-col gap-2 p-4">
         <h3 className="font-display text-lg leading-snug text-ink-900">
           <Link href={`/bidhaa/${product.slug}`} className="transition-colors hover:text-accent">
             {product.name}
@@ -72,7 +72,7 @@ export function ProductCard({ product }: { product: Product }) {
         <p className="line-clamp-2 text-sm text-ink-500">{product.shortDescription}</p>
         <RatingStars rating={product.rating} reviewCount={product.reviewCount} />
 
-        <div className="mt-1 flex items-baseline gap-2">
+        <div className="product-card__price mt-1 flex items-baseline gap-2">
           <span className="text-lg font-semibold text-ink-900">{formatTsh(product.priceTsh)}</span>
           {product.compareAtTsh ? (
             <span className="text-sm text-ink-300 line-through">{formatTsh(product.compareAtTsh)}</span>

@@ -22,16 +22,16 @@ const makeId = (prefix: string) =>
   `${prefix}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
 /** Tuma arifa kwa mteja (kwa customerId au phone). */
-export function notifyCustomer(input: {
+export async function notifyCustomer(input: {
   customerId?: string;
   phone?: string;
   orderCode?: string;
   kind?: string;
   title: string;
   body?: string;
-}): void {
+}): Promise<void> {
   try {
-    getDb()
+    await getDb()
       .prepare(
         `INSERT INTO customer_notifications
            (id, customer_id, phone, order_code, kind, title, body, status, created_at)
@@ -53,9 +53,9 @@ export function notifyCustomer(input: {
 }
 
 /** Arifa za mteja (mpya kwanza). */
-export function listCustomerNotifications(
+export async function listCustomerNotifications(
   opts: { customerId?: string; phone?: string; limit?: number } = {},
-): CustomerNotification[] {
+): Promise<CustomerNotification[]> {
   const limit = Math.min(Math.max(opts.limit ?? 50, 1), 200);
   const clauses: string[] = [];
   const params: (string | number)[] = [];
@@ -69,7 +69,7 @@ export function listCustomerNotifications(
   }
   if (clauses.length === 0) return [];
   const where = clauses.join(" OR ");
-  const rows = getDb()
+  const rows = await getDb()
     .prepare(
       `SELECT * FROM customer_notifications WHERE ${where}
        ORDER BY created_at DESC LIMIT ?`,
@@ -99,10 +99,10 @@ export function listCustomerNotifications(
 }
 
 /** Idadi ya arifa ambazo bado hazijasomwa. */
-export function countUnreadCustomerNotifications(
+export async function countUnreadCustomerNotifications(
   customerId: string,
   phone?: string,
-): number {
+): Promise<number> {
   const clauses = ["status = 'new'"];
   const params: (string | number)[] = [];
   if (customerId) {
@@ -114,7 +114,7 @@ export function countUnreadCustomerNotifications(
     params.push(phone);
   }
   if (params.length === 0) return 0;
-  const row = getDb()
+  const row = await getDb()
     .prepare(
       `SELECT COUNT(*) AS n FROM customer_notifications WHERE ${clauses.join(" OR ")}`,
     )
@@ -123,18 +123,18 @@ export function countUnreadCustomerNotifications(
 }
 
 /** Weka arifa kuwa imesomwa. */
-export function markCustomerNotificationRead(id: string): boolean {
-  const result = getDb()
+export async function markCustomerNotificationRead(id: string): Promise<boolean> {
+  const result = await getDb()
     .prepare("UPDATE customer_notifications SET status = 'read' WHERE id = ?")
     .run(id);
-  return Number(result.changes) > 0;
+  return Number((await result).changes) > 0;
 }
 
 /** Weka zote kuwa zimesomwa (mteja alipoingia). */
-export function markAllCustomerNotificationsRead(
+export async function markAllCustomerNotificationsRead(
   customerId: string,
   phone?: string,
-): number {
+): Promise<number> {
   const clauses = ["status = 'new'"];
   const params: (string | number)[] = [];
   if (customerId) {
@@ -146,10 +146,10 @@ export function markAllCustomerNotificationsRead(
     params.push(phone);
   }
   if (params.length === 0) return 0;
-  const result = getDb()
+  const result = await getDb()
     .prepare(
       `UPDATE customer_notifications SET status = 'read' WHERE ${clauses.join(" OR ")}`,
     )
     .run(...params);
-  return Number(result.changes);
+  return Number((await result).changes);
 }

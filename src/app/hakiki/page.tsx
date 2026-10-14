@@ -65,7 +65,7 @@ function RatingSummary({ reviews }: { reviews: StoredReview[] }) {
 export default async function ReviewsPage() {
   // Hakiki zote hutoka kwenye database (pamoja na mpya uliyoweka wewe).
   await connection();
-  const all = listReviews(200);
+  const all = await listReviews(200);
 
   return (
     <div className="container-x py-12 lg:py-16">

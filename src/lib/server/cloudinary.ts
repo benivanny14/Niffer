@@ -1,0 +1,75 @@
+import "server-only";
+import { v2 as cloudinary } from "cloudinary";
+
+type UploadedImage = { public_id: string; version: number };
+
+/** Keep Cloudinary delivery URLs on automatic format and quality. */
+export function optimizeCloudinaryUrl(value: string): string {
+  try {
+    const url = new URL(value);
+    if (url.hostname !== "res.cloudinary.com") return value;
+    const path = url.pathname.split("/");
+    const uploadIndex = path.indexOf("upload");
+    if (uploadIndex < 0) return value;
+    const transformIndex = uploadIndex + 1;
+    const current = path[transformIndex] ?? "";
+    const hasFormat = current.includes("f_auto");
+    const hasQuality = current.includes("q_auto");
+    if (hasFormat && hasQuality) return value;
+    if (hasFormat || hasQuality) {
+      const missing = [!hasFormat && "f_auto", !hasQuality && "q_auto"].filter(Boolean);
+      path[transformIndex] = [current, ...missing].join(",");
+    } else {
+      path.splice(transformIndex, 0, "f_auto,q_auto");
+    }
+    url.pathname = path.join("/");
+    return url.toString();
+  } catch {
+    return value;
+  }
+}
+
+/** Upload a product image to Cloudinary and return an auto-optimized URL. */
+export async function uploadProductImage(file: File, slug: string): Promise<string> {
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME?.trim();
+  const apiKey = process.env.CLOUDINARY_API_KEY?.trim();
+  const apiSecret = process.env.CLOUDINARY_API_SECRET?.trim();
+
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new Error("Cloudinary credentials hazijawekwa.");
+  }
+
+  cloudinary.config({
+    cloud_name: cloudName,
+    api_key: apiKey,
+    api_secret: apiSecret,
+    secure: true,
+  });
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const uploaded = await new Promise<UploadedImage>(
+    (resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: "niffer/products",
+          public_id: slug,
+          overwrite: true,
+          resource_type: "image",
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else if (!result) reject(new Error("Cloudinary haikurudisha picha."));
+          else resolve(result);
+        },
+      );
+      stream.end(buffer);
+    },
+  );
+
+  return cloudinary.url(uploaded.public_id, {
+    secure: true,
+    fetch_format: "auto",
+    quality: "auto",
+    version: uploaded.version,
+  });
+}

@@ -16,8 +16,8 @@ export async function POST(req: NextRequest) {
     if (!body?.token || !body?.password) {
       return fail("Msimbo na nywila mpya vinahitajika.");
     }
-    const customer = resetPasswordWithToken(body.token, body.password);
-    notifyAdmin({
+    const customer = await resetPasswordWithToken(body.token, body.password);
+    await notifyAdmin({
       kind: "info",
       title: "Nywila imebadilishwa",
       body: `${customer.name} (${customer.phone}) amebadilisha nywila yake.`,
