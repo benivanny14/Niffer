@@ -580,7 +580,7 @@ html.notranslate * {
   transition: transform .24s cubic-bezier(.2,.7,.2,1), background-color .2s ease;
   will-change: transform;
 }
-.site-header--hidden { transform: translateY(-100%); }
+.site-header.site-header--hidden { transform: translateY(-100%); }
 .site-header__nav-link { position: relative; padding: .7rem 0; }
 .site-header__nav-link::after {
   position: absolute;
