@@ -896,5 +896,5 @@ body {
 @media (max-width: 639px) {
   .product-card__body { padding: 9px; }
   .product-card .badge { letter-spacing: .02em; }
-  .site-header__main { height: 4rem; }
+  .site-header__main { height: auto; min-height: 4rem; }
 }

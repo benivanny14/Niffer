@@ -31,6 +31,15 @@ export function optimizeCloudinaryUrl(value: string): string {
 
 /** Upload a product image to Cloudinary and return an auto-optimized URL. */
 export async function uploadProductImage(file: File, slug: string): Promise<string> {
+  return uploadImage(file, "niffer/products", slug);
+}
+
+/** Upload the public store owner's profile photo to Cloudinary. */
+export async function uploadAdminProfileImage(file: File): Promise<string> {
+  return uploadImage(file, "niffer/store", "admin-profile");
+}
+
+async function uploadImage(file: File, folder: string, publicId: string): Promise<string> {
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME?.trim();
   const apiKey = process.env.CLOUDINARY_API_KEY?.trim();
   const apiSecret = process.env.CLOUDINARY_API_SECRET?.trim();
@@ -51,8 +60,8 @@ export async function uploadProductImage(file: File, slug: string): Promise<stri
     (resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {
-          folder: "niffer/products",
-          public_id: slug,
+          folder,
+          public_id: publicId,
           overwrite: true,
           resource_type: "image",
         },

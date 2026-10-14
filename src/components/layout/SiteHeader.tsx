@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { categories } from "@/lib/data/catalog";
 import { HeaderControls } from "@/components/layout/HeaderControls";
@@ -21,6 +22,27 @@ const navLinks = [
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const [profileImage, setProfileImage] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    const loadProfile = () => {
+      fetch("/api/store-profile", { cache: "no-store" })
+        .then((response) => response.ok ? response.json() as Promise<{ image?: string }> : null)
+        .then((data) => { if (active && data) setProfileImage(data.image ?? ""); })
+        .catch(() => undefined);
+    };
+    const onUpdated = (event: Event) => {
+      const image = (event as CustomEvent<string>).detail;
+      if (image) setProfileImage(image);
+    };
+    loadProfile();
+    window.addEventListener("niffer:store-profile-updated", onUpdated);
+    return () => {
+      active = false;
+      window.removeEventListener("niffer:store-profile-updated", onUpdated);
+    };
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -40,16 +62,22 @@ export function SiteHeader() {
         </div>
       </div>
 
-      <div className="site-header__main container-x flex h-[4.5rem] items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-accent shadow-sm ring-1 ring-brand-200">
-            <SparkleIcon className="h-5 w-5" />
+      <div className="site-header__main container-x flex min-h-[5.25rem] items-center justify-between gap-3 py-2">
+        <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2.5 sm:gap-3" onClick={() => setOpen(false)} aria-label="Niffer Cosmetics, ukurasa wa mwanzo">
+          <span className="relative h-14 w-14 shrink-0 rounded-full bg-gradient-to-br from-gold-500 via-brand-400 to-brand-800 p-[3px] shadow-lg shadow-black/25 sm:h-[4.5rem] sm:w-[4.5rem]">
+            <span className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-surface text-accent ring-2 ring-surface">
+              {profileImage ? (
+                <Image src={profileImage} alt="Profile ya Niffer Cosmetics" fill unoptimized sizes="72px" className="object-cover" />
+              ) : (
+                <SparkleIcon className="h-7 w-7 sm:h-8 sm:w-8" />
+              )}
+            </span>
           </span>
           <span className="flex flex-col leading-none">
-            <span className="font-display text-xl font-semibold tracking-tight text-ink-900">
+            <span className="font-display text-lg font-semibold tracking-tight text-ink-900 sm:text-xl">
               Niffer
             </span>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-gold-600">
+            <span className="mt-1 text-[9px] font-semibold uppercase tracking-[0.2em] text-gold-600 sm:text-[10px] sm:tracking-[0.3em]">
               Cosmetics
             </span>
           </span>

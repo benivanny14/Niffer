@@ -13,6 +13,7 @@ import {
 import { useAdminOrders, patchOrderStatus } from "@/lib/orders-client";
 import { apiGet, apiPatch, apiPost, errorMessage } from "@/lib/api";
 import { ProductManager } from "@/components/admin/ProductManager";
+import { AdminProfileManager } from "@/components/admin/AdminProfileManager";
 import { formatTsh, formatPhone } from "@/lib/format";
 import { site } from "@/lib/site";
 import {
@@ -358,6 +359,7 @@ function AdminDashboard() {
 
   return (
     <div className="admin-shell container-x py-10 lg:py-14">
+      <AdminProfileManager />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="eyebrow">Admin</p>
