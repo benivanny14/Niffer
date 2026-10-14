@@ -17,14 +17,14 @@
   --gold-100: #f7f0e2;
   --gold-300: #e3cda3;
   --gold-500: #c9a86a;
-  --gold-600: #b08d4f;
-  --gold-700: #8f713c;
+  --gold-600: #80612f;
+  --gold-700: #765a2e;
 
   --ink-900: #241c16;
   --ink-800: #33281f;
   --ink-700: #463930;
   --ink-500: #6d5f52;
-  --ink-400: #8b7c6d;
+  --ink-400: #746557;
   --ink-300: #b3a797;
 
   --cream-50: #fbf8f3;
@@ -61,7 +61,7 @@
   --ink-800: #e7dfd4;
   --ink-700: #d3c9bc;
   --ink-500: #a99b8c;
-  --ink-400: #8a7d6f;
+  --ink-400: #aa9b8c;
   --ink-300: #6d645a;
   --brand-50: #2c1720;
   --brand-100: #381b28;
@@ -170,7 +170,7 @@ button, a {
 
 ::placeholder {
   color: var(--ink-400);
-  opacity: 0.78;
+  opacity: 1;
 }
 
 ::selection {
@@ -211,7 +211,7 @@ button, a {
 }
 
 @utility btn-gold {
-  @apply btn bg-gold-500 text-on-gold shadow-[0_12px_26px_-18px_rgba(201,168,106,0.9)] hover:bg-gold-600 hover:text-white active:scale-[0.985];
+  @apply btn bg-gold-500 text-on-gold shadow-[0_12px_26px_-18px_rgba(201,168,106,0.9)] hover:bg-gold-600 hover:text-on-gold active:scale-[0.985];
 }
 
 @utility btn-outline {

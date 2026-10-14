@@ -1,4 +1,4 @@
-﻿import { Pool, type PoolClient, type QueryResultRow } from "@neondatabase/serverless";
+import { Pool, type PoolClient } from "@neondatabase/serverless";
 import {
   products as catalogProducts,
   reviews as catalogReviews,
