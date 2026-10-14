@@ -408,7 +408,7 @@ export default function CheckoutPage() {
 
         {/* Muhtasari */}
         <aside className="lg:col-span-2">
-          <div className="card sticky top-28 p-6">
+          <div className="card sticky top-30 p-6 sm:top-32">
             <h2 className="font-display text-xl text-ink-900">Oda yako</h2>
             <ul className="mt-4 space-y-3">
               {lines.map(({ product, qty }) => (

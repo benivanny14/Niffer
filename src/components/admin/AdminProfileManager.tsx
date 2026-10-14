@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { apiGet, apiPost, apiPut, errorMessage } from "@/lib/api";
+import { SparkleIcon } from "@/components/ui/icons";
 
 const MAX_IMAGE_SIZE = 12 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
@@ -75,14 +76,25 @@ export function AdminProfileManager() {
 
   return (
     <section className="card mt-7 flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:p-6" aria-labelledby="store-profile-title">
-      <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-2xl border border-brand-300/50 bg-gradient-to-br from-brand-100 via-cream-200 to-gold-100 p-1 shadow-lg shadow-black/20 sm:h-32 sm:w-32">
-        {image ? (
-          <Image src={image} alt="Picha ya profile ya duka" fill unoptimized sizes="128px" className="rounded-[0.8rem] object-cover" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center rounded-[0.8rem] bg-surface text-4xl font-display font-semibold text-accent" aria-label="Hakuna picha ya profile iliyowekwa">
-            N
-          </div>
-        )}
+      <div className="group relative mx-auto flex h-44 w-44 shrink-0 items-center justify-center transition-transform duration-300 ease-out hover:scale-[1.03] sm:mx-0 sm:h-56 sm:w-56">
+        <span aria-hidden className="absolute -inset-2 rounded-full border border-dashed border-gold-500/60 transition-transform duration-500 ease-out group-hover:rotate-90" />
+        <span className="relative flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-gold-500 via-brand-400 to-brand-800 p-[6px] shadow-[0_22px_44px_-22px_rgba(95,23,49,0.7)]">
+          <span className="flex h-full w-full items-center justify-center rounded-full bg-surface p-[4px] dark:bg-[var(--surface-raised)]">
+            <span className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-cream-100 text-accent">
+              {image ? (
+                <Image src={image} alt="Picha ya profile ya duka" fill unoptimized sizes="(max-width: 640px) 176px, 224px" className="object-cover" />
+              ) : (
+                <span className="flex flex-col items-center gap-1.5" aria-label="Hakuna picha ya profile iliyowekwa">
+                  <SparkleIcon className="h-10 w-10 sm:h-12 sm:w-12" />
+                  <span className="text-6xl font-display font-semibold sm:text-7xl">N</span>
+                </span>
+              )}
+            </span>
+          </span>
+        </span>
+        <span aria-hidden className="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-full bg-gold-500 text-brand-900 shadow-md ring-4 ring-[var(--surface)] dark:ring-[var(--surface-raised)]">
+          <SparkleIcon className="h-5 w-5" />
+        </span>
       </div>
       <div className="min-w-0 flex-1">
         <p className="eyebrow">Utambulisho wa duka</p>

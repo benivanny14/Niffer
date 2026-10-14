@@ -62,15 +62,23 @@ export function SiteHeader() {
         </div>
       </div>
 
-      <div className="site-header__main container-x flex min-h-[5.25rem] items-center justify-between gap-3 py-2">
-        <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2.5 sm:gap-3" onClick={() => setOpen(false)} aria-label="Niffer Cosmetics, ukurasa wa mwanzo">
-          <span className="relative h-14 w-14 shrink-0 rounded-full bg-gradient-to-br from-gold-500 via-brand-400 to-brand-800 p-[3px] shadow-lg shadow-black/25 sm:h-[4.5rem] sm:w-[4.5rem]">
-            <span className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-surface text-accent ring-2 ring-surface">
-              {profileImage ? (
-                <Image src={profileImage} alt="Profile ya Niffer Cosmetics" fill unoptimized sizes="72px" className="object-cover" />
-              ) : (
-                <SparkleIcon className="h-7 w-7 sm:h-8 sm:w-8" />
-              )}
+      <div className="site-header__main container-x flex min-h-[5.25rem] items-center justify-between gap-3 py-1.5">
+        <Link href="/" className="group flex min-w-0 shrink-0 items-center gap-2.5 sm:gap-3" onClick={() => setOpen(false)} aria-label="Niffer Cosmetics, ukurasa wa mwanzo">
+          <span className="relative flex h-16 w-16 shrink-0 items-center justify-center transition-transform duration-300 ease-out group-hover:scale-[1.04] sm:h-[5.25rem] sm:w-[5.25rem]">
+            <span aria-hidden className="absolute -inset-1 rounded-full border border-dashed border-gold-500/60 transition-transform duration-500 ease-out group-hover:rotate-90" />
+            <span className="relative flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-gold-500 via-brand-400 to-brand-800 p-[4px] shadow-[0_14px_30px_-16px_rgba(95,23,49,0.7)]">
+              <span className="flex h-full w-full items-center justify-center rounded-full bg-surface p-[3px]">
+                <span className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-cream-100 text-accent">
+                  {profileImage ? (
+                    <Image src={profileImage} alt="Profile ya Niffer Cosmetics" fill unoptimized sizes="84px" className="object-cover" />
+                  ) : (
+                    <SparkleIcon className="h-8 w-8 sm:h-10 sm:w-10" />
+                  )}
+                </span>
+              </span>
+            </span>
+            <span aria-hidden className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-gold-500 text-brand-900 shadow-md ring-2 ring-cream-50">
+              <SparkleIcon className="h-3.5 w-3.5" />
             </span>
           </span>
           <span className="flex flex-col leading-none">
