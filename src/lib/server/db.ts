@@ -417,7 +417,13 @@ async function seed(pool: Pool): Promise<void> {
       stockValues,
     );
 
-    // Restore accurate seeded catalog ratings after removing synthetic demo reviews.
+    // Remove the old catalog's known example reviews from the initial seed.
+    await pool.query(
+      `DELETE FROM reviews WHERE id = ANY($1::text[])`,
+      [["r-001", "r-002", "r-003", "r-004", "r-005", "r-006", "r-007", "r-008"]],
+    );
+
+    // Derive product scores only from remaining approved customer reviews.
     await pool.query(
       `UPDATE products AS p SET rating = COALESCE(r.avg_rating, 0), review_count = COALESCE(r.review_count, 0)
        FROM (SELECT product_slug, AVG(rating) AS avg_rating, COUNT(*) AS review_count
