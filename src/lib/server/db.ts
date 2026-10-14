@@ -294,7 +294,7 @@ function getPool(): Pool {
   if (globals.__nifferPool) return globals.__nifferPool;
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) throw new Error('DATABASE_URL haijawekwa.');
-  const pool = new Pool({ connectionString, max: 5, idleTimeoutMillis: 5_000, connectionTimeoutMillis: 10_000 });
+  const pool = new Pool({ connectionString, max: 5, idleTimeoutMillis: 60_000, connectionTimeoutMillis: 10_000 });
   globals.__nifferPool = pool;
   return pool;
 }
@@ -317,8 +317,8 @@ export async function ensureDatabaseReady(): Promise<void> {
   if (globals.__nifferDbReady) return globals.__nifferDbReady;
   const pool = getPool();
   globals.__nifferDbReady = (async () => {
-    const statements = SCHEMA.split(';').map((sql) => sql.trim()).filter(Boolean);
-    for (const statement of statements) await pool.query(statement);
+    // Moja query nyingi kwa mzunguko mmoja — kila round-trip ya Neon ni ~250ms.
+    await pool.query(SCHEMA);
     await migrate(pool);
     await seed(pool);
   })().catch((error) => {
@@ -332,32 +332,79 @@ async function migrate(pool: Pool): Promise<void> {
   await pool.query(`UPDATE gift_cards
     SET expires_at = (created_at::timestamptz + INTERVAL '1 year')::text
     WHERE expires_at IS NULL`);
-  for (const promo of promoCodes) {
+  if (promoCodes.length > 0) {
+    const tuples: string[] = [];
+    const values: unknown[] = [];
+    promoCodes.forEach((promo, i) => {
+      const b = i * 7;
+      tuples.push(`($${b + 1},$${b + 2},$${b + 3},$${b + 4},$${b + 5},$${b + 6},$${b + 7})`);
+      values.push(promo.code, promo.label, promo.percentOff ?? null, promo.freeShipping ? 1 : 0, promo.minSubtotalTsh ?? null, promo.active ? 1 : 0, nowIso());
+    });
     await pool.query(
       `INSERT INTO promo_codes (code, label, percent_off, free_shipping, min_subtotal_tsh, active, created_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (code) DO NOTHING`,
-      [promo.code, promo.label, promo.percentOff ?? null, promo.freeShipping ? 1 : 0, promo.minSubtotalTsh ?? null, promo.active ? 1 : 0, nowIso()],
+       VALUES ${tuples.join(',')} ON CONFLICT (code) DO NOTHING`,
+      values,
     );
   }
 }
 
 async function seed(pool: Pool): Promise<void> {
   const now = nowIso();
-  for (const p of catalogProducts) {
+  if (catalogProducts.length > 0) {
+    const tuples: string[] = [];
+    const values: unknown[] = [];
+    catalogProducts.forEach((p, i) => {
+      const b = i * 19;
+      tuples.push(`(${Array.from({ length: 19 }, (_, j) => `$${b + j + 1}`).join(',')})`);
+      values.push(p.slug, p.id, p.name, p.category, p.priceTsh, nul(p.compareAtTsh), p.shortDescription, p.description, p.ingredients, p.howToUse, p.rating, p.reviewCount, p.stock, JSON.stringify(p.badges ?? []), p.image, p.imageAlt, p.region ?? '', p.city ?? '', now);
+    });
     await pool.query(
       `INSERT INTO products (slug,id,name,category,price_tsh,compare_at_tsh,short_description,description,ingredients,how_to_use,rating,review_count,stock_base,badges,image,image_alt,region,city,updated_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
-       ON CONFLICT (slug) DO NOTHING`,
-      [p.slug,p.id,p.name,p.category,p.priceTsh,nul(p.compareAtTsh),p.shortDescription,p.description,p.ingredients,p.howToUse,p.rating,p.reviewCount,p.stock,JSON.stringify(p.badges ?? []),p.image,p.imageAlt,p.region ?? '',p.city ?? '',now],
+       VALUES ${tuples.join(',')} ON CONFLICT (slug) DO NOTHING`,
+      values,
     );
-    if (p.region) await pool.query("UPDATE products SET region=$1,city=$2 WHERE slug=$3 AND region=''", [p.region,p.city ?? '',p.slug]);
-    await pool.query('INSERT INTO stock (slug,qty,updated_at) VALUES ($1,$2,$3) ON CONFLICT (slug) DO NOTHING', [p.slug,p.stock,now]);
+
+    const regionProducts = catalogProducts.filter((p) => p.region);
+    if (regionProducts.length > 0) {
+      const regionTuples: string[] = [];
+      const regionValues: unknown[] = [];
+      regionProducts.forEach((p, i) => {
+        const b = i * 3;
+        regionTuples.push(`($${b + 1},$${b + 2},$${b + 3})`);
+        regionValues.push(p.slug, p.region ?? '', p.city ?? '');
+      });
+      await pool.query(
+        `UPDATE products AS p SET region = v.region, city = v.city
+         FROM (VALUES ${regionTuples.join(',')}) AS v(slug, region, city)
+         WHERE p.slug = v.slug AND p.region = ''`,
+        regionValues,
+      );
+    }
+
+    const stockTuples: string[] = [];
+    const stockValues: unknown[] = [];
+    catalogProducts.forEach((p, i) => {
+      const b = i * 3;
+      stockTuples.push(`($${b + 1},$${b + 2},$${b + 3})`);
+      stockValues.push(p.slug, p.stock, now);
+    });
+    await pool.query(
+      `INSERT INTO stock (slug,qty,updated_at) VALUES ${stockTuples.join(',')} ON CONFLICT (slug) DO NOTHING`,
+      stockValues,
+    );
   }
-  for (const review of catalogReviews) {
+  if (catalogReviews.length > 0) {
+    const reviewTuples: string[] = [];
+    const reviewValues: unknown[] = [];
+    catalogReviews.forEach((review, i) => {
+      const b = i * 7;
+      reviewTuples.push(`($${b + 1},$${b + 2},$${b + 3},$${b + 4},$${b + 5},$${b + 6},'approved',$${b + 7})`);
+      reviewValues.push(review.id, review.customerName, review.location, review.rating, review.comment, review.productSlug, now);
+    });
     await pool.query(
       `INSERT INTO reviews (id,customer_name,location,rating,comment,product_slug,status,created_at)
-       VALUES ($1,$2,$3,$4,$5,$6,'approved',$7) ON CONFLICT (id) DO NOTHING`,
-      [review.id,review.customerName,review.location,review.rating,review.comment,review.productSlug,now],
+       VALUES ${reviewTuples.join(',')} ON CONFLICT (id) DO NOTHING`,
+      reviewValues,
     );
   }
 }

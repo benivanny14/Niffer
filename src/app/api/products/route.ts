@@ -30,8 +30,9 @@ export async function GET(req: NextRequest) {
     query: params.get("q"),
     sort: isSortKey(sortParam) ? sortParam : "maarufu",
   };
-  const products = filterProducts(await listProducts(), filters);
-  return json({ ok: true, count: products.length, products, ...(await catalogStats()) });
+  const all = await listProducts();
+  const products = filterProducts(all, filters);
+  return json({ ok: true, count: products.length, products, ...(await catalogStats(all)) });
 }
 
 function slugify(value: string): string {

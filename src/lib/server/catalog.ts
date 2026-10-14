@@ -162,11 +162,19 @@ export async function searchCatalog(query: string, limit = 24): Promise<SearchRe
 }
 
 /** Takwimu za haraka kwa dashibodi. */
-export async function catalogStats(): Promise<{
+export async function catalogStats(list?: Product[]): Promise<{
   productCount: number;
   articleCount: number;
 }> {
-  return { productCount: (await listProducts()).length, articleCount: articles.length };
+  if (list) return { productCount: list.length, articleCount: articles.length };
+  try {
+    const row = await getDb()
+      .prepare("SELECT count(*) AS c FROM products")
+      .get() as { c: string | number } | undefined;
+    return { productCount: Number(row?.c ?? catalogProducts.length), articleCount: articles.length };
+  } catch {
+    return { productCount: catalogProducts.length, articleCount: articles.length };
+  }
 }
 
 export type { Article };

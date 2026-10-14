@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { categories } from "@/lib/data/catalog";
 import { HeaderControls } from "@/components/layout/HeaderControls";
 import { CloseIcon, MenuIcon, SparkleIcon } from "@/components/ui/icons";
@@ -23,6 +23,32 @@ const navLinks = [
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [profileImage, setProfileImage] = useState("");
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    let frame = 0;
+    function onScroll() {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        const currentY = Math.max(0, window.scrollY);
+        const previousY = lastScrollY.current;
+        const delta = currentY - previousY;
+
+        if (currentY < 72 || delta < -6) setHidden(false);
+        else if (currentY > 180 && delta > 8 && !open) setHidden(true);
+
+        lastScrollY.current = currentY;
+        frame = 0;
+      });
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [open]);
 
   useEffect(() => {
     let active = true;
@@ -54,7 +80,7 @@ export function SiteHeader() {
   }, [open]);
 
   return (
-    <header className="site-header sticky top-0 z-40">
+    <header className={`site-header sticky top-0 z-40 ${hidden ? "site-header--hidden" : ""}`}>
       <div className="site-header__announcement">
         <div className="container-x flex min-h-8 items-center justify-center gap-2 py-1 text-[11px] leading-snug">
           <SparkleIcon className="h-3.5 w-3.5 shrink-0 text-gold-500" />

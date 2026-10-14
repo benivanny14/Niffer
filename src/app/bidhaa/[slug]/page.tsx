@@ -98,7 +98,8 @@ export default async function ProductPage({ params }: PageProps) {
 async function ProductDetail({ params }: PageProps) {
   await connection();
   const { slug } = await params;
-  const product = await findProduct(slug);
+  const all = await listProducts();
+  const product = all.find((p) => p.slug === slug);
   if (!product) notFound();
 
   const discount = discountPercent(product.priceTsh, product.compareAtTsh);
@@ -107,7 +108,7 @@ async function ProductDetail({ params }: PageProps) {
     (r) => r.productSlug === product.slug,
   );
   // Bidhaa zinazohusiana kutoka DB (kategoria ile ile).
-  const related = (await listProducts())
+  const related = all
     .filter((p) => p.slug !== product.slug && p.category === product.category)
     .slice(0, 4);
 
