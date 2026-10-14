@@ -2,8 +2,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { categories } from "@/lib/data/catalog";
-import { listProducts } from "@/lib/server/catalog";
+import { listCategories, listProducts } from "@/lib/server/catalog";
 import { ProductCard } from "@/components/catalog/ProductCard";
 import { CatalogFilters } from "@/components/catalog/CatalogFilters";
 import {
@@ -98,7 +97,7 @@ async function ProductGrid({ searchParams }: PageProps) {
   const params = await searchParams;
   const filters = parseFilters(params);
   await connection();
-  const all = await listProducts();
+  const [all, categories] = await Promise.all([listProducts(), listCategories()]);
   const filtered = filterProducts(all, filters);
   const counts = filterCounts(all, filters);
 
@@ -138,7 +137,7 @@ async function ProductGrid({ searchParams }: PageProps) {
       </div>
 
       <div className="catalog-controls mt-8">
-        <CatalogFilters counts={counts} />
+      <CatalogFilters counts={counts} categories={categories} />
       </div>
 
       {filtered.length > 0 ? (

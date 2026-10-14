@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { categories, getProductBySlug, searchProducts } from "@/lib/data/catalog";
+import { categories as fallbackCategories, getProductBySlug, searchProducts, type Category } from "@/lib/data/catalog";
 import { apiGet } from "@/lib/api";
 import { useAsync } from "@/lib/use-async";
 import { ProductCard } from "@/components/catalog/ProductCard";
@@ -44,6 +44,11 @@ export default function SearchPage() {
 function SearchResults() {
   const params = useSearchParams();
   const q = params.get("q") ?? "";
+  const categoryResource = useAsync<Category[]>("store-categories", async () => {
+    const data = await apiGet<{ ok: boolean; categories: Category[] }>("/api/categories");
+    return data.categories;
+  });
+  const categoryOptions = categoryResource.data ?? fallbackCategories;
 
   // Utafitaji wa backend (bidhaa + makala) — hutumia utafutaji wa ndani kama
   // kinga endapo server/mtandao haupo.
@@ -87,7 +92,7 @@ function SearchResults() {
       )}
 
       <ul className="mt-6 flex flex-wrap gap-2">
-        {categories.map((c) => (
+        {categoryOptions.map((c) => (
           <li key={c.slug}>
             <Link
               href={`/bidhaa?kategoria=${c.slug}`}

@@ -1,5 +1,5 @@
 import { Pool, type PoolClient } from "@neondatabase/serverless";
-import { products as catalogProducts } from "@/lib/data/catalog";
+import { categories as catalogCategories, products as catalogProducts } from "@/lib/data/catalog";
 import { promoCodes } from "@/lib/promo";
 
 /**
@@ -33,6 +33,14 @@ CREATE TABLE IF NOT EXISTS stock (
   slug       TEXT PRIMARY KEY,
   qty        INTEGER NOT NULL,
   updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS categories (
+  slug        TEXT PRIMARY KEY,
+  name        TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  swatch      TEXT NOT NULL DEFAULT 'bg-cream-200',
+  created_at  TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS orders (
@@ -281,7 +289,7 @@ export class NeonDatabase {
 }
 
 /** Ongeza mara SCHEMA inapobadilishwa (DDL ni polepole: ~14s kwenye Neon). */
-const SCHEMA_VERSION = "1";
+const SCHEMA_VERSION = "2";
 
 type DbGlobals = typeof globalThis & {
   __nifferPool?: Pool;
@@ -374,6 +382,20 @@ async function migrate(pool: Pool): Promise<void> {
 
 async function seed(pool: Pool): Promise<void> {
   const now = nowIso();
+  if (catalogCategories.length > 0) {
+    const categoryTuples: string[] = [];
+    const categoryValues: unknown[] = [];
+    catalogCategories.forEach((category, i) => {
+      const b = i * 5;
+      categoryTuples.push(`($${b + 1},$${b + 2},$${b + 3},$${b + 4},$${b + 5})`);
+      categoryValues.push(category.slug, category.name, category.description, category.swatch, now);
+    });
+    await pool.query(
+      `INSERT INTO categories (slug,name,description,swatch,created_at)
+       VALUES ${categoryTuples.join(',')} ON CONFLICT (slug) DO NOTHING`,
+      categoryValues,
+    );
+  }
   if (catalogProducts.length > 0) {
     const tuples: string[] = [];
     const values: unknown[] = [];

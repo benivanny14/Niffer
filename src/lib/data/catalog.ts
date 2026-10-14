@@ -26,11 +26,7 @@ export type Product = {
 
 export type ProductBadge = "new" | "bestseller" | "sale" | "low-stock";
 
-export type CategorySlug =
-  | "mwanachuo-pack"
-  | "purest-glow"
-  | "body-care"
-  | "skincare";
+export type CategorySlug = string;
 
 export type Category = {
   slug: CategorySlug;

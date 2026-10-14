@@ -1,7 +1,9 @@
 import { getDb } from "@/lib/server/db";
 import {
+  categories as catalogCategories,
   products as catalogProducts,
   type CategorySlug,
+  type Category,
   type Product,
   type ProductBadge,
 } from "@/lib/data/catalog";
@@ -35,6 +37,38 @@ type ProductRow = {
   city: string;
   updated_at: string;
 };
+
+type CategoryRow = {
+  slug: string;
+  name: string;
+  description: string;
+  swatch: string;
+  product_count: number;
+};
+
+/** Orodha ya kategoria za duka; data ya msingi hutumika kama DB haipatikani. */
+export async function listCategories(): Promise<Category[]> {
+  try {
+    const rows = await getDb().prepare(
+      `SELECT c.slug, c.name, c.description, c.swatch, COUNT(p.slug)::int AS product_count
+       FROM categories c LEFT JOIN products p ON p.category = c.slug
+       GROUP BY c.slug, c.name, c.description, c.swatch, c.created_at
+       ORDER BY c.created_at, c.name`,
+    ).all() as CategoryRow[];
+    if (rows.length > 0) {
+      return rows.map((row) => ({
+        slug: row.slug,
+        name: row.name,
+        description: row.description,
+        swatch: row.swatch,
+        productCount: Number(row.product_count),
+      }));
+    }
+  } catch {
+    // DB mpya/haipatikani: onyesha kategoria za msingi badala ya kuvunja duka.
+  }
+  return catalogCategories;
+}
 
 function rowToProduct(row: ProductRow): Product {
   let badges: ProductBadge[] = [];

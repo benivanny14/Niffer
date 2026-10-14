@@ -1,7 +1,7 @@
 ﻿import Link from "next/link";
 import { connection } from "next/server";
-import { beautyVideos, categories } from "@/lib/data/catalog";
-import { listProducts } from "@/lib/server/catalog";
+import { beautyVideos } from "@/lib/data/catalog";
+import { listCategories, listProducts } from "@/lib/server/catalog";
 import { listReviews } from "@/lib/server/leads";
 import { getDb } from "@/lib/server/db";
 import { latestArticles, formatDate } from "@/lib/data/articles";
@@ -9,7 +9,6 @@ import { formatTsh } from "@/lib/format";
 import { ProductCard } from "@/components/catalog/ProductCard";
 import { ProductImage } from "@/components/media/ProductImage";
 import { VideoGallery } from "@/components/media/VideoGallery";
-import { InstagramShowcase } from "@/components/instagram/InstagramShowcase";
 import { NewsletterForm } from "@/components/ui/NewsletterForm";
 import { waLink } from "@/lib/site";
 import {
@@ -47,13 +46,14 @@ const trustPoints = [
 
 export default async function Home() {
   await connection();
-  const [products, reviews, profileRow] = await Promise.all([
+  const [products, reviews, profileRow, categories] = await Promise.all([
     listProducts(),
     listReviews(8),
     getDb()
       .prepare("SELECT value FROM meta WHERE key = ?")
       .get("store_admin_profile_image")
       .catch(() => undefined) as Promise<{ value?: string } | undefined>,
+    listCategories(),
   ]);
   const storeProfileImage = profileRow?.value ?? "";
   const onSale = products.filter((p) => p.compareAtTsh);
@@ -168,7 +168,6 @@ export default async function Home() {
         </ul>
       </section>
 
-      <InstagramShowcase />
 
       <section id="bidhaa" className="product-showcase scroll-mt-24 bg-cream-100 py-16 lg:py-24">
         <div className="container-x">

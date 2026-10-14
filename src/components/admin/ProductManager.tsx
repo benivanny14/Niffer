@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { categories, type Product } from "@/lib/data/catalog";
+import { categories as fallbackCategories, type Category, type Product } from "@/lib/data/catalog";
 import { formatTsh } from "@/lib/format";
 import {
   apiDelete,
@@ -38,7 +38,7 @@ const emptyDraft: Draft = {
   name: "",
   price: "",
   compareAt: "",
-  category: categories[0]?.slug ?? "skincare",
+  category: fallbackCategories[0]?.slug ?? "skincare",
   stock: "10",
   shortDescription: "",
   description: "",
@@ -57,6 +57,16 @@ export function ProductManager() {
   const [formError, setFormError] = useState("");
   const [notice, setNotice] = useState("");
   const [stockError, setStockError] = useState("");
+  const [categoryName, setCategoryName] = useState("");
+  const [categoryDescription, setCategoryDescription] = useState("");
+  const [categoryError, setCategoryError] = useState("");
+  const [categorySaving, setCategorySaving] = useState(false);
+
+  const categoryResource = useAsync<Category[]>("admin-categories", async () => {
+    const res = await apiGet<{ ok: boolean; categories: Category[] }>("/api/categories");
+    return res.categories;
+  });
+  const categoryOptions = categoryResource.data ?? fallbackCategories;
 
   const { data, loading, error, refresh } = useAsync<Product[]>(
     "admin-products",
@@ -73,6 +83,27 @@ export function ProductManager() {
   const filtered = products.filter(
     (p) => categoryFilter === "zote" || p.category === categoryFilter,
   );
+
+  async function addCategory() {
+    if (categorySaving) return;
+    setCategorySaving(true);
+    setCategoryError("");
+    try {
+      const result = await apiPost<{ ok: boolean; category: Category }>("/api/categories", {
+        name: categoryName,
+        description: categoryDescription,
+      });
+      setCategoryName("");
+      setCategoryDescription("");
+      categoryResource.refresh();
+      setCategoryFilter(result.category.slug);
+      flash(`Kategoria “${result.category.name}” limeongezwa`);
+    } catch (err) {
+      setCategoryError(errorMessage(err));
+    } finally {
+      setCategorySaving(false);
+    }
+  }
 
   function openEdit(product: Product) {
     setFormError("");
@@ -183,7 +214,7 @@ export function ProductManager() {
           className="rounded-xl border border-cream-300 bg-surface px-3 py-2 text-sm"
         >
           <option value="zote">Zote</option>
-          {categories.map((c) => (
+          {categoryOptions.map((c) => (
             <option key={c.slug} value={c.slug}>
               {c.name}
             </option>
@@ -210,6 +241,45 @@ export function ProductManager() {
           <span className="text-xs text-danger-600">{stockError}</span>
         ) : null}
       </div>
+
+      <details className="card mt-4 p-4">
+        <summary className="cursor-pointer text-sm font-semibold text-ink-800">
+          + Ongeza kategoria mpya
+        </summary>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <label className="block text-sm">
+            <span className="mb-1.5 block font-medium text-ink-700">Jina la kategoria</span>
+            <input
+              value={categoryName}
+              onChange={(event) => setCategoryName(event.target.value)}
+              maxLength={60}
+              className={field}
+              placeholder="Mfano: Manukato"
+            />
+          </label>
+          <label className="block text-sm">
+            <span className="mb-1.5 block font-medium text-ink-700">Maelezo mafupi (hiari)</span>
+            <input
+              value={categoryDescription}
+              onChange={(event) => setCategoryDescription(event.target.value)}
+              maxLength={240}
+              className={field}
+              placeholder="Bidhaa za manukato na body mist"
+            />
+          </label>
+          {categoryError ? <p className="text-sm text-danger-600 sm:col-span-2">{categoryError}</p> : null}
+          <div className="sm:col-span-2">
+            <button
+              type="button"
+              onClick={() => void addCategory()}
+              disabled={categorySaving || categoryName.trim().length < 2}
+              className="btn-primary px-4 py-2 text-sm disabled:opacity-60"
+            >
+              {categorySaving ? "Inaongeza…" : "Ongeza kategoria"}
+            </button>
+          </div>
+        </div>
+      </details>
 
       {/* Orodha */}
       <div className="card mt-6 overflow-x-auto">
@@ -258,7 +328,7 @@ export function ProductManager() {
                       </span>
                     </td>
                     <td className="px-5 py-3 text-ink-700">
-                      {categories.find((c) => c.slug === product.category)?.name ??
+                      {categoryOptions.find((c) => c.slug === product.category)?.name ??
                         product.category}
                     </td>
                     <td className="px-5 py-3 text-ink-700">
@@ -385,7 +455,7 @@ export function ProductManager() {
                   onChange={(e) => setDraft({ ...draft, category: e.target.value })}
                   className={field}
                 >
-                  {categories.map((c) => (
+                  {categoryOptions.map((c) => (
                     <option key={c.slug} value={c.slug}>
                       {c.name}
                     </option>

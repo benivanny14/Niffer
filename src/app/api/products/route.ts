@@ -4,7 +4,6 @@ import { listProducts, catalogStats } from "@/lib/server/catalog";
 import { isAdminRequest } from "@/lib/server/auth";
 import { getDb, nowIso } from "@/lib/server/db";
 import { optimizeCloudinaryUrl } from "@/lib/server/cloudinary";
-import { categories } from "@/lib/data/catalog";
 import {
   filterProducts,
   isSortKey,
@@ -81,7 +80,7 @@ export async function POST(req: NextRequest) {
     if (!slug) return fail("Slug ya bidhaa si sahihi.");
 
     const category = (body.category || "skincare").trim();
-    if (!categories.some((c) => c.slug === category)) {
+    if (!await getDb().prepare("SELECT 1 FROM categories WHERE slug = ?").get(category)) {
       return fail("Kategoria si sahihi.");
     }
 

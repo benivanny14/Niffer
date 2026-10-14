@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { categories } from "@/lib/data/catalog";
+import type { Category } from "@/lib/data/catalog";
 import { tanzaniaRegions } from "@/lib/site";
 import {
   priceRanges,
@@ -16,7 +16,7 @@ import { MapPinIcon } from "@/components/ui/icons";
  * mkoa → mji, kategoria, kipengele, bei na upangaji. Kila mabadiliko
  * huandika kwenye URL (?mkoa=&mji=…) ili viungi viweze kushirikiwa.
  */
-export function CatalogFilters({ counts }: { counts: ProductFilterCounts }) {
+export function CatalogFilters({ counts, categories }: { counts: ProductFilterCounts; categories: Category[] }) {
   const [showLocationFilters, setShowLocationFilters] = useState(false);
   const router = useRouter();
   const params = useSearchParams();

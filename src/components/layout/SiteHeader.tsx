@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { categories } from "@/lib/data/catalog";
+import { categories as fallbackCategories, type Category } from "@/lib/data/catalog";
 import { HeaderControls } from "@/components/layout/HeaderControls";
 import { CloseIcon, MenuIcon, SparkleIcon } from "@/components/ui/icons";
 
@@ -23,6 +23,7 @@ const navLinks = [
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [profileImage, setProfileImage] = useState("");
+  const [categoryOptions, setCategoryOptions] = useState<Category[]>(fallbackCategories);
   const [hidden, setHidden] = useState(false);
   const lastScrollY = useRef(0);
 
@@ -52,6 +53,10 @@ export function SiteHeader() {
 
   useEffect(() => {
     let active = true;
+    fetch("/api/categories", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() as Promise<{ categories?: Category[] }> : null)
+      .then((data) => { if (active && data?.categories) setCategoryOptions(data.categories); })
+      .catch(() => undefined);
     const loadProfile = () => {
       fetch("/api/store-profile", { cache: "no-store" })
         .then((response) => response.ok ? response.json() as Promise<{ image?: string }> : null)
@@ -167,7 +172,7 @@ export function SiteHeader() {
             </ul>
             <p className="eyebrow mt-5 px-3">Kategoria</p>
             <ul className="mt-2 grid grid-cols-2 gap-1">
-              {categories.map((category) => (
+              {categoryOptions.map((category) => (
                 <li key={category.slug}>
                   <Link
                     href={`/bidhaa?kategoria=${category.slug}`}

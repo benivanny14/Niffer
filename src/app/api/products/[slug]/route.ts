@@ -69,7 +69,11 @@ export async function PATCH(
     }
     if (typeof body.howToUse === "string") push("how_to_use", body.howToUse.trim());
     if (typeof body.category === "string" && body.category.trim()) {
-      push("category", body.category.trim());
+      const category = body.category.trim();
+      if (!await db.prepare("SELECT 1 FROM categories WHERE slug = ?").get(category)) {
+        return fail("Kategoria si sahihi.");
+      }
+      push("category", category);
     }
     if (Array.isArray(body.badges)) push("badges", JSON.stringify(body.badges));
     if (typeof body.image === "string" && body.image.trim()) {
