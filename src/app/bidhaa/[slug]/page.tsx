@@ -222,7 +222,7 @@ async function ProductDetail({ params }: PageProps) {
             </li>
             <li className="flex items-center gap-2.5">
               <ShieldIcon className="h-4 w-4 shrink-0 text-brand-600" />
-              Bidhaa halisi 100% · malipo poa baada ya kupokea
+              Lipa ukipokea
             </li>
           </ul>
 

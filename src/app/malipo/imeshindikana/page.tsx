@@ -47,7 +47,7 @@ export default async function PaymentFailedPage({ searchParams }: PageProps) {
           </div>
           <p className="mt-2 text-ink-500">
             Hali: malipo hayajathibitishwa. Ukifika bidhaa unaweza kulipa kwa
-            M-Pesa, Mixx by Yas, Airtel Money au malipo poa.
+            M-Pesa, Mixx by Yas, Airtel Money au kulipa bidhaa ikikufikia.
           </p>
         </div>
       ) : null}

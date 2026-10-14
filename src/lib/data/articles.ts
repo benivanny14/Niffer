@@ -1,7 +1,4 @@
-/**
- * Makala za urembo (blog) — mock data.
- * Baada ya CMS, badilisha hapa au tuta-fetch kutoka API.
- */
+/** Makala ya Kiswahili kuhusu kuchagua na kutumia bidhaa za urembo. */
 
 export type Article = {
   slug: string;
@@ -9,10 +6,9 @@ export type Article = {
   excerpt: string;
   category: "skincare" | "makeup" | "nywele" | "harufu" | "habari";
   author: string;
-  date: string; // ISO
+  date: string;
   readMinutes: number;
   image: string;
-  /** Aya za maudhui — kila kipengele ni aya au kichwa kidogo. */
   body: { heading?: string; paragraph: string }[];
   relatedProductSlugs: string[];
 };
@@ -28,189 +24,89 @@ export const articleCategories: { slug: Article["category"]; name: string }[] = 
 export const articles: Article[] = [
   {
     slug: "rutini-ya-skincare-ya-asubuhi",
-    title: "Rutini ya asubuhi ya skincare ndani ya dakika 5",
-    excerpt:
-      "Hatua sahihi tatu za kuanza siku: safisha, hifadhi unyevu, na kinga ya jua — hata ukiwa na muda mfupi.",
+    title: "Hatua rahisi za kutunza ngozi asubuhi",
+    excerpt: "Usafi, unyevunyevu na kinga ya jua vinaweza kuwa mwanzo mzuri wa siku.",
     category: "skincare",
-    author: "Neema M.",
+    author: "Timu ya Niffer",
     date: "2026-09-12",
-    readMinutes: 5,
+    readMinutes: 4,
     image: "/images/packs/pack-135k-qe.jpg",
     body: [
-      {
-        paragraph:
-          "Ngozi yenye afya huanza asubuhi. Rutini sahihi haichukui zaidi ya dakika tano, lakini ina athara ya muda mrefu: inauzuia uzeze, kuoza, na mabadiliko ya rangi yanayosababishwa na jua.",
-      },
-      {
-        heading: "Hatua ya 1: Safisha kwa upole",
-        paragraph:
-          "Tumia cleanser laini yenye pH karibu na 5.5. Paka kwenye uso wa mnyevu na piga mviringo kwa dakika 60 kabla ya kusuka. Usitumie sabuni kali — huvunja kinga ya ngozi na kuisababisha kutoa mafuta ya ziada.",
-      },
-      {
-        heading: "Hatua ya 2: Hifadhi unyevu",
-        paragraph:
-          "Baada ya kusafisha, paka serum kama Vitamin C kwa mwanga, kisha moisturizer kwa unyevu. Serum huingia kwanza kwa sababu molekuli zake ni ndogo kuliko za moisturizer.",
-      },
-      {
-        heading: "Hatua ya 3: Kinga ya jua — si hiari",
-        paragraph:
-          "Sunscreen ya SPF 30+ ni hatua ya mwisho na muhimu zaidi. Ikiwa unatumia tu hatua moja kutoka kwenye list hii, ichague sunscreen. Jua husababisha 80% ya dalili za uzeze kwenye ngozi.",
-      },
-      {
-        paragraph:
-          "Ukidumisha rutini hii kwa wiki nne, utaona tofauti: ngozi angavu, laini, na yenye unyevu wa asili. Kwa bidhaa zinazofaa, angalia kategoria ya Skincare kwenye duka letu.",
-      },
+      { paragraph: "Ratiba ya asubuhi haihitaji bidhaa nyingi. Chagua hatua chache zinazokufaa, na fuata maelekezo yaliyo kwenye kila bidhaa." },
+      { heading: "1. Osha uso kwa upole", paragraph: "Tumia kisafishaji kinachofaa ngozi yako na maji ya uvuguvugu. Suuza vizuri, kisha kausha uso kwa taulo safi bila kusugua." },
+      { heading: "2. Paka moisturizer", paragraph: "Ikiwa ngozi yako huhisi kukauka, paka moisturizer baada ya kuosha. Anza na kiasi kidogo na ongeza tu ikihitajika." },
+      { heading: "3. Tumia sunscreen", paragraph: "Ukiwa nje wakati wa mchana, paka sunscreen yenye SPF 30 au zaidi kulingana na maelekezo ya bidhaa. Rudia kupaka kama lebo inavyoelekeza, hasa baada ya kuogelea au kutokwa jasho." },
+      { paragraph: "Bidhaa mpya inaweza isiifae kila ngozi. Isijaribu kwanza kwenye eneo dogo na acha kuitumia ukiona muwasho unaoendelea." },
     ],
-    relatedProductSlugs: [
-      "purest-glow-pack-65k",
-      "purest-glow-pack-100k",
-      "purest-glow-pack-135k",
-    ],
+    relatedProductSlugs: ["purest-glow-pack-65k", "purest-glow-pack-100k", "purest-glow-pack-135k"],
   },
   {
     slug: "lipstick-ya-muda-mrefu-hatua-kwa-hatua",
-    title: "Mat lipstick ya muda mrefu: hatua kwa hatua",
-    excerpt:
-      "Technique nne rahisi za kupaka lipstick isiyofutika hata baada ya kula chakula.",
+    title: "Jinsi ya kupaka lipstick kwa mwonekano nadhifu",
+    excerpt: "Andaa midomo, weka rangi kwa tabaka nyepesi na rekebisha kingo kwa utulivu.",
     category: "makeup",
-    author: "Asha K.",
+    author: "Timu ya Niffer",
     date: "2026-09-28",
-    readMinutes: 4,
+    readMinutes: 3,
     image: "/images/packs/pack-200k-glass-skin.jpg",
     body: [
-      {
-        paragraph:
-          "Lipstick ya matte inadumu kwa saa nyingi — lakini tu kama imepakwa kwa taratibu sahihi. Hii hapa ndiyo routine tunayotumia wenyewe.",
-      },
-      {
-        heading: "1. Tayarisha midomo",
-        paragraph:
-          "Paka lip balm dakika 10 kabla ya makeup. Kisha futa ziada kwa kitambaa — midomo yenye unyevu kidogo hushika rangi vizuri zaidi kuliko midomo yenye mafuta mengi.",
-      },
-      {
-        heading: "2. Paka liner kwanza",
-        paragraph:
-          "Chora midomo yako kwa lip liner ya rangi ya karibu. Hii hutoa msingi wa rangi na kuzuia lipstick kufurika nje ya mistari ya midomo.",
-      },
-      {
-        heading: "3. Tabaka la kwanza na la pili",
-        paragraph:
-          "Paka tabaka la kwanza kwa brashi ya midomo, kisha mnyafuse kwa kitambaa. Rudia na tabaka la pili. Tabaka mbili nyepesi zaidi kuliko tabaka moja zito.",
-      },
-      {
-        heading: "4. Futa ziada",
-        paragraph:
-          "Weka kitambaa kati ya midomo yako na bonyeza upole — huondoa mafuta ya ziada na kubakiza rangi pekee. Sasa lipstick yako imekamilika kwa siku nzima.",
-      },
+      { paragraph: "Lipstick hukaa vizuri zaidi midomoni ikiwa safi na imetayarishwa. Matokeo hutegemea bidhaa na shughuli zako, kwa hiyo unaweza kuhitaji kuipaka tena." },
+      { heading: "1. Andaa midomo", paragraph: "Paka lip balm kidogo ikiwa midomo imekauka. Iache kwa muda mfupi, kisha futa kiasi kilichobaki kabla ya kuweka rangi." },
+      { heading: "2. Chora kingo", paragraph: "Tumia lip liner inayokaribiana na rangi ya lipstick, au ruka hatua hii kama unapendelea mwonekano wa kawaida." },
+      { heading: "3. Weka lipstick", paragraph: "Paka tabaka jembamba kuanzia katikati ya mdomo. Unaweza kuongeza tabaka jingine ikiwa unataka rangi ionekane zaidi." },
+      { heading: "4. Ondoa rangi ya ziada", paragraph: "Bonyeza tissue taratibu katikati ya midomo. Angalia kingo kwenye mwanga mzuri na usahihishe sehemu zinazohitaji." },
     ],
     relatedProductSlugs: ["body-pack-200k-glass", "body-pack-245k-rose"],
   },
   {
     slug: "kuchagua-perfume-inayokufaa",
-    title: "Kuchagua perfume inayokufaa: mwongozo wa harufu",
-    excerpt:
-      "Familia tatu za harufu, jinsi ya kuzijaribu, na ni yupi anafaa na hali ya hewa ya Tanzania.",
+    title: "Namna ya kuchagua harufu unayoipenda",
+    excerpt: "Jaribu harufu moja baada ya nyingine na upe muda kabla ya kuamua.",
     category: "harufu",
-    author: "Zainabu H.",
+    author: "Timu ya Niffer",
     date: "2026-10-02",
-    readMinutes: 6,
+    readMinutes: 4,
     image: "/images/packs/pack-265k-eos.jpg",
     body: [
-      {
-        paragraph:
-          "Perfume ni uamuzi wa kibinafsi sana — harufu inayokufaa wewe si lazima imfahie rafiki yako. Lakini kuna kanuni chache zinazokuongoza kuchagua chaguo sahihi.",
-      },
-      {
-        heading: "Familia tatu kuu",
-        paragraph:
-          "Citrus (bergamot, limao) ni nyepesi na yenye nishati — inafaa mchana. Floral (rose, jasmine) ni ya kifahari na ya kike. Oriental/Amber (vanilla, cedar, musk) ni nzito na ya jioni.",
-      },
-      {
-        heading: "Jinsi ya kujaribu",
-        paragraph:
-          "Usipake perfume kwenye karatasi — paka kwenye ngozi yako. Harufu hubadilika na joto la mwili wako. Ngoisha dakika 30 kabla ya kuamua, kwa sababu midundo ya juu huondoka na kubaki msingi.",
-      },
-      {
-        heading: "Kwa hali ya hewa ya Tanzania",
-        paragraph:
-          "Joto la joto linahitaji harufu nyepesi: citrus, aquatic, au body mist. Kwa jioni na matukio maalum, amber na vanilla hubaki kwa muda mrefu na kuonekana za kifahari zaidi.",
-      },
-      {
-        paragraph:
-          "Kidokezo: paka perfume kwenye maendo ya nabii — shingo, nyuma ya masikio, na pulse points. Usifute; harufu huachwa iendelee kutoka mwilini.",
-      },
+      { paragraph: "Harufu ni chaguo la mtu binafsi. Ile unayoipenda inaweza kuwa tofauti na anayopenda rafiki yako, kwa hiyo ni vizuri kuijaribu mwenyewe." },
+      { heading: "Anza na aina unazopendelea", paragraph: "Harufu za citrus huwa na noti za matunda jamii ya machungwa; floral hukumbusha maua; na baadhi ya harufu zenye vanilla au mbao huwa na hisia nzito zaidi. Majina haya ni mwongozo tu—jaribu bidhaa yenyewe." },
+      { heading: "Ijaribu kabla ya kununua", paragraph: "Ikiwezekana, jaribu kiasi kidogo kwenye ngozi au karatasi ya kupimia. Ipe dakika kadhaa kabla ya kuamua kama unaipenda, na epuka kupuliza karibu na macho au ngozi iliyowashwa." },
+      { heading: "Tumia kulingana na lebo", paragraph: "Fuata maelekezo ya chupa. Kama unapuliza kwenye nguo, hakikisha lebo inaruhusu na jaribu kwanza sehemu isiyoonekana ili kuepuka doa." },
     ],
-    relatedProductSlugs: [
-      "body-pack-265k",
-      "body-pack-140k",
-    ],
+    relatedProductSlugs: ["body-pack-265k", "body-pack-140k"],
   },
   {
     slug: "nywele-zinazoumiza-5-tiba-za-argan",
-    title: "Nywele zinazoumiza? Tiba tano za argan za kila wiki",
-    excerpt:
-      "Kutoka kwa kukausha hadi kupasuka — jinsi ya kurejesha nywele zako kwa ratiba rahisi ya wiki moja.",
+    title: "Utunzaji wa nywele zilizokauka au kukatika",
+    excerpt: "Hatua za kawaida za kuosha na kutunza nywele bila kuzisumbua kupita kiasi.",
     category: "nywele",
-    author: "Rehema J.",
+    author: "Timu ya Niffer",
     date: "2026-10-05",
-    readMinutes: 5,
+    readMinutes: 4,
     image: "/images/packs/pack-mwanachuo-95k-argan.jpg",
     body: [
-      {
-        paragraph:
-          "Nywele zinazoumiza ni ishara ya unyevu uliopungua na protein iliyopungua. Tiba sahihi si ya gharama kubwa — ni ya kudumu kwa wiki nne.",
-      },
-      {
-        heading: "Wiki ya 1: Msingi wa usafi",
-        paragraph:
-          "Tumia shampoo ya repair ya argan mara mbili kwa wiki. Paka kwenye scalpa pekee na acha maji yasafishe miisho — shampoo nyingi huua unyevu wa miisho.",
-      },
-      {
-        heading: "Wiki ya 2–3: Conditioner na masaji",
-        paragraph:
-          "Baada ya shampoo, paka conditioner kutoka katikati hadi ukingo. Acha dakika 3 kisha suka kwa maji baridi — baridi hufunga cuticle na kutoa mwanga.",
-      },
-      {
-        heading: "Wiki ya 4: Mask ya muda mrefu",
-        paragraph:
-          "Mara moja kwa wiki, paka argan oil safi kwenye nywele kabla ya kuoga na acha kwa saa 1. Hii ni tiba ya kina kabla ya kurejea kwenye ratiba ya kawaida.",
-      },
-      {
-        paragraph:
-          "Epuka joto la moja kwa moja bila spray ya kinga, na punguza kupiga nywele kwa mavuzi. Uthabiti ndio siri kubwa kuliko bidhaa yoyote.",
-      },
+      { paragraph: "Nywele kukauka au kukatika kunaweza kuwa na sababu tofauti. Anza na utunzaji mpole na chagua bidhaa kulingana na mahitaji ya nywele zako." },
+      { heading: "Osha kwa upole", paragraph: "Paka shampoo zaidi kichwani na usugue kwa ncha za vidole. Tumia mara kulingana na aina ya nywele na maelekezo ya bidhaa." },
+      { heading: "Tumia conditioner", paragraph: "Baada ya shampoo, paka conditioner kwenye urefu wa nywele na ncha. Iache kwa muda ulioelekezwa kisha suuza." },
+      { heading: "Punguza joto kali", paragraph: "Kama unatumia kifaa cha joto, tumia kiwango cha chini kinachokufaa na bidhaa ya kinga ya joto iliyoandikwa kwa matumizi hayo." },
+      { paragraph: "Mafuta au bidhaa zenye argan zinaweza kuwa sehemu ya ratiba yako ikiwa zinakufaa. Fuata lebo; bidhaa moja haiwezi kutatua kila aina ya tatizo la nywele." },
     ],
     relatedProductSlugs: ["mwanachuo-pack-95k-argan", "body-pack-195k-coffee"],
   },
   {
     slug: "habari-kubwa-niffer-duka-jipya-dar",
-    title: "Habari: duka letu jipya linafunguliwa Dar es Salaam",
-    excerpt:
-      "Tunazindua duka la kimwili Mtaa wa Samora — karibu na wateja wetu zaidi.",
+    title: "Jinsi ya kuagiza bidhaa kwenye Niffer Cosmetics",
+    excerpt: "Tafuta bidhaa, kagua maelezo na chagua njia inayokufaa ya kukamilisha oda.",
     category: "habari",
     author: "Timu ya Niffer",
     date: "2026-10-08",
-    readMinutes: 3,
+    readMinutes: 2,
     image: "/images/packs/pack-245k-ogx-rose.jpg",
     body: [
-      {
-        paragraph:
-          "Baada ya miaka miwili ya kuuza mtandaoni, tumefungua duka letu la kwanza la kimwili Mtaa wa Samora, Dar es Salaam.",
-      },
-      {
-        heading: "Kwa nini duka la kimwili?",
-        paragraph:
-          "Wateja wetu wengi walitaka kuona na kupaka bidhaa kabla ya kununua. Duka letu lina maonyesho ya kila aina ya bidhaa, na timu yetu ya wataalamu iko hapo kushauri.",
-      },
-      {
-        heading: "Ofa ya kuzindua",
-        paragraph:
-          "Kwa mwezi wa kwanza, punguzo la 10% kwa kila oda ya kimwili, na usafirishaji bure Dar es Salaam kwa oda zilizoagizwa mtandaoni.",
-      },
-      {
-        paragraph:
-          "Karibu sana — Jumatatu hadi Jumamosi, 9:00 hadi 20:00. Pia unaweza kuagiza kwa WhatsApp kama huwezi kufika.",
-      },
+      { paragraph: "Unaweza kuanza kwa kutafuta bidhaa kwa jina au kuchagua kategoria kwenye duka. Fungua ukurasa wa bidhaa ili kuona maelezo, bei na upatikanaji wake." },
+      { heading: "Kagua bidhaa na oda", paragraph: "Chagua bidhaa unazotaka na uziongeze kwenye kikapu. Kabla ya kuendelea, hakiki majina, idadi na jumla ya gharama." },
+      { heading: "Weka maelezo ya kupokea", paragraph: "Jaza jina, namba ya simu na anwani ya kufikishiwa. Kagua gharama na makadirio ya muda wa usafirishaji yanayoonyeshwa wakati wa kulipa." },
+      { heading: "Unahitaji msaada?", paragraph: "Wasiliana nasi kupitia namba ya simu au WhatsApp iliyo kwenye ukurasa wa mawasiliano ikiwa una swali kuhusu bidhaa au oda." },
     ],
     relatedProductSlugs: [],
   },

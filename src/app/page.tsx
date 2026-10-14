@@ -9,7 +9,6 @@ import { ProductCard } from "@/components/catalog/ProductCard";
 import { ProductImage } from "@/components/media/ProductImage";
 import { VideoGallery } from "@/components/media/VideoGallery";
 import { InstagramShowcase } from "@/components/instagram/InstagramShowcase";
-import { RatingStars } from "@/components/ui/RatingStars";
 import { NewsletterForm } from "@/components/ui/NewsletterForm";
 import { waLink } from "@/lib/site";
 import {
@@ -30,18 +29,18 @@ const trustPoints = [
   },
   {
     icon: ShieldIcon,
-    title: "Bidhaa halisi 100%",
-    description: "Tunahakikisha ubora kutoka kwa wasambazaji waliothibitishwa",
+    title: "Maelezo ya bidhaa wazi",
+    description: "Kagua bei, picha na maelezo kabla ya kuagiza",
   },
   {
     icon: ChatIcon,
     title: "Malipo salama",
-    description: "M-Pesa, Mixx by Yas, Airtel Money au malipo poa baada ya kupokea",
+    description: "M-Pesa, Mixx by Yas, Airtel Money au lipa ukipokea",
   },
   {
     icon: TagIcon,
     title: "Bei za ushindani",
-    description: "Punguzo na ofa maalum kwa wateja wetu waaminifu",
+    description: "Angalia bidhaa zenye punguzo kwenye ukurasa wa ofa",
   },
 ];
 
@@ -137,7 +136,7 @@ export default async function Home() {
               <Link href={`/bidhaa?kategoria=${category.slug}`} className="category-tile card group flex h-full flex-col justify-between overflow-hidden p-6">
                 <div className={`category-tile__swatch -mx-6 -mt-6 mb-5 h-28 border-b border-cream-300 ${category.swatch}`} aria-hidden />
                 <div>
-                  <span className="eyebrow">Niffer edit</span>
+                  <span className="eyebrow">Chaguo la Niffer</span>
                   <h3 className="mt-2 font-display text-2xl text-ink-900">{category.name}</h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-ink-500">{category.description}</p>
                 </div>
@@ -241,10 +240,10 @@ export default async function Home() {
       <section id="video" className="scroll-mt-24 bg-cream-100 py-16 lg:py-24">
         <div className="container-x">
           <div>
-            <p className="eyebrow">Funika ndani</p>
+            <p className="eyebrow">Jifunze jinsi ya kutumia</p>
             <h2 className="heading-display mt-2">Video za urembo</h2>
             <p className="mt-3 max-w-2xl text-ink-500">
-              Mwongozo wa matumizi, rutini za kila siku na vidokezo kutoka kwa wataalamu wetu wa urembo.
+              Vidokezo vya kuchagua na kutumia bidhaa za urembo.
             </p>
           </div>
 
@@ -252,7 +251,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section id="maoni" className="container-x scroll-mt-24 py-16 lg:py-24">
+      {reviews.length > 0 ? <section id="maoni" className="container-x scroll-mt-24 py-16 lg:py-24">
         <div className="max-w-2xl">
           <p className="eyebrow">Wateja wanavyosema</p>
           <h2 className="heading-display mt-2">Maoni ya wateja</h2>
@@ -261,7 +260,7 @@ export default async function Home() {
           {reviews.map((review) => (
             <li key={review.id}>
               <figure className="card flex h-full flex-col gap-3 p-6">
-                <RatingStars rating={review.rating} size="md" />
+                <div className="text-sm font-medium text-gold-700">{review.rating}/5 · Hakiki ya mteja</div>
                 <blockquote className="text-sm leading-relaxed text-ink-700">“{review.comment}”</blockquote>
                 <figcaption className="mt-auto pt-2 text-sm">
                   <span className="font-semibold text-ink-900">{review.customerName}</span>
@@ -271,7 +270,7 @@ export default async function Home() {
             </li>
           ))}
         </ul>
-      </section>
+      </section> : null}
 
       {latest.length > 0 ? (
         <section id="makala" className="scroll-mt-24 bg-cream-100 py-16 lg:py-24">
@@ -281,7 +280,7 @@ export default async function Home() {
                 <p className="eyebrow">Jarida la Niffer</p>
                 <h2 className="heading-display mt-2">Makala za urembo</h2>
                 <p className="mt-3 max-w-2xl text-ink-500">
-                  Mwongozo wa Kiswahili wa skincare, makeup, nywele na harufu — ulioandikwa na wataalamu wetu.
+                  Maelezo mafupi ya skincare, makeup, nywele na harufu kwa Kiswahili.
                 </p>
               </div>
               <Link href="/makala" className="group inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent">
@@ -322,7 +321,7 @@ export default async function Home() {
               Pokea ofa na vidokezo kwa barua pepe
             </h2>
             <p className="mt-3 max-w-md text-ink-500">
-              Jiunge na wateja 10,000+ wanaopata punguzo maalum, bidhaa mpya, na mwongozo wa urembo kwa Kiswahili.
+              Jiandikishe upokee taarifa za ofa, bidhaa mpya na vidokezo vya urembo kwa Kiswahili.
             </p>
           </div>
           <NewsletterForm />

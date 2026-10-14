@@ -1,71 +1,19 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { connection } from "next/server";
-import { products } from "@/lib/data/catalog";
-import { getProductBySlug } from "@/lib/data/catalog";
-import { listReviews, type StoredReview } from "@/lib/server/leads";
-import { RatingStars } from "@/components/ui/RatingStars";
+import { listAllReviews, listReviews } from "@/lib/server/leads";
 import { ReviewForm } from "@/components/ui/ReviewForm";
-import { StarIcon } from "@/components/ui/icons";
 
 export const metadata: Metadata = {
   title: "Hakiki za Wateja",
   description:
-    "Soma na uandike hakiki za bidhaa za Niffer Cosmetics kutoka kwa wateja halisi Tanzania.",
+    "Soma hakiki zilizoidhinishwa au tuma maoni yako kuhusu bidhaa ulizonunua.",
 };
 
-function RatingSummary({ reviews }: { reviews: StoredReview[] }) {
-  const avg =
-    reviews.length > 0
-      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-      : 0;
-  const dist = [5, 4, 3, 2, 1].map((star) => ({
-    star,
-    count: reviews.filter((r) => r.rating === star).length,
-  }));
-
-  return (
-    <div className="card grid gap-8 p-6 sm:grid-cols-2">
-      <div className="flex flex-col items-center justify-center text-center">
-        <p className="font-display text-5xl text-ink-900">{avg.toFixed(1)}</p>
-        <RatingStars rating={avg} size="lg" />
-        <p className="mt-2 text-sm text-ink-500">
-          Kutoka maoni {reviews.length} ya wateja
-        </p>
-      </div>
-      <ul className="space-y-2">
-        {dist.map(({ star, count }) => {
-          const pct =
-            reviews.length > 0
-              ? Math.round((count / reviews.length) * 100)
-              : 0;
-          return (
-            <li key={star} className="flex items-center gap-3 text-sm">
-              <span className="flex w-8 items-center gap-0.5 text-ink-500">
-                {star}
-                <StarIcon className="h-3.5 w-3.5 text-gold-500" />
-              </span>
-              <span className="h-2 flex-1 overflow-hidden rounded-full bg-cream-200">
-                <span
-                  className="block h-full rounded-full bg-gold-500"
-                  style={{ width: `${pct}%` }}
-                />
-              </span>
-              <span className="w-8 text-right text-xs text-ink-400">
-                {count}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
-
 export default async function ReviewsPage() {
-  // Hakiki zote hutoka kwenye database (pamoja na mpya uliyoweka wewe).
+  // Orodha ya hakiki zilizoidhinishwa pamoja na za kusubiri huonyeshwa kwa uwazi.
   await connection();
-  const all = await listReviews(200);
+  const [all, pending] = await Promise.all([listReviews(200), listAllReviews(300)]);
+  const pendingReviews = pending.filter((review) => review.status === "pending");
 
   return (
     <div className="container-x py-12 lg:py-16">
@@ -75,11 +23,6 @@ export default async function ReviewsPage() {
         Soma uzoefu wa wateja wetu halisi. Umeonunua kutoka Niffer? Acha hakiki
         yako ili kusaidia wateja wengine.
       </p>
-
-      <div className="mt-10">
-        <RatingSummary reviews={all} />
-      </div>
-
       {/* Fomu + orodha */}
       <div className="mt-12 grid gap-10 lg:grid-cols-5">
         <div className="lg:col-span-3">
@@ -87,34 +30,21 @@ export default async function ReviewsPage() {
             Maoni ya hivi karibuni
           </h2>
 
-          {all.length === 0 ? (
+          {all.length === 0 && pendingReviews.length === 0 ? (
             <p className="card mt-6 p-6 text-sm text-ink-500">
-              Hakuna hakiki bado. Kuwa wa kwanza kuacha hakiki hapa chini.
+              Bado hakuna hakiki zilizochapishwa. Unaweza kuandika hakiki yako kwenye fomu iliyo hapa chini.
             </p>
           ) : (
             <ul className="mt-6 space-y-4">
               {all.map((review) => {
-                const product = getProductBySlug(review.productSlug);
-                const isNew = review.id.startsWith("rev-");
                 return (
                   <li
                     key={review.id}
-                    className={`card p-6 ${isNew ? "border-brand-200" : ""}`}
+                    className="card p-6"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <RatingStars rating={review.rating} size="md" />
-                      {isNew ? (
-                        <span className="badge bg-success-100 text-success-600">
-                          Hakiki mpya
-                        </span>
-                      ) : product ? (
-                        <Link
-                          href={`/bidhaa/${product.slug}`}
-                          className="text-xs font-semibold text-accent hover:underline"
-                        >
-                          {product.name} →
-                        </Link>
-                      ) : null}
+                      <span className="text-sm font-medium text-gold-700">{review.rating}/5</span>
+                      <span className="badge bg-success-100 text-success-600">Imeidhinishwa</span>
                     </div>
                     <blockquote className="mt-3 text-sm leading-relaxed text-ink-700">
                       &ldquo;{review.comment}&rdquo;
@@ -130,41 +60,21 @@ export default async function ReviewsPage() {
               })}
             </ul>
           )}
-
-          {/* Orodha ya bidhaa zenye hakiki */}
-          <section className="mt-12">
-            <h2 className="font-display text-2xl text-ink-900">
-              Bidhaa zilizokaguliwa zaidi
-            </h2>
-            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-              {products
-                .slice()
-                .sort((a, b) => b.reviewCount - a.reviewCount)
-                .slice(0, 6)
-                .map((product) => (
-                  <li key={product.id}>
-                    <Link
-                      href={`/bidhaa/${product.slug}`}
-                      className="card flex items-center justify-between gap-3 p-4 transition-colors hover:border-brand-300"
-                    >
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-semibold text-ink-900">
-                          {product.name}
-                        </span>
-                        <RatingStars
-                          rating={product.rating}
-                          reviewCount={product.reviewCount}
-                          size="sm"
-                        />
-                      </span>
-                      <span className="text-xs text-ink-400">
-                        {product.reviewCount} maoni
-                      </span>
-                    </Link>
+          {pendingReviews.length > 0 ? (
+            <section className="mt-8" aria-labelledby="pending-reviews-title">
+              <h3 id="pending-reviews-title" className="font-semibold text-ink-900">Hakiki zinazosubiri kuidhinishwa</h3>
+              <ul className="mt-4 space-y-4">
+                {pendingReviews.map((review) => (
+                  <li key={review.id} className="card border-dashed p-6">
+                    <span className="badge bg-warning-100 text-warning-700">Inakaguliwa</span>
+                    <blockquote className="mt-3 text-sm leading-relaxed text-ink-700">&ldquo;{review.comment}&rdquo;</blockquote>
+                    <p className="mt-3 text-sm text-ink-500">{review.customerName} · {review.location}</p>
                   </li>
                 ))}
-            </ul>
-          </section>
+              </ul>
+            </section>
+          ) : null}
+
         </div>
 
         {/* Fomu */}

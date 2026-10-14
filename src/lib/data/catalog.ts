@@ -90,15 +90,15 @@ const COMMON_INGREDIENTS =
 const HOW_TO_USE =
   "Tumia kila bidhaa kwenye pack kulingana na maagizo yake. Kwa body care: paka lotion au cream baada ya kuoga wakati ngozi bado ni mnyevu.";
 
-function fromSeed(seed: Seed, index: number): Product {
+function fromSeed(seed: Seed): Product {
   const { stock: stockOpt, ...rest } = seed;
   return {
     ...rest,
     stock: stockOpt ?? 25,
     ingredients: COMMON_INGREDIENTS,
     howToUse: HOW_TO_USE,
-    rating: 4.8,
-    reviewCount: 12 + ((index * 7) % 40),
+    rating: 0,
+    reviewCount: 0,
     region: "Dar es Salaam",
     city: "Kinondoni",
   };
@@ -563,7 +563,7 @@ const seeds: Seed[] = [
   },
 ];
 
-export const products: Product[] = seeds.map((s, i) => fromSeed(s, i));
+export const products: Product[] = seeds.map(fromSeed);
 
 export type BeautyVideo = {
   id: string;
@@ -616,90 +616,6 @@ export const beautyVideos: BeautyVideo[] = [
     mp4Url: "/videos/video-4.mp4",
     thumbnail: "/images/packs/pack-265k-eos.jpg",
     relatedProductSlug: "body-pack-265k",
-  },
-];
-
-export type Review = {
-  id: string;
-  customerName: string;
-  location: string;
-  rating: number;
-  comment: string;
-  productSlug: string;
-};
-
-export const reviews: Review[] = [
-  {
-    id: "r-001",
-    customerName: "Neema M.",
-    location: "Dar es Salaam",
-    rating: 5,
-    comment:
-      "Purest Glow Pack 135,000 ni bora! Ngozi yangu angavu zaidi baada ya wiki tatu tu. Bidhaa halisi na bei nzuri.",
-    productSlug: "purest-glow-pack-135k",
-  },
-  {
-    id: "r-002",
-    customerName: "Asha K.",
-    location: "Mwanza",
-    rating: 5,
-    comment:
-      "Mwanachuo Pack nilinunua ni wa thamani. Queen Elizabeth cream ni ngumu kupita — inadumu na ina harufu nzuri.",
-    productSlug: "mwanachuo-pack-45k",
-  },
-  {
-    id: "r-003",
-    customerName: "Sarah J.",
-    location: "Arusha",
-    rating: 4,
-    comment:
-      "Body Pack na Coffee Scrub ni mseto mzuri. Scrub huondoa seli za mwisho na lotion huweka unyevu mchana kutwa.",
-    productSlug: "body-pack-195k-coffee",
-  },
-  {
-    id: "r-004",
-    customerName: "Zainabu H.",
-    location: "Dodoma",
-    rating: 5,
-    comment:
-      "Skincare Pack ya Belle Glow ni ya ajabu! Serum huenda haraka na cream haifinyangi ngozi. Kila mtu ananiuliza nimetumia nini.",
-    productSlug: "skincare-pack-175k",
-  },
-  {
-    id: "r-005",
-    customerName: "Fatma S.",
-    location: "Tanga",
-    rating: 5,
-    comment:
-      "EOS Pack ni bora zaidi niliyowahi kununua. Body wash na lotion zina harufu nzuri sana na unyevu unadumu siku nzima.",
-    productSlug: "body-pack-265k",
-  },
-  {
-    id: "r-006",
-    customerName: "Grace L.",
-    location: "Mbeya",
-    rating: 5,
-    comment:
-      "Mwanachuo Pack 90k ni nzuri kwa mwanafunzi. SAFE serum na Vaseline pamoja na Queen Elizabeth — mchanganyiko bora kwa bei.",
-    productSlug: "mwanachuo-pack-90k",
-  },
-  {
-    id: "r-007",
-    customerName: "Anna M.",
-    location: "Iringa",
-    rating: 4,
-    comment:
-      "OGX Rose Water Pack ni harufu nzuri na scrub laini. Queen Elizabeth cream huweka unyevu muda mrefu.",
-    productSlug: "body-pack-245k-rose",
-  },
-  {
-    id: "r-008",
-    customerName: "Rehema J.",
-    location: "Morogoro",
-    rating: 5,
-    comment:
-      "Dr Teal's Pack ni spa nyumbani! Scrub ya Dr Teal's na lotion pamoja na Purest Glow — ngozi yangu imebadilika kabisa.",
-    productSlug: "purest-glow-pack-170k",
   },
 ];
 

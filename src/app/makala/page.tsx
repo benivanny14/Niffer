@@ -12,7 +12,7 @@ import { ArrowRightIcon } from "@/components/ui/icons";
 export const metadata: Metadata = {
   title: "Makala za Urembo",
   description:
-    "Mwongozo wa Kiswahili wa skincare, makeup, nywele na harufu kutoka kwa wataalamu wa Niffer Cosmetics.",
+    "Makala za Kiswahili kuhusu bidhaa za skincare, makeup, nywele na harufu.",
 };
 
 const categoryNames = Object.fromEntries(
@@ -29,8 +29,7 @@ export default function MakalaPage() {
       <p className="eyebrow">Jarida la Niffer</p>
       <h1 className="heading-display mt-2">Makala za urembo</h1>
       <p className="mt-3 max-w-2xl text-ink-500">
-        Mwongozo wa Kiswahili wa skincare, makeup, nywele na harufu — ulioandikwa
-        na wataalamu wetu wa urembo.
+        Maelezo ya Kiswahili kuhusu skincare, makeup, nywele na harufu.
       </p>
 
       {/* Makala kuu */}

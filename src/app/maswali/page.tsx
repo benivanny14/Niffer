@@ -9,12 +9,12 @@ export const metadata: Metadata = {
 
 const faqs = [
   {
-    q: "Je, bidhaa zenu ni halisi?",
-    a: "Ndiyo. Kila bidhaa tunayouza ni asili 100% na inatoka kwa wasambazaji waliothibitishwa. Tunachukua hatua ya ziada kuhakikisha ubora kabla ya kuwasilisha kwako.",
+    q: "Ninawezaje kujua maelezo ya bidhaa?",
+    a: "Fungua ukurasa wa bidhaa ili kuona picha, bei na maelezo yaliyowekwa. Ukiwa na swali zaidi, wasiliana nasi kabla ya kuagiza.",
   },
   {
     q: "Nalipaje?",
-    a: "Tunapokea M-Pesa, Mixx by Yas, Airtel Money, na malipo poa (lipa baada ya kupokea bidhaa). Chagua njia unayopenda kwenye hatua ya malipo.",
+    a: "Tunapokea M-Pesa, Mixx by Yas, Airtel Money, au unaweza kulipa bidhaa ikikufikia. Chagua njia unayopenda wakati wa kukamilisha oda.",
   },
   {
     q: "Mnaleta wapi na kwa gharama gani?",
@@ -29,8 +29,8 @@ const faqs = [
     a: "Baada ya kuweka oda, utapata nambari ya oda (mfano NCF-8F3K). Tumia ukurasa wa Fuatilia Oda kuona hatua iliyofikia.",
   },
   {
-    q: "Mna duka la kimwili?",
-    a: "Ndiyo, tupo Mtaa wa Samora, Dar es Salaam, Jumatatu hadi Jumamosi, 9:00 hadi 20:00. Unaweza pia kuagiza kwa WhatsApp.",
+    q: "Ninawezaje kuwasiliana nanyi?",
+    a: "Tumia namba ya simu, WhatsApp au barua pepe iliyo kwenye ukurasa wa mawasiliano. Kwa anwani na saa za huduma, angalia taarifa zilizo chini ya tovuti.",
   },
 ];
 

@@ -128,7 +128,7 @@ export function SiteFooter() {
             </li>
           </ul>
           <div className="mt-5 flex flex-wrap gap-2">
-            {['M-Pesa', 'Mixx by Yas', 'Airtel Money', 'Malipo poa'].map((method) => (
+            {['M-Pesa', 'Mixx by Yas', 'Airtel Money', 'Lipa ukipokea'].map((method) => (
               <span
                 key={method}
                 className="rounded-full border border-cream-300 bg-surface px-3 py-1 text-xs font-medium text-ink-500"

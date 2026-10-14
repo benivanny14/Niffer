@@ -11,19 +11,19 @@ import {
 export const metadata: Metadata = {
   title: "Kuhusu Niffer Cosmetics",
   description:
-    "Jinsi Niffer Cosmetics ilivyoanzishwa na jinsi tunavyotoa bidhaa za urembo halisi kwa Tanzania.",
+    "Taarifa za duka la mtandaoni la Niffer Cosmetics na namna ya kuwasiliana nasi.",
 };
 
 const values = [
   {
     icon: ShieldIcon,
-    title: "Ubora halisi",
-    body: "Tunachagua bidhaa kutoka kwa wasambazaji waliothibitishwa pekee. Kila bidhaa ni asili 100%.",
+    title: "Maelezo wazi",
+        body: "Tunaweka maelezo ya kila bidhaa wazi ili uweze kuyakagua kabla ya kuagiza.",
   },
   {
     icon: TruckIcon,
     title: "Usafirishaji wa haraka",
-    body: "Dar es Salaam ndani ya siku 1–2, na mikoa yote ya Tanzania kwa bei nafuu.",
+        body: "Tunakueleza gharama na makadirio ya muda wa kufika wakati wa kuagiza.",
   },
   {
     icon: ChatIcon,
@@ -37,13 +37,12 @@ export default function AboutPage() {
     <div className="container-x py-12 lg:py-16">
       <p className="eyebrow">Kuhusu Niffer</p>
       <h1 className="heading-display mt-2 max-w-2xl">
-        Urembo halisi, ubora wa juu — kwa kila mwanamke wa Tanzania
+        Bidhaa za urembo, kwa urahisi wa kuagiza
       </h1>
       <p className="mt-5 max-w-2xl leading-relaxed text-ink-500">
-        Niffer Cosmetics ilianza kwa damu moja: kuleta bidhaa za urembo za
-        ubora wa juu kwa bei wanayostahili Watananzia. Tunauza skincare,
-        makeup, huduma za nywele na fragrance zilizochaguliwa kwa makini —
-        kila bidhaa tunayouza ni tunayojiamini kuutumia wenyewe.
+        Niffer Cosmetics ni duka la mtandaoni la bidhaa za urembo. Vinjari
+        bidhaa, soma maelezo na wasiliana nasi ukiwa na swali kabla ya
+        kukamilisha oda yako.
       </p>
 
       <section className="mt-12 grid gap-6 sm:grid-cols-3">
@@ -60,20 +59,18 @@ export default function AboutPage() {
 
       <section className="mt-16 grid items-center gap-10 lg:grid-cols-2">
         <div>
-          <p className="eyebrow">Hadithi yetu</p>
+          <p className="eyebrow">Duka letu</p>
           <h2 className="heading-display mt-2 text-3xl">
-            Kutoka kwa ndoto hadi duka lako mtandaoni
+            Tafuta bidhaa kwa urahisi
           </h2>
           <p className="mt-4 leading-relaxed text-ink-500">
-            Tulianza kwa kuuza bidhaa chache kwa marafiki na jirani Dar es
-            Salaam. Baada ya wateja kurudi mara kwa mara na kusema &ldquo;bidhaa
-            zenu ni halisi&rdquo;, tukaona fursa: kuleta duka la urembo linaloaminika
-            mtandaoni kwa wote Tanzania.
+            Tunakusanya bidhaa za skincare, makeup, nywele na harufu kwenye
+            sehemu moja ili iwe rahisi kuzitafuta na kulinganisha kabla ya
+            kuagiza.
           </p>
           <p className="mt-4 leading-relaxed text-ink-500">
-            Leo, tunahudumia wateja zaidi ya 10,000 katika mikoa yote. Bado
-            tuna uhakika mmoja: kila bidhaa lazima ionekane thamani kwa mteja
-            wetu.
+            Una swali kuhusu bidhaa, malipo au usafirishaji? Timu yetu inaweza
+            kukusaidia kupitia simu au barua pepe zilizo hapa chini.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/bidhaa" className="btn-primary">

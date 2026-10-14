@@ -30,7 +30,7 @@ const paymentLabels: Record<string, string> = {
   mpesa: "M-Pesa",
   mixx: "Mixx by Yas",
   airtel: "Airtel Money",
-  cod: "Malipo poa (baada ya kupokea)",
+  cod: "Lipa ukipokea bidhaa",
 };
 
 export default function OrderPage() {
@@ -431,7 +431,7 @@ export default function OrderPage() {
         </li>
         <li className="flex items-center gap-1.5">
           <ShieldIcon className="h-4 w-4 text-brand-600" />
-          Bidhaa halisi 100%
+          Kagua maelezo ya bidhaa
         </li>
       </ul>
     </div>

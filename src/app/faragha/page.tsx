@@ -16,7 +16,7 @@ const sections = [
   },
   {
     h: "Malipo",
-    p: "Malipo hufanywa kupitia M-Pesa, Mixx by Yas, Airtel Money au malipo poa. Hatuhifadhi taarifa zozote za kadi za benki kwenye seva zetu.",
+    p: "Malipo hufanywa kupitia M-Pesa, Mixx by Yas, Airtel Money au kulipa bidhaa inapofikishwa. Hatuhifadhi taarifa zozote za kadi za benki kwenye seva zetu.",
   },
   {
     h: "Haki zako",

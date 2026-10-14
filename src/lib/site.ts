@@ -2,13 +2,13 @@
 
 export const site = {
   name: "Niffer Cosmetics",
-  tagline: "Urembo halisi, ubora wa juu",
+  tagline: "Bidhaa za urembo na huduma ya karibu",
   phoneDisplay: "+255 747 340 170",
   phoneTel: "+255747340170",
   whatsapp: "255747340170",
   email: "habari@niffercosmetics.co.tz",
   address: "Mtaa wa Samora, Dar es Salaam",
-  hours: "Jumatatu–Jumamosi · 9:00–20:00",
+  hours: "Jumatatu hadi Jumamosi · saa 3:00 asubuhi–2:00 usiku",
   freeShippingThresholdTsh: 50000,
   baseShippingTsh: 3000,
   codEnabled: true,
@@ -23,7 +23,7 @@ export const paymentMethods = [
   { id: "mpesa", label: "M-Pesa", note: "Lipa kwa simu yako" },
   { id: "mixx", label: "Mixx by Yas", note: "Lipa kwa simu yako" },
   { id: "airtel", label: "Airtel Money", note: "Lipa kwa simu yako" },
-  { id: "cod", label: "Malipo poa", note: "Lipa baada ya kupokea" },
+  { id: "cod", label: "Lipa ukipokea", note: "Lipa bidhaa ikikufikia" },
 ] as const;
 
 export type PaymentId = (typeof paymentMethods)[number]["id"];

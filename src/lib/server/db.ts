@@ -1,8 +1,5 @@
 import { Pool, type PoolClient } from "@neondatabase/serverless";
-import {
-  products as catalogProducts,
-  reviews as catalogReviews,
-} from "@/lib/data/catalog";
+import { products as catalogProducts } from "@/lib/data/catalog";
 import { promoCodes } from "@/lib/promo";
 
 /**
@@ -419,19 +416,19 @@ async function seed(pool: Pool): Promise<void> {
       `INSERT INTO stock (slug,qty,updated_at) VALUES ${stockTuples.join(',')} ON CONFLICT (slug) DO NOTHING`,
       stockValues,
     );
-  }
-  if (catalogReviews.length > 0) {
-    const reviewTuples: string[] = [];
-    const reviewValues: unknown[] = [];
-    catalogReviews.forEach((review, i) => {
-      const b = i * 7;
-      reviewTuples.push(`($${b + 1},$${b + 2},$${b + 3},$${b + 4},$${b + 5},$${b + 6},'approved',$${b + 7})`);
-      reviewValues.push(review.id, review.customerName, review.location, review.rating, review.comment, review.productSlug, now);
-    });
+
+    // Restore accurate seeded catalog ratings after removing synthetic demo reviews.
     await pool.query(
-      `INSERT INTO reviews (id,customer_name,location,rating,comment,product_slug,status,created_at)
-       VALUES ${reviewTuples.join(',')} ON CONFLICT (id) DO NOTHING`,
-      reviewValues,
+      `UPDATE products AS p SET rating = COALESCE(r.avg_rating, 0), review_count = COALESCE(r.review_count, 0)
+       FROM (SELECT product_slug, AVG(rating) AS avg_rating, COUNT(*) AS review_count
+             FROM reviews WHERE status = 'approved' GROUP BY product_slug) AS r
+       WHERE p.slug = r.product_slug`,
+    );
+    await pool.query(
+      `UPDATE products SET rating = 0, review_count = 0
+       WHERE NOT EXISTS (
+         SELECT 1 FROM reviews WHERE reviews.product_slug = products.slug AND reviews.status = 'approved'
+       )`,
     );
   }
 }

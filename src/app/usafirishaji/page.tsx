@@ -77,7 +77,7 @@ export default function ShippingPage() {
             { name: "M-Pesa", note: "Lipa kwa simu yako" },
             { name: "Mixx by Yas", note: "Lipa kwa simu yako" },
             { name: "Airtel Money", note: "Lipa kwa simu yako" },
-            { name: "Malipo poa", note: "Lipa baada ya kupokea bidhaa" },
+            { name: "Lipa ukipokea", note: "Lipa bidhaa ikikufikia" },
           ].map((p) => (
             <li
               key={p.name}
