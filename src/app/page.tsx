@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { beautyVideos, categories } from "@/lib/data/catalog";
 import { listProducts } from "@/lib/server/catalog";
 import { listReviews } from "@/lib/server/leads";
+import { getDb } from "@/lib/server/db";
 import { latestArticles, formatDate } from "@/lib/data/articles";
 import { formatTsh } from "@/lib/format";
 import { ProductCard } from "@/components/catalog/ProductCard";
@@ -46,10 +47,17 @@ const trustPoints = [
 
 export default async function Home() {
   await connection();
-  const products = await listProducts();
+  const [products, reviews, profileRow] = await Promise.all([
+    listProducts(),
+    listReviews(8),
+    getDb()
+      .prepare("SELECT value FROM meta WHERE key = ?")
+      .get("store_admin_profile_image")
+      .catch(() => undefined) as Promise<{ value?: string } | undefined>,
+  ]);
+  const storeProfileImage = profileRow?.value ?? "";
   const onSale = products.filter((p) => p.compareAtTsh);
   const freshIn = products.filter((p) => p.badges.includes("new"));
-  const reviews = await listReviews(8);
   const latest = latestArticles(3);
   const categoryCounts = new Map<string, number>();
   for (const p of products) {
@@ -84,8 +92,16 @@ export default async function Home() {
             </div>
             <div className="hero-editorial__visual animate-fade-in">
               <div className="hero-editorial__image-wrap">
-                <ProductImage src="/images/packs/pack-135k-qe.jpg" alt="Purest Glow Pack ya Niffer Cosmetics" priority className="hero-editorial__image" />
-                <div className="hero-editorial__image-caption"><span>Ritual ya kila siku</span><strong>Purest Glow Pack</strong></div>
+                <ProductImage
+                  src={storeProfileImage || "/images/packs/pack-135k-qe.jpg"}
+                  alt={storeProfileImage ? "Picha ya profile ya Niffer Cosmetics" : "Purest Glow Pack ya Niffer Cosmetics"}
+                  priority
+                  className="hero-editorial__image"
+                />
+                <div className="hero-editorial__image-caption">
+                  <span>{storeProfileImage ? "Wasifu wa duka" : "Ritual ya kila siku"}</span>
+                  <strong>{storeProfileImage ? "Niffer Cosmetics" : "Purest Glow Pack"}</strong>
+                </div>
               </div>
               <Link href="/bidhaa/mwanachuo-pack-45k" className="hero-editorial__float-card">
                 <span className="hero-editorial__float-icon"><SparkleIcon className="h-4 w-4" /></span>
