@@ -21,10 +21,11 @@ export function HeaderControls() {
         <button
           type="button"
           onClick={() => setSearchOpen(true)}
-          className="rounded-full p-2 text-ink-700 transition-colors hover:bg-cream-200 hover:text-accent"
+          className="flex min-h-11 items-center gap-2 rounded-md border border-ink-200/70 px-3 text-ink-500 transition-colors duration-200 ease-in-out hover:border-brand-700/40 hover:text-brand-700"
           aria-label="Tafuta bidhaa"
         >
-          <SearchIcon className="h-5 w-5" />
+          <SearchIcon className="h-4 w-4" />
+          <span className="hidden text-sm md:inline">Tafuta bidhaa</span>
         </button>
 
         <Link

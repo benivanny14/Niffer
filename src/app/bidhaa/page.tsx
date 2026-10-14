@@ -44,9 +44,30 @@ export default function AllProductsPage({ searchParams }: PageProps) {
         </ol>
       </nav>
 
-      <Suspense fallback={<div className="mt-6 h-40 animate-pulse rounded-2xl bg-cream-200" />}>
+      <Suspense fallback={<CatalogSkeleton />}>
         <ProductGrid searchParams={searchParams} />
       </Suspense>
+    </div>
+  );
+}
+
+function CatalogSkeleton() {
+  return (
+    <div aria-label="Bidhaa zinapakia" aria-busy="true" className="mt-8">
+      <div className="h-32 animate-pulse border-y border-cream-300 bg-cream-100" />
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 2xl:grid-cols-5">
+        {Array.from({ length: 10 }, (_, index) => (
+          <div key={index} className="overflow-hidden border border-cream-300 bg-surface">
+            <div className="aspect-[4/5] animate-pulse bg-cream-200" />
+            <div className="space-y-3 p-3 sm:p-4">
+              <div className="h-4 w-4/5 animate-pulse bg-cream-200" />
+              <div className="h-3 w-2/3 animate-pulse bg-cream-200" />
+              <div className="h-5 w-1/2 animate-pulse bg-cream-200" />
+              <div className="h-10 animate-pulse bg-cream-200" />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -99,7 +120,7 @@ async function ProductGrid({ searchParams }: PageProps) {
 
   return (
     <>
-      <div className="store-hero mt-6 rounded-[2rem] border border-cream-300 p-6 sm:p-8">
+      <div className="store-hero mt-6 border-y border-cream-300 p-5 sm:p-7">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Duka letu</p>
@@ -110,7 +131,7 @@ async function ProductGrid({ searchParams }: PageProps) {
                 : "Chuja kwa mkoa, mji, bei au kategoria ili kupata bidhaa inayokufaa."}
             </p>
           </div>
-          <p className="rounded-full border border-brand-200 bg-surface px-3 py-1.5 text-sm font-medium text-accent">
+          <p className="border border-brand-200 bg-surface px-3 py-1.5 text-sm font-medium text-accent">
             {filtered.length} bidhaa zimepatikana
           </p>
         </div>
@@ -121,7 +142,7 @@ async function ProductGrid({ searchParams }: PageProps) {
       </div>
 
       {filtered.length > 0 ? (
-        <ul className="product-grid mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <ul className="product-grid mt-7 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 2xl:grid-cols-5">
           {filtered.map((product) => (
             <li key={product.id}>
               <ProductCard product={product} />

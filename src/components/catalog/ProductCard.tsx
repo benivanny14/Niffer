@@ -33,7 +33,7 @@ export function ProductCard({ product }: { product: Product }) {
   const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
 
   return (
-    <article className="product-card card group flex h-full flex-col overflow-hidden">
+    <article className="product-card group flex h-full flex-col overflow-hidden">
       <div className="product-card__media relative aspect-[4/5] overflow-hidden bg-cream-200">
         <Link href={`/bidhaa/${product.slug}`} className="block h-full w-full" aria-label={product.name}>
           <ProductImage
@@ -45,9 +45,9 @@ export function ProductCard({ product }: { product: Product }) {
         </Link>
 
         {product.badges.length > 0 ? (
-          <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
+          <div className="absolute left-2 top-2 flex flex-col items-start gap-1 sm:left-3 sm:top-3">
             {product.badges.map((badge) => (
-              <span key={badge} className={`badge ${badgeStyles[badge]}`}>
+              <span key={badge} className={`badge px-1.5 py-1 text-[9px] sm:px-2 sm:text-[10px] ${badgeStyles[badge]}`}>
                 {badgeLabels[badge]}
               </span>
             ))}
@@ -55,7 +55,7 @@ export function ProductCard({ product }: { product: Product }) {
         ) : null}
 
         {discount ? (
-          <span className="badge absolute right-3 top-14 bg-brand-700 text-white shadow-sm">
+          <span className="badge absolute right-2 top-11 bg-brand-700 px-1.5 py-1 text-[9px] text-white sm:right-3 sm:top-14 sm:px-2 sm:text-[10px]">
             -{discount}%
           </span>
         ) : null}
@@ -63,19 +63,19 @@ export function ProductCard({ product }: { product: Product }) {
         <WishlistButton slug={product.slug} className="absolute right-3 top-3" />
       </div>
 
-      <div className="product-card__body flex flex-1 flex-col gap-2 p-4">
-        <h3 className="font-display text-lg leading-snug text-ink-900">
+      <div className="product-card__body flex flex-1 flex-col gap-1.5 p-2.5 sm:gap-2 sm:p-4">
+        <h3 className="line-clamp-2 min-h-[2.6em] font-sans text-sm font-medium leading-snug text-ink-900 sm:text-base">
           <Link href={`/bidhaa/${product.slug}`} className="transition-colors hover:text-accent">
             {product.name}
           </Link>
         </h3>
-        <p className="line-clamp-2 text-sm text-ink-500">{product.shortDescription}</p>
-        <RatingStars rating={product.rating} reviewCount={product.reviewCount} />
+        <p className="hidden line-clamp-2 text-sm text-ink-500 sm:block">{product.shortDescription}</p>
+        <div className="scale-[.88] origin-left sm:scale-100"><RatingStars rating={product.rating} reviewCount={product.reviewCount} /></div>
 
         <div className="product-card__price mt-1 flex items-baseline gap-2">
-          <span className="text-lg font-semibold text-ink-900">{formatTsh(product.priceTsh)}</span>
+          <span className="text-sm font-semibold leading-tight text-ink-900 sm:text-lg">{formatTsh(product.priceTsh)}</span>
           {product.compareAtTsh ? (
-            <span className="text-sm text-ink-300 line-through">{formatTsh(product.compareAtTsh)}</span>
+            <span className="text-xs text-ink-500 line-through">{formatTsh(product.compareAtTsh)}</span>
           ) : null}
         </div>
 

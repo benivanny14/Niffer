@@ -168,18 +168,24 @@ export default async function Home() {
             </Link>
           </div>
 
-          <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {products.map((product) => (
+          <ul className="product-grid mt-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 2xl:grid-cols-5">
+            {products.slice(0, 8).map((product) => (
               <li key={product.id}>
                 <ProductCard product={product} />
               </li>
             ))}
           </ul>
+          <div className="mt-8 flex justify-center">
+            <Link href="/bidhaa" className="btn-outline">
+              Tazama bidhaa zote {products.length}
+              <ArrowRightIcon className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       </section>
 
       {onSale.length > 0 ? (
-        <section className="border-y border-ink-900 bg-brand-800 text-cream-50">
+        <section className="border-y border-ink-900 bg-brand-800 text-white">
           <div className="container-x flex flex-wrap items-center justify-between gap-6 py-12">
             <div className="max-w-xl">
               <p className="inline-flex items-center gap-1.5 rounded-full bg-gold-500 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-on-gold">

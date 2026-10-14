@@ -121,14 +121,14 @@ export function InstagramShowcase() {
                     <summary className="cursor-pointer px-5 py-3 text-sm font-semibold text-accent underline decoration-brand-300 underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
                       Tazama chapisho halisi la Instagram
                     </summary>
-                    <div className="overflow-hidden bg-white">
+                    <div className="overflow-hidden bg-surface">
                       <iframe
                         title={`Chapisho la Instagram: ${post.title}`}
                         src={`${postUrl}embed/`}
                         loading="lazy"
                         allowFullScreen
                         referrerPolicy="strict-origin-when-cross-origin"
-                        className="block h-[580px] w-full max-w-full border-0 bg-white sm:h-[620px]"
+                        className="block h-[580px] w-full max-w-full border-0 bg-surface sm:h-[620px]"
                       />
                     </div>
                   </details>

@@ -357,7 +357,7 @@ function AdminDashboard() {
   }
 
   return (
-    <div className="container-x py-10 lg:py-14">
+    <div className="admin-shell container-x py-10 lg:py-14">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="eyebrow">Admin</p>

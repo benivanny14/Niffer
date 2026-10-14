@@ -11,7 +11,7 @@
       <rect x="470" y="160" width="56" height="110" rx="14" fill="#d99aab"/>
       <rect x="482" y="140" width="32" height="22" rx="5" fill="#a83a5e"/>
     </g>
-    <circle cx="320" cy="180" r="46" fill="#ffffff" opacity="0.92"/>
+    <circle cx="320" cy="180" r="46" fill="#e7dccd" opacity="0.96"/>
     <path d="M308 158v44l38-22-38-22z" fill="#7a1f3f"/>
     
   <g fill="#c9a86a" opacity="0.7">
