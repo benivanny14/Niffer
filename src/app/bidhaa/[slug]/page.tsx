@@ -286,7 +286,7 @@ async function ProductDetail({ params }: PageProps) {
               <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
-          <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="product-grid mt-8 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
             {related.map((item) => (
               <li key={item.id}>
                 <ProductCard product={item} />

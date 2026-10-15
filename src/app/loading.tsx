@@ -5,7 +5,7 @@ export default function Loading() {
         <div className="h-6 w-40 animate-pulse bg-cream-200" />
         <div className="mt-4 h-12 w-2/3 max-w-xl animate-pulse bg-cream-200" />
         <div className="mt-3 h-5 w-1/2 max-w-md animate-pulse bg-cream-200" />
-        <div className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 2xl:grid-cols-5">
+        <div className="product-grid mt-10 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
           {Array.from({ length: 10 }, (_, i) => (
             <div key={i} className="overflow-hidden border border-cream-300 bg-surface">
               <div className="aspect-[4/5] animate-pulse bg-cream-200" />

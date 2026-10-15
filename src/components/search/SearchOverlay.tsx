@@ -196,6 +196,7 @@ export function SearchOverlay({ open, onClose }: Props) {
                             <ProductImage
                               src={product.image}
                               alt={product.imageAlt}
+                              fit="contain"
                               className="h-full w-full"
                             />
                           ) : (

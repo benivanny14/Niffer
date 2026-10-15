@@ -105,7 +105,7 @@ function SearchResults() {
       </ul>
 
       {loading ? (
-        <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <ul className="product-grid mt-10 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
           {[0, 1, 2, 3].map((i) => (
             <li key={i} className="card h-64 animate-pulse bg-cream-100" />
           ))}
@@ -126,7 +126,7 @@ function SearchResults() {
       ) : (
         <>
           {productResults.length > 0 ? (
-            <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <ul className="product-grid mt-10 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
               {productResults.map((result) => {
                 const product = getProductBySlug(result.slug);
                 if (!product) return null;

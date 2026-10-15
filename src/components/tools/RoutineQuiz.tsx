@@ -145,7 +145,7 @@ export function RoutineQuiz({ products: items }: { products?: Product[] }) {
           </button>
         </div>
 
-        <ul className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="product-grid mt-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
           {results.map((product) => (
             <li key={product.slug}>
               <ProductCard product={product} />

@@ -369,7 +369,8 @@ export function ProductManager() {
                         <ProductImage
                           src={product.image}
                           alt={product.imageAlt}
-                          className="h-10 w-10 shrink-0 rounded-lg border border-cream-300 object-cover"
+                          fit="contain"
+                          className="h-10 w-10 shrink-0 rounded-lg border border-cream-300 bg-cream-100"
                         />
                         <span className="min-w-0">
                           <span className="block font-medium text-ink-900">
@@ -604,7 +605,8 @@ export function ProductManager() {
                         ? `Preview of ${draft.file.name}`
                         : `Preview of ${draft.name || "product image"}`
                     }
-                    className="h-16 w-16 rounded-xl border border-cream-300 object-cover"
+                    fit="contain"
+                    className="h-16 w-16 rounded-xl border border-cream-300 bg-cream-100"
                   />
                   <input
                     type="file"

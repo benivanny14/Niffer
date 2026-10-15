@@ -292,10 +292,11 @@ export default function OrderPage() {
             return (
               <li key={line.slug} className="flex items-center gap-3">
                 {p ? (
-                  <span className="h-14 w-12 shrink-0 overflow-hidden rounded-lg border border-cream-300">
+                  <span className="h-14 w-12 shrink-0 overflow-hidden rounded-lg border border-cream-300 bg-cream-100">
                     <ProductImage
                       src={p.image}
                       alt={p.imageAlt}
+                      fit="contain"
                       className="h-full w-full"
                     />
                   </span>

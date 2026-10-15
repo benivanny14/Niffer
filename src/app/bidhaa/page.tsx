@@ -141,7 +141,7 @@ async function ProductGrid({ searchParams }: PageProps) {
       </div>
 
       {filtered.length > 0 ? (
-        <ul className="product-grid mt-7 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 2xl:grid-cols-5">
+        <ul className="product-grid mt-7 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
           {filtered.map((product) => (
             <li key={product.id}>
               <ProductCard product={product} />

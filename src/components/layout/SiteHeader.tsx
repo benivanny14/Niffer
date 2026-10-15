@@ -140,7 +140,7 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav aria-label="Main menu" className="hidden lg:block">
+        <nav aria-label="Main menu" className="hidden xl:block">
           <ul className="flex items-center gap-6">
             {navLinks
               .filter((link) => !link.mobileOnly)
@@ -161,7 +161,7 @@ export function SiteHeader() {
           <HeaderControls />
           <button
             type="button"
-            className="rounded-full p-2 text-ink-700 transition-colors hover:bg-cream-200 hover:text-accent lg:hidden"
+            className="rounded-full p-2 text-ink-700 transition-colors hover:bg-cream-200 hover:text-accent xl:hidden"
             aria-expanded={open}
             aria-controls="mobile-menu"
             aria-label={open ? "Close menu" : "Open menu"}
@@ -173,7 +173,7 @@ export function SiteHeader() {
       </div>
 
       {open ? (
-          <div id="mobile-menu" className="site-header__mobile border-t border-cream-300 bg-cream-50 lg:hidden">
+          <div id="mobile-menu" className="site-header__mobile border-t border-cream-300 bg-cream-50 xl:hidden">
           <nav aria-label="Mobile menu" className="container-x py-4">
             <ul className="flex flex-col gap-1">
               {navLinks.map((link) => (

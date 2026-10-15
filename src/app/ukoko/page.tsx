@@ -417,6 +417,7 @@ export default function CheckoutPage() {
                     <ProductImage
                       src={product.image}
                       alt={product.imageAlt}
+                      fit="contain"
                       className="h-full w-full"
                     />
                   </span>

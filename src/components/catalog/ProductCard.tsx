@@ -41,8 +41,9 @@ export function ProductCard({ product }: { product: Product }) {
           <ProductImage
             src={product.image}
             alt={product.imageAlt}
+            fit="contain"
             priority={false}
-            className="h-full w-full transition-transform duration-500 group-hover:scale-[1.04]"
+            className="h-full w-full"
           />
         </Link>
 
@@ -74,7 +75,7 @@ export function ProductCard({ product }: { product: Product }) {
         <p className="hidden line-clamp-2 text-sm text-ink-500 sm:block">{product.shortDescription}</p>
         <div className="scale-[.88] origin-left sm:scale-100"><RatingStars rating={product.rating} reviewCount={product.reviewCount} /></div>
 
-        <div className="product-card__price mt-1 flex items-baseline gap-2">
+        <div className="product-card__price mt-1 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
           <span className="text-sm font-semibold leading-tight text-ink-900 sm:text-lg">{formatTsh(product.priceTsh)}</span>
           {product.compareAtTsh ? (
             <span className="text-xs text-ink-500 line-through">{formatTsh(product.compareAtTsh)}</span>

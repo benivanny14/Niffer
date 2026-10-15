@@ -90,7 +90,7 @@ export default async function OffersPage() {
       {onSale.length > 0 ? (
         <section className="mt-14">
           <h2 className="heading-display">Limited-time offers</h2>
-          <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <ul className="product-grid mt-8 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
             {onSale.map((product) => (
               <li key={product.id}>
                 <ProductCard product={product} />
@@ -208,7 +208,7 @@ export default async function OffersPage() {
               View all new arrivals →
             </Link>
           </div>
-          <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="product-grid mt-8 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
             {fresh.map((product) => (
               <li key={product.id}>
                 <ProductCard product={product} />
