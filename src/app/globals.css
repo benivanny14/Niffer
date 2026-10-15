@@ -577,10 +577,12 @@ html.notranslate * {
 .site-header__main { position: relative; }
 .site-header {
   transform: translateY(0);
-  transition: transform .24s cubic-bezier(.2,.7,.2,1), background-color .2s ease;
-  will-change: transform;
+  transition: transform .18s ease-out, background-color .2s ease;
 }
-.site-header.site-header--hidden { transform: translateY(-100%); }
+.site-header.site-header--hidden {
+  transform: translateY(calc(-100% - 2px));
+  pointer-events: none;
+}
 .site-header__nav-link { position: relative; padding: .7rem 0; }
 .site-header__nav-link::after {
   position: absolute;

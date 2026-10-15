@@ -26,6 +26,7 @@ export function SiteHeader() {
   const [categoryOptions, setCategoryOptions] = useState<Category[]>(fallbackCategories);
   const [hidden, setHidden] = useState(false);
   const lastScrollY = useRef(0);
+  const directionDistance = useRef(0);
 
   useEffect(() => {
     let frame = 0;
@@ -36,8 +37,23 @@ export function SiteHeader() {
         const previousY = lastScrollY.current;
         const delta = currentY - previousY;
 
-        if (currentY < 72 || delta < -6) setHidden(false);
-        else if (currentY > 180 && delta > 8 && !open) setHidden(true);
+        if (currentY < 72) {
+          directionDistance.current = 0;
+          setHidden(false);
+        } else if (Math.abs(delta) >= 1) {
+          const direction = Math.sign(delta);
+          directionDistance.current = Math.sign(directionDistance.current) === direction
+            ? directionDistance.current + delta
+            : delta;
+
+          if (directionDistance.current <= -18) {
+            setHidden(false);
+            directionDistance.current = 0;
+          } else if (currentY > 180 && directionDistance.current >= 28 && !open) {
+            setHidden(true);
+            directionDistance.current = 0;
+          }
+        }
 
         lastScrollY.current = currentY;
         frame = 0;

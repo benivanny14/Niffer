@@ -2,28 +2,23 @@ import { connection } from "next/server";
 import { json } from "@/lib/server/http";
 import { getDb } from "@/lib/server/db";
 
-/** Afya ya mfumo: DB, muda na idadi ya bidhaa. */
+/** Minimal health check: expose availability only, not internal inventory metrics. */
 export async function GET() {
   await connection();
   try {
-    const row = await getDb()
-      .prepare("SELECT COUNT(*) AS n FROM products")
-      .get() as { n?: number } | undefined;
+    // A lightweight query confirms database connectivity without disclosing
+    // business data such as catalog size to anonymous callers.
+    await getDb().prepare("SELECT 1").get();
 
     return json({
       ok: true,
-      service: "niffer-api",
-      time: new Date().toISOString(),
-      database: "postgresql",
-      products: Number(row?.n ?? 0),
+      service: "available",
     });
   } catch (error) {
     console.error("[health] PostgreSQL check failed:", error);
     return json({
       ok: false,
-      service: "niffer-api",
-      time: new Date().toISOString(),
-      database: "unavailable",
+      service: "unavailable",
     }, 503);
   }
 }
