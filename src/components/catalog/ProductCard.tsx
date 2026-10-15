@@ -41,7 +41,7 @@ export function ProductCard({ product }: { product: Product }) {
           <ProductImage
             src={product.image}
             alt={product.imageAlt}
-            fit="contain"
+            fit="cover"
             priority={false}
             className="h-full w-full"
           />

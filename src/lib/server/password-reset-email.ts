@@ -42,6 +42,12 @@ export async function sendPasswordResetEmail(
 ): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY?.trim();
   if (!apiKey) throw new Error("RESEND_API_KEY is not configured.");
+  const from = process.env.EMAIL_FROM?.trim();
+  if (!from) {
+    throw new Error(
+      "EMAIL_FROM is not configured. Set it to an address on a domain verified in Resend.",
+    );
+  }
 
   const resetUrl = new URL("/reset-password", publicAppUrl());
   resetUrl.searchParams.set("token", token);
@@ -50,7 +56,7 @@ export async function sendPasswordResetEmail(
   const link = escapeHtml(resetUrl.toString());
   const resend = new Resend(apiKey);
   const { error } = await resend.emails.send({
-    from: "Niffer Cosmetics <onboarding@resend.dev>",
+    from,
     to: [customer.email!],
     subject: "Reset your password — Niffer Cosmetics",
     text: `Hello ${customer.name},\n\nUse this link to choose a new password: ${resetUrl}\n\nThis link expires in one hour and can only be used once. If you did not request this, you can ignore this email.`,
@@ -69,5 +75,12 @@ export async function sendPasswordResetEmail(
 </html>`,
   });
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    // Avoid logging addresses or reset links; Resend's message/code are enough to diagnose.
+    console.error("[password-reset] Resend rejected email", {
+      name: error.name,
+      message: error.message,
+    });
+    throw new Error(`Resend rejected password reset email: ${error.message}`);
+  }
 }

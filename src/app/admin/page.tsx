@@ -376,10 +376,10 @@ function AdminDashboard() {
   }
 
   return (
-    <div className="admin-shell container-x py-10 lg:py-14">
+    <div className="admin-shell container-x min-w-0 py-6 sm:py-10 lg:py-14">
       <AdminProfileManager />
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <p className="eyebrow">Admin</p>
           <h1 className="heading-display mt-1">Niffer dashboard</h1>
           <p className="mt-1 text-sm text-ink-500">
@@ -403,7 +403,7 @@ function AdminDashboard() {
       ) : null}
 
       {/* Tabs */}
-      <nav className="mt-8 flex gap-1 overflow-x-auto border-b border-cream-300">
+      <nav aria-label="Admin sections" className="admin-tabs mt-6 flex max-w-full gap-1 overflow-x-auto border-b border-cream-300 sm:mt-8">
         {tabs.map((t) => (
           <button
             key={t.id}
@@ -522,16 +522,16 @@ function Overview({
     <div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map(({ icon: Icon, label, value }) => (
-          <div key={label} className="card p-5">
+          <div key={label} className="card min-w-0 p-4 sm:p-5">
             <div className="flex items-center gap-3">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-accent">
                 <Icon className="h-5 w-5" />
               </span>
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">
                   {label}
                 </p>
-                <p className="font-display text-xl text-ink-900">{value}</p>
+                <p className="break-words font-display text-lg text-ink-900 sm:text-xl">{value}</p>
               </div>
             </div>
           </div>
@@ -902,7 +902,7 @@ function OrdersTab({
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="admin-orders-toolbar flex flex-wrap items-center gap-2">
         <span className="text-sm font-medium text-ink-700">Filter:</span>
         {(
           ["all", ...statusSteps.map((s) => s.id), "ghairiwa"] as const
@@ -924,14 +924,14 @@ function OrdersTab({
                 : statusSteps.find((s) => s.id === id)?.label}
           </button>
         ))}
-        <div className="ml-auto flex items-center gap-2">
+        <div className="admin-orders-actions ml-auto flex min-w-0 items-center gap-2">
           <input
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search order number, name or phone…"
             aria-label="Search orders"
-            className="w-56 rounded-full border border-cream-300 bg-surface px-4 py-1.5 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500"
+            className="min-w-0 w-56 rounded-full border border-cream-300 bg-surface px-4 py-1.5 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500"
           />
           <button
             type="button"
@@ -1041,7 +1041,7 @@ function OrdersTab({
             return (
               <li key={order.code} className="card p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
                     <span className="font-display text-lg text-ink-900">
                       {order.code}
                     </span>
@@ -1065,7 +1065,7 @@ function OrdersTab({
                       </span>
                     )}
                   </div>
-                  <span className="font-display text-lg text-accent">
+                  <span className="shrink-0 font-display text-lg text-accent">
                     {formatTsh(order.totalTsh)}
                   </span>
                 </div>
@@ -1073,10 +1073,10 @@ function OrdersTab({
                 <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
                   <div>
                     <p className="text-ink-400">Customer</p>
-                    <p className="font-medium text-ink-900">
+                    <p className="break-words font-medium text-ink-900">
                       {order.customer.name}
                     </p>
-                    <p className="text-ink-500">
+                    <p className="break-words text-ink-500">
                       {formatPhone(order.customer.phone)}
                     </p>
                   </div>
@@ -1090,7 +1090,7 @@ function OrdersTab({
                     <p className="text-ink-500">
                       {order.customer.street || "—"}
                     </p>
-                    <p className="truncate text-xs text-ink-400">
+                    <p className="break-words text-xs text-ink-400">
                       {order.customer.address}
                     </p>
                   </div>

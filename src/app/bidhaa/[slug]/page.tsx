@@ -162,7 +162,7 @@ async function ProductDetail({ params }: PageProps) {
           <ProductImage
             src={product.image}
             alt={product.imageAlt}
-            fit="contain"
+            fit="cover"
             priority
             className="h-full w-full"
           />
