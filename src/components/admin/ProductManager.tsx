@@ -5,10 +5,11 @@ import { categories as fallbackCategories, type Category, type Product } from "@
 import { formatTsh } from "@/lib/format";
 import {
   apiDelete,
-  apiForm,
   apiGet,
   apiPatch,
   apiPost,
+  apiPut,
+  arrayOrEmpty,
   errorMessage,
 } from "@/lib/api";
 import { useAsync } from "@/lib/use-async";
@@ -17,6 +18,8 @@ import { ProductImage } from "@/components/media/ProductImage";
 
 const field =
   "w-full rounded-xl border border-cream-300 bg-surface px-3 py-2.5 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500";
+const MAX_IMAGE_SIZE = 12 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 
 type Draft = {
   mode: "edit" | "create";
@@ -64,7 +67,7 @@ export function ProductManager() {
 
   const categoryResource = useAsync<Category[]>("admin-categories", async () => {
     const res = await apiGet<{ ok: boolean; categories: Category[] }>("/api/categories");
-    return res.categories;
+    return arrayOrEmpty<Category>(res.categories);
   });
   const categoryOptions = categoryResource.data ?? fallbackCategories;
 
@@ -74,7 +77,7 @@ export function ProductManager() {
       const res = await apiGet<{ ok: boolean; products: Product[] }>(
         "/api/products",
       );
-      return res.products;
+      return arrayOrEmpty<Product>(res.products);
     },
     { intervalMs: 60_000 },
   );
@@ -86,7 +89,10 @@ export function ProductManager() {
       id: number; name: string; slug: string; delta: number; quantity: number;
       reason: string; reference: string | null; createdAt: string;
     }[] }>("/api/stock/movements?limit=30");
-    return response.movements;
+    return arrayOrEmpty<{
+      id: number; name: string; slug: string; delta: number; quantity: number;
+      reason: string; reference: string | null; createdAt: string;
+    }>(response.movements);
   }, { intervalMs: 60_000 });
 
   const products = data ?? [];
@@ -185,9 +191,44 @@ export function ProductManager() {
       }
 
       if (draft.file) {
-        const fd = new FormData();
-        fd.append("file", draft.file);
-        await apiForm(`/api/products/${slug}/image`, fd);
+        if (!ALLOWED_IMAGE_TYPES.has(draft.file.type)) {
+          throw new Error("Choose a JPG, PNG, WebP or AVIF image.");
+        }
+        if (draft.file.size > MAX_IMAGE_SIZE) {
+          throw new Error("Image must be 12 MB or smaller.");
+        }
+
+        const { upload } = await apiPost<{
+          upload: {
+            cloudName: string;
+            apiKey: string;
+            timestamp: number;
+            signature: string;
+            folder: string;
+            publicId: string;
+            overwrite: boolean;
+          };
+        }>(`/api/products/${slug}/image`);
+        const form = new FormData();
+        form.append("file", draft.file);
+        form.append("api_key", upload.apiKey);
+        form.append("timestamp", String(upload.timestamp));
+        form.append("signature", upload.signature);
+        form.append("folder", upload.folder);
+        form.append("public_id", upload.publicId);
+        form.append("overwrite", String(upload.overwrite));
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${upload.cloudName}/image/upload`, {
+          method: "POST",
+          body: form,
+        });
+        const cloudinaryResult = await response.json() as {
+          public_id?: string;
+          error?: { message?: string };
+        };
+        if (!response.ok || cloudinaryResult.public_id !== upload.publicId) {
+          throw new Error(cloudinaryResult.error?.message || "Cloudinary could not upload the image.");
+        }
+        await apiPut(`/api/products/${slug}/image`, { publicId: upload.publicId });
       }
 
       refresh();
@@ -569,14 +610,26 @@ export function ProductManager() {
                     type="file"
                     accept="image/*"
                     aria-label="Product image"
-                    onChange={(e) =>
-                      setDraft({ ...draft, file: e.target.files?.[0] ?? null })
-                    }
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] ?? null;
+                      if (file && !ALLOWED_IMAGE_TYPES.has(file.type)) {
+                        setFormError("Choose a JPG, PNG, WebP or AVIF image.");
+                        e.target.value = "";
+                        return;
+                      }
+                      if (file && file.size > MAX_IMAGE_SIZE) {
+                        setFormError("Image must be 12 MB or smaller.");
+                        e.target.value = "";
+                        return;
+                      }
+                      setFormError("");
+                      setDraft({ ...draft, file });
+                    }}
                     className="text-sm text-ink-500 file:mr-3 file:rounded-full file:border-0 file:bg-brand-100 file:px-4 file:py-2 file:text-xs file:font-semibold file:text-accent"
                   />
                 </div>
                 <p className="mt-1 text-xs text-ink-400">
-                  PNG, JPG, WebP or AVIF ? up to 12 MB. Leave blank to add an image later.
+                  JPG, PNG, WebP or AVIF · up to 12 MB. Uploaded directly to Cloudinary.
                 </p>
               </div>
             </div>

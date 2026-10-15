@@ -11,7 +11,7 @@ import {
   type OrderStatus,
 } from "@/lib/orders";
 import { useAdminOrders, patchOrderStatus } from "@/lib/orders-client";
-import { apiGet, apiPatch, apiPost, errorMessage } from "@/lib/api";
+import { apiGet, apiPatch, apiPost, arrayOrEmpty, errorMessage } from "@/lib/api";
 import { ProductManager } from "@/components/admin/ProductManager";
 import { AdminProfileManager } from "@/components/admin/AdminProfileManager";
 import { formatTsh, formatPhone } from "@/lib/format";
@@ -297,17 +297,20 @@ function AdminDashboard() {
         ),
       ]);
       return {
-        stats: s,
-        messages: m.messages,
-        rfqs: r.rfqs,
-        reviews: rv.reviews,
-        promos: pr.promos,
-        notifications: nt.notifications,
-        subscribers: nl.subscribers,
-        giftCards: gc.giftCards,
-        giftCardRequests: gc.requests,
-        customers: cu.customers,
-        adminProducts: (pd.products ?? []).map((p) => ({
+        stats: {
+          ...s,
+          lowStock: arrayOrEmpty<Stats["lowStock"][number]>(s.lowStock),
+        },
+        messages: arrayOrEmpty<MessageRecord>(m.messages),
+        rfqs: arrayOrEmpty<RfqRecord>(r.rfqs),
+        reviews: arrayOrEmpty<ReviewRecord>(rv.reviews),
+        promos: arrayOrEmpty<PromoRecord>(pr.promos),
+        notifications: arrayOrEmpty<NotificationRecord>(nt.notifications),
+        subscribers: arrayOrEmpty<SubscriberRecord>(nl.subscribers),
+        giftCards: arrayOrEmpty<GiftCardRecord>(gc.giftCards),
+        giftCardRequests: arrayOrEmpty<GiftCardRequestRecord>(gc.requests),
+        customers: arrayOrEmpty<CustomerRecord>(cu.customers),
+        adminProducts: arrayOrEmpty<{ slug: string; name: string; stock: number }>(pd.products).map((p) => ({
           slug: p.slug,
           name: p.name,
           stock: p.stock,

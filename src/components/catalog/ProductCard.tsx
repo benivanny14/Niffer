@@ -9,6 +9,7 @@ import { ProductImage } from "@/components/media/ProductImage";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { useStock } from "@/lib/stock";
+import { arrayOrEmpty } from "@/lib/api";
 
 const badgeStyles: Record<Product["badges"][number], string> = {
   new: "bg-success-100 text-success-600",
@@ -27,6 +28,7 @@ const badgeLabels: Record<Product["badges"][number], string> = {
 const subscribeNoop = () => () => {};
 
 export function ProductCard({ product }: { product: Product }) {
+  const badges = arrayOrEmpty<Product["badges"][number]>(product.badges);
   const discount = discountPercent(product.priceTsh, product.compareAtTsh);
   const stock = useStock(product.slug);
   const outOfStock = stock === 0;
@@ -44,9 +46,9 @@ export function ProductCard({ product }: { product: Product }) {
           />
         </Link>
 
-        {product.badges.length > 0 ? (
+        {badges.length > 0 ? (
           <div className="absolute left-2 top-2 flex flex-col items-start gap-1 sm:left-3 sm:top-3">
-            {product.badges.map((badge) => (
+            {badges.map((badge) => (
               <span key={badge} className={`badge px-1.5 py-1 text-[9px] sm:px-2 sm:text-[10px] ${badgeStyles[badge]}`}>
                 {badgeLabels[badge]}
               </span>

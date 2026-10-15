@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { formatTsh } from "@/lib/format";
-import { apiGet, errorMessage } from "@/lib/api";
+import { apiGet, arrayOrEmpty, errorMessage } from "@/lib/api";
 import { tierFor } from "@/lib/wholesale";
 import { SearchIcon } from "@/components/ui/icons";
 
@@ -63,7 +63,7 @@ export function RfqTracker() {
       const res = await apiGet<{ ok: boolean; rfqs: Rfq[] }>(
         `/api/rfq?phone=${encodeURIComponent(phone.trim())}`,
       );
-      setRfqs(res.rfqs);
+      setRfqs(arrayOrEmpty<Rfq>(res.rfqs));
       setSearched(true);
     } catch (err) {
       setError(errorMessage(err));

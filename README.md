@@ -17,7 +17,8 @@ Weka faili `.env.local` (ona `.env.example`):
 
 | Kiableu | Maelezo |
 | --- | --- |
-| `ADMIN_PASSWORD` | Nenosiri la admin. **Lazima liwekwe** kwa `/admin`. |
+| `ADMIN_PASSWORD` | Unique password for admin sign-in. Required in production. |
+| `ADMIN_PANEL_PATH` | Private random URL segment for the admin dashboard (32+ URL-safe characters). |
 | `DATABASE_URL` | Connection string ya Neon PostgreSQL (tumia pooled hostname kwa Vercel). |
 | `RESEND_API_KEY` | (Hiari) Ujumbe wa barua pepe — akaunti & reset ya nywila. |
 | `EMAIL_FROM` | (Hiari) Anwani ya mtumaji wa barua pepe. |
@@ -36,7 +37,7 @@ npm test         # Vitest (unit tests)
 
 ## Admin
 
-Nenda `/admin` kisha ingia kwa `ADMIN_PASSWORD`. Unaweza kusimamia bidhaa, oda, stoo, kadi za zawadi, ujumbe na arifa.
+Admin uses a private URL segment set by `ADMIN_PANEL_PATH` and signs in with `ADMIN_PASSWORD`. Keep the URL private; the path is an extra layer against automated scans, while the password/session and protected API routes provide access control. Admin can manage products, orders, inventory, gift cards, messages and notifications.
 
 ## muundo / teknolojia
 

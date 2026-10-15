@@ -174,7 +174,6 @@ export function SiteFooter() {
           <p>© 2026 Niffer Cosmetics. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <Link href="/akaunti" className="hover:text-accent">Account</Link>
-            <Link href="/admin" className="hover:text-accent">Admin</Link>
             <span>All prices are in Tanzanian Shillings (TSh)</span>
           </div>
         </div>

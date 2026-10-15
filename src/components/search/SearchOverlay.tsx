@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { getProductBySlug, searchProducts } from "@/lib/data/catalog";
 import { formatTsh } from "@/lib/format";
-import { apiGet } from "@/lib/api";
+import { apiGet, arrayOrEmpty } from "@/lib/api";
 import { useAsync } from "@/lib/use-async";
 import { ProductImage } from "@/components/media/ProductImage";
 import { CloseIcon, SearchIcon, SparkleIcon } from "@/components/ui/icons";
@@ -92,7 +92,7 @@ export function SearchOverlay({ open, onClose }: Props) {
       const data = await apiGet<{ ok: boolean; results: SearchResult[] }>(
         `/api/search?q=${encodeURIComponent(q)}&limit=6`,
       );
-      return data.results;
+      return arrayOrEmpty<SearchResult>(data.results);
     } catch {
       return localResults(q);
     }

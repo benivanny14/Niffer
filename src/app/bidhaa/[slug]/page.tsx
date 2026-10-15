@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import {
   products,
   type Product,
+  type ProductBadge,
 } from "@/lib/data/catalog";
 import { findProduct, listProducts } from "@/lib/server/catalog";
 import { listReviews } from "@/lib/server/leads";
@@ -13,6 +14,7 @@ import { formatTsh, discountPercent } from "@/lib/format";
 import { productJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { RatingStars } from "@/components/ui/RatingStars";
 import { ProductCard } from "@/components/catalog/ProductCard";
+import { arrayOrEmpty } from "@/lib/api";
 import { ProductImage } from "@/components/media/ProductImage";
 import { BuyBox } from "@/components/catalog/BuyBox";
 import { ReviewForm } from "@/components/ui/ReviewForm";
@@ -105,6 +107,7 @@ async function ProductDetail({ params }: PageProps) {
   ]);
   const product = all.find((p) => p.slug === slug);
   if (!product) notFound();
+  const badges = arrayOrEmpty<ProductBadge>(product.badges);
 
   const discount = discountPercent(product.priceTsh, product.compareAtTsh);
   // Hakiki za bidhaa hii tu.
@@ -163,9 +166,9 @@ async function ProductDetail({ params }: PageProps) {
             priority
             className="h-full w-full"
           />
-          {product.badges.length > 0 ? (
+          {badges.length > 0 ? (
             <div className="absolute left-4 top-4 flex flex-col items-start gap-1.5">
-              {product.badges.map((badge) => (
+              {badges.map((badge) => (
                 <span
                   key={badge}
                   className="badge bg-surface/90 text-accent shadow-sm"

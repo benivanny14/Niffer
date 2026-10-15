@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { createLocalStore } from "@/lib/local-store";
 import { type Order, type OrderStatus } from "@/lib/orders";
-import { apiGet, apiPatch, apiPost, ApiError } from "@/lib/api";
+import { apiGet, apiPatch, apiPost, ApiError, arrayOrEmpty } from "@/lib/api";
 import { useAsync } from "@/lib/use-async";
 
 export const ORDERS_KEY = "niffer.orders.v1";
@@ -98,7 +98,7 @@ export async function fetchOrder(code: string): Promise<Order | undefined> {
 /** Oda zote za server (admin). */
 export async function fetchAllOrders(): Promise<Order[]> {
   const data = await apiGet<{ ok: boolean; orders: Order[] }>("/api/orders");
-  return data.orders;
+  return arrayOrEmpty<Order>(data.orders);
 }
 
 /** Badilisha hatua ya oda kwenye server (admin). */

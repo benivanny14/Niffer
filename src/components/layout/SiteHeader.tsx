@@ -71,7 +71,9 @@ export function SiteHeader() {
     let active = true;
     fetch("/api/categories", { cache: "no-store" })
       .then((response) => response.ok ? response.json() as Promise<{ categories?: Category[] }> : null)
-      .then((data) => { if (active && data?.categories) setCategoryOptions(data.categories); })
+      .then((data) => {
+        if (active && Array.isArray(data?.categories)) setCategoryOptions(data.categories);
+      })
       .catch(() => undefined);
     const loadProfile = () => {
       fetch("/api/store-profile", { cache: "no-store" })

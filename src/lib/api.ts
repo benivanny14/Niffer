@@ -12,6 +12,11 @@ export class ApiError extends Error {
   }
 }
 
+/** Treat an invalid API collection as empty so malformed responses cannot crash React lists. */
+export function arrayOrEmpty<T>(value: unknown): T[] {
+  return Array.isArray(value) ? value as T[] : [];
+}
+
 type Options = RequestInit & { timeoutMs?: number };
 
 async function request<T>(path: string, options: Options = {}): Promise<T> {
