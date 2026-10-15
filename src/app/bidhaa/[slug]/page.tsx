@@ -191,11 +191,11 @@ async function ProductDetail({ params }: PageProps) {
               reviewCount={product.reviewCount}
               size="md"
             />
-            <span className="text-sm text-ink-400">
-              {productReviews.length > 0
-                ? `${productReviews.length} reviews in our store`
-                : "No reviews yet"}
-            </span>
+            {productReviews.length > 0 ? (
+              <span className="text-sm text-ink-400">
+                {productReviews.length} reviews in our store
+              </span>
+            ) : null}
           </div>
 
           <div className="mt-6 flex items-baseline gap-3">

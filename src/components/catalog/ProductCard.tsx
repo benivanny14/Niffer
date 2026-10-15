@@ -73,7 +73,7 @@ export function ProductCard({ product }: { product: Product }) {
           </Link>
         </h3>
         <p className="hidden line-clamp-2 text-sm text-ink-500 sm:block">{product.shortDescription}</p>
-        <div className="scale-[.88] origin-left sm:scale-100"><RatingStars rating={product.rating} reviewCount={product.reviewCount} /></div>
+        <RatingStars rating={product.rating} reviewCount={product.reviewCount} />
 
         <div className="product-card__price mt-1 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
           <span className="text-sm font-semibold leading-tight text-ink-900 sm:text-lg">{formatTsh(product.priceTsh)}</span>
