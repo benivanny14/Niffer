@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { categories as fallbackCategories, getProductBySlug, searchProducts, type Category } from "@/lib/data/catalog";
-import { apiGet } from "@/lib/api";
+import { apiGet, arrayOrEmpty } from "@/lib/api";
 import { useAsync } from "@/lib/use-async";
 import { ProductCard } from "@/components/catalog/ProductCard";
 import { SearchIcon, SparkleIcon } from "@/components/ui/icons";
@@ -46,7 +46,7 @@ function SearchResults() {
   const q = params.get("q") ?? "";
   const categoryResource = useAsync<Category[]>("store-categories", async () => {
     const data = await apiGet<{ ok: boolean; categories: Category[] }>("/api/categories");
-    return data.categories;
+    return arrayOrEmpty<Category>(data.categories);
   });
   const categoryOptions = categoryResource.data ?? fallbackCategories;
 
@@ -59,7 +59,7 @@ function SearchResults() {
       const data = await apiGet<{ ok: boolean; results: SearchResult[] }>(
         `/api/search?q=${encodeURIComponent(query)}&limit=24`,
       );
-      return data.results;
+      return arrayOrEmpty<SearchResult>(data.results);
     } catch {
       return localResults(query);
     }
