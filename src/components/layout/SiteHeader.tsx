@@ -126,9 +126,6 @@ export function SiteHeader() {
                 </span>
               </span>
             </span>
-            <span aria-hidden className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-gold-500 text-brand-900 shadow-md ring-2 ring-cream-50">
-              <SparkleIcon className="h-3.5 w-3.5" />
-            </span>
           </span>
           <span className="flex flex-col leading-none">
             <span className="font-display text-lg font-semibold tracking-tight text-ink-900 sm:text-xl">

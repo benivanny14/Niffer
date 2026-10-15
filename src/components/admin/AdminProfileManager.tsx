@@ -92,9 +92,6 @@ export function AdminProfileManager() {
             </span>
           </span>
         </span>
-        <span aria-hidden className="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-full bg-gold-500 text-brand-900 shadow-md ring-4 ring-[var(--surface)] dark:ring-[var(--surface-raised)]">
-          <SparkleIcon className="h-5 w-5" />
-        </span>
       </div>
       <div className="min-w-0 flex-1">
         <p className="eyebrow">Store identity</p>

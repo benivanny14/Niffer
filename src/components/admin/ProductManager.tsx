@@ -473,8 +473,8 @@ export function ProductManager() {
 
       {/* Modal ya kuhariri / kuongeza */}
       {draft ? (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 backdrop-blur-sm">
-          <div className="card mt-10 w-full max-w-2xl p-6">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-3 backdrop-blur-sm sm:items-center sm:p-4">
+          <div className="card my-0 max-h-[calc(100dvh-1.5rem)] w-full min-w-0 max-w-2xl overflow-y-auto p-4 sm:my-10 sm:max-h-[calc(100vh-5rem)] sm:p-6">
             <div className="flex items-center justify-between">
               <h3 className="font-display text-xl text-ink-900">
                 {draft.mode === "create" ? "Add product" : "Edit product"}
@@ -489,8 +489,8 @@ export function ProductManager() {
               </button>
             </div>
 
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <label className="block text-sm sm:col-span-2">
+            <div className="mt-4 grid min-w-0 gap-3 sm:mt-5 sm:grid-cols-2 sm:gap-4">
+              <label className="block min-w-0 text-sm sm:col-span-2">
                 <span className="mb-1.5 block font-medium text-ink-700">
                   Product name *
                 </span>
@@ -502,7 +502,7 @@ export function ProductManager() {
                 />
               </label>
 
-              <label className="block text-sm">
+              <label className="block min-w-0 text-sm">
                 <span className="mb-1.5 block font-medium text-ink-700">
                   Price (TSh) *
                 </span>
@@ -516,7 +516,7 @@ export function ProductManager() {
                 />
               </label>
 
-              <label className="block text-sm">
+              <label className="block min-w-0 text-sm">
                 <span className="mb-1.5 block font-medium text-ink-700">
                   Original price (optional)
                 </span>
@@ -532,7 +532,7 @@ export function ProductManager() {
                 />
               </label>
 
-              <label className="block text-sm">
+              <label className="block min-w-0 text-sm">
                 <span className="mb-1.5 block font-medium text-ink-700">
                   Category
                 </span>
@@ -549,7 +549,7 @@ export function ProductManager() {
                 </select>
               </label>
 
-              <label className="block text-sm">
+              <label className="block min-w-0 text-sm">
                 <span className="mb-1.5 block font-medium text-ink-700">
                   Stock
                 </span>
@@ -563,7 +563,7 @@ export function ProductManager() {
                 />
               </label>
 
-              <label className="block text-sm sm:col-span-2">
+              <label className="block min-w-0 text-sm sm:col-span-2">
                 <span className="mb-1.5 block font-medium text-ink-700">
                   Short description
                 </span>
@@ -577,7 +577,7 @@ export function ProductManager() {
                 />
               </label>
 
-              <label className="block text-sm sm:col-span-2">
+              <label className="block min-w-0 text-sm sm:col-span-2">
                 <span className="mb-1.5 block font-medium text-ink-700">
                   Full description
                 </span>
@@ -591,11 +591,11 @@ export function ProductManager() {
                 />
               </label>
 
-              <div className="sm:col-span-2">
+              <div className="min-w-0 sm:col-span-2">
                 <label className="mb-1.5 block text-sm font-medium text-ink-700">
                   Image
                 </label>
-                <div className="flex items-center gap-4">
+                <div className="flex min-w-0 flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
                   <ProductImage
                     src={
                       draft.file ? URL.createObjectURL(draft.file) : draft.image
@@ -627,7 +627,7 @@ export function ProductManager() {
                       setFormError("");
                       setDraft({ ...draft, file });
                     }}
-                    className="text-sm text-ink-500 file:mr-3 file:rounded-full file:border-0 file:bg-brand-100 file:px-4 file:py-2 file:text-xs file:font-semibold file:text-accent"
+                    className="block w-full min-w-0 max-w-full text-xs text-ink-500 file:mr-2 file:max-w-full file:rounded-full file:border-0 file:bg-brand-100 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-accent sm:text-sm"
                   />
                 </div>
                 <p className="mt-1 text-xs text-ink-400">
@@ -642,11 +642,11 @@ export function ProductManager() {
               </p>
             ) : null}
 
-            <div className="mt-5 flex flex-wrap justify-end gap-3">
+            <div className="mt-5 grid grid-cols-2 gap-2 sm:flex sm:justify-end sm:gap-3">
               <button
                 type="button"
                 onClick={() => setDraft(null)}
-                className="btn-outline px-5 py-2.5 text-sm"
+                className="btn-outline w-full px-3 py-2.5 text-sm sm:w-auto sm:px-5"
               >
                     Cancel
               </button>
@@ -654,7 +654,7 @@ export function ProductManager() {
                 type="button"
                 onClick={() => void save()}
                 disabled={saving}
-                className="btn-primary px-5 py-2.5 text-sm disabled:opacity-60"
+                className="btn-primary w-full px-3 py-2.5 text-sm disabled:opacity-60 sm:w-auto sm:px-5"
               >
                 {saving ? "Saving?" : "Save"}
               </button>
