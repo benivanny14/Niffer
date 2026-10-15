@@ -1,6 +1,7 @@
 import { getDb } from "@/lib/server/db";
 import { timingSafeEqual } from "node:crypto";
 import type { Order } from "@/lib/orders";
+import { InputError } from "@/lib/server/errors";
 
 /**
  * Malipo (mobile money) kupitia AzamPay.
@@ -39,18 +40,35 @@ export function paymentConfig() {
   const merchantId = env("AZAMPAY_MERCHANT_ID");
   const apiKey = env("AZAMPAY_API_KEY");
   const baseUrl = env("AZAMPAY_BASE_URL") || "https://apigw.azampay.co";
-  const mock = env("AZAMPAY_MOCK") === "1";
+  const mock = process.env.NODE_ENV !== "production" && env("AZAMPAY_MOCK") === "1";
   const enabled = mock || Boolean(appId && merchantId && apiKey);
   const appUrl =
-    env("APP_URL") || env("NEXT_PUBLIC_SITE_URL") || "http://localhost:3000";
+    env("APP_URL") || env("NEXT_PUBLIC_SITE_URL") ||
+    (env("VERCEL_PROJECT_PRODUCTION_URL") ? `https://${env("VERCEL_PROJECT_PRODUCTION_URL")}` : "") ||
+    (env("VERCEL_URL") ? `https://${env("VERCEL_URL")}` : "") ||
+    (process.env.NODE_ENV === "production" ? "" : "http://localhost:3000");
   return { appId, merchantId, apiKey, baseUrl, mock, enabled, appUrl };
+}
+
+export function onlinePaymentReadiness(): string | null {
+  const cfg = paymentConfig();
+  if (!cfg.enabled) return "Online mobile-money payments are not configured. Choose cash on delivery.";
+  if (!cfg.appUrl) return "Set APP_URL to the public HTTPS website URL before enabling online payments.";
+  if (process.env.NODE_ENV === "production" && !env("PAYMENT_CALLBACK_TOKEN")) {
+    return "Online payments are not ready because the payment callback secret is missing.";
+  }
+  return null;
 }
 
 /* ============ Kuanzisha malipo ============ */
 
 export async function startPayment(order: Order): Promise<PaymentStart> {
   const cfg = paymentConfig();
-  if (!cfg.enabled) return { mode: "disabled" };
+  if (!isOnlinePayment(order.payment)) {
+    throw new InputError("This order does not use online mobile-money payment.", 400);
+  }
+  const unavailable = onlinePaymentReadiness();
+  if (unavailable) throw new InputError(unavailable, 503);
 
   if (cfg.mock) {
     return {
@@ -66,10 +84,10 @@ export async function startPayment(order: Order): Promise<PaymentStart> {
       return { mode: "gateway", redirectUrl: url };
     }
   } catch (error) {
-    // Hazikuja — oda inabaki salama kwenye malipo ya kawaida (COD).
     console.error("[payments] AzamPay haikufungua:", error);
+    throw new InputError("The payment provider could not start checkout. Please retry or choose cash on delivery.", 503);
   }
-  return { mode: "disabled" };
+  throw new InputError("The payment provider did not return a checkout link. Please retry or choose cash on delivery.", 503);
 }
 
 async function azamPayCheckout(
@@ -146,7 +164,7 @@ export async function setPaymentStatus(
       `UPDATE orders
          SET payment_status = ?,
              payment_ref = COALESCE(?, payment_ref)
-       WHERE code = ?`,
+       WHERE code = ? AND payment IN ('mpesa', 'mixx', 'airtel') AND payment_status <> 'paid'`,
     )
     .run(status, providerRef ?? null, code);
   return result.changes > 0;

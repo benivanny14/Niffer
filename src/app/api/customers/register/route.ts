@@ -11,7 +11,7 @@ import { rateLimit, rateLimitMessage } from "@/lib/server/rate-limit";
 export async function POST(req: NextRequest) {
   await connection();
   try {
-    const limited = rateLimit(req, "customer-register", 3, 600);
+    const limited = await rateLimit(req, "customer-register", 3, 600);
     if (!limited.ok) {
       return fail(rateLimitMessage(limited.retryAfterSec), 429);
     }

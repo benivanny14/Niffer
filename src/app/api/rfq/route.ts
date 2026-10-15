@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   try {
     const phone = req.nextUrl.searchParams.get("phone");
     if (phone) {
-      const limited = rateLimit(req, "rfq-lookup", 10, 60);
+      const limited = await rateLimit(req, "rfq-lookup", 10, 60);
       if (!limited.ok) {
         return fail(rateLimitMessage(limited.retryAfterSec), 429);
       }
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   await connection();
   try {
-    const limited = rateLimit(req, "rfq-create", 5, 600);
+    const limited = await rateLimit(req, "rfq-create", 5, 600);
     if (!limited.ok) {
       return fail(rateLimitMessage(limited.retryAfterSec), 429);
     }

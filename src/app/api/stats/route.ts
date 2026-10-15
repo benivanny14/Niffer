@@ -32,7 +32,7 @@ export async function GET() {
     try {
       const rows = await getDb()
         .prepare(
-          `SELECT lines FROM orders WHERE demo = 0`,
+          `SELECT lines FROM orders WHERE demo = 0 AND status <> 'ghairiwa'`,
         )
         .all() as { lines: string }[];
       for (const row of rows) {

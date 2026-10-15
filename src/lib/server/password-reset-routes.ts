@@ -11,7 +11,7 @@ const GENERIC_RESPONSE =
 export async function handleForgotPassword(req: NextRequest) {
   await connection();
   try {
-    const limited = rateLimit(req, "password-reset-request", 3, 300);
+    const limited = await rateLimit(req, "password-reset-request", 3, 300);
     if (!limited.ok) return fail(rateLimitMessage(limited.retryAfterSec), 429);
 
     const body = await readBody<{ email?: string }>(req);
@@ -39,7 +39,7 @@ export async function handleForgotPassword(req: NextRequest) {
 export async function handleResetPassword(req: NextRequest) {
   await connection();
   try {
-    const limited = rateLimit(req, "password-reset-submit", 10, 300);
+    const limited = await rateLimit(req, "password-reset-submit", 10, 300);
     if (!limited.ok) return fail(rateLimitMessage(limited.retryAfterSec), 429);
 
     const body = await readBody<{

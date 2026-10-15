@@ -14,7 +14,7 @@ import { fail } from "@/lib/server/http";
  */
 export async function GET(req: NextRequest) {
   await connection();
-  const limited = rateLimit(req, "payment-mock", 10, 60);
+  const limited = await rateLimit(req, "payment-mock", 10, 60);
   if (!limited.ok) {
     return fail(rateLimitMessage(limited.retryAfterSec), 429);
   }

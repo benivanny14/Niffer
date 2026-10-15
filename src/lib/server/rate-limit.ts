@@ -1,99 +1,57 @@
 import type { NextRequest } from "next/server";
-
-/**
- * Rate limiting ndani ya kumbuka (in-memory) — inatosha kwa deployment
- * moja (VPS/container). Kila endpoint ina kikomo chake cha majaribio
- * kwa IP ndani ya dirisha la muda.
- *
- * Kumbuka: kwa serverless (VPS morei ya moja) tumia rate limiter ya
- * nje (Upstash/Ratelimit) — interface hii ni rahisi kubadilisha.
- */
-
-type Bucket = { count: number; resetAt: number };
-
-const store = (globalThis as unknown as { __rateLimit?: Map<string, Bucket> })
-  .__rateLimit ??
-  ((globalThis as unknown as { __rateLimit?: Map<string, Bucket> }).__rateLimit =
-    new Map());
-
-const MAX_BUCKETS = 5000;
-
-function pruneExpired(): void {
-  const now = Date.now();
-  for (const [key, bucket] of store) {
-    if (bucket.resetAt <= now) store.delete(key);
-  }
-  // Kikomo cha kumbuka — futa kale morei ikiwa zimezidi.
-  if (store.size > MAX_BUCKETS) {
-    const entries = [...store.entries()].sort(
-      (a, b) => a[1].resetAt - b[1].resetAt,
-    );
-    for (let i = 0; i < entries.length - MAX_BUCKETS; i++) {
-      store.delete(entries[i][0]);
-    }
-  }
-}
+import { getDb } from "@/lib/server/db";
 
 export type RateLimitResult = {
   ok: boolean;
-  /** Sekunde zilizobaki kabla ya kupumzika. */
   retryAfterSec: number;
 };
 
 /**
- * Thibitisha kikomo cha majaribio. Rudisha `{ ok: false }` kama
- * kikomo kimevukwa — mtumiaji anapaswa kusubiri `retryAfterSec`.
+ * Shared fixed-window limiter. Vercel can run many short-lived instances, so
+ * counters live in Neon rather than process memory. Each hit is one atomic
+ * PostgreSQL upsert and is shared by all app instances.
  */
-export function rateLimit(
+export async function rateLimit(
   req: NextRequest,
   key: string,
   limit: number,
   windowSec: number,
-): RateLimitResult {
+): Promise<RateLimitResult> {
   const ip = clientIp(req);
   const bucketKey = `${key}:${ip}`;
   const now = Date.now();
-
-  // Osha bucket za zamani kila ~100 calls.
-  if (store.size > 200) pruneExpired();
-
-  let bucket = store.get(bucketKey);
-  if (!bucket || bucket.resetAt <= now) {
-    bucket = { count: 0, resetAt: now + windowSec * 1000 };
-    store.set(bucketKey, bucket);
+  const resetAt = now + windowSec * 1000;
+  if (Math.random() < 0.01) {
+    await getDb().prepare("DELETE FROM rate_limit_buckets WHERE reset_at <= ?").run(now);
   }
+  const row = await getDb().prepare(
+    `INSERT INTO rate_limit_buckets (bucket_key, hits, reset_at)
+     VALUES (?, 1, ?)
+     ON CONFLICT (bucket_key) DO UPDATE SET
+       hits = CASE WHEN rate_limit_buckets.reset_at <= ? THEN 1 ELSE rate_limit_buckets.hits + 1 END,
+       reset_at = CASE WHEN rate_limit_buckets.reset_at <= ? THEN EXCLUDED.reset_at ELSE rate_limit_buckets.reset_at END
+     RETURNING hits, reset_at`,
+  ).get(bucketKey, resetAt, now, now) as { hits: number; reset_at: string | number } | undefined;
 
-  bucket.count += 1;
-  if (bucket.count > limit) {
-    return {
-      ok: false,
-      retryAfterSec: Math.max(1, Math.ceil((bucket.resetAt - now) / 1000)),
-    };
-  }
-  return { ok: true, retryAfterSec: 0 };
+  const bucketReset = Number(row?.reset_at ?? resetAt);
+  return {
+    ok: Number(row?.hits ?? 0) <= limit,
+    retryAfterSec: Math.max(1, Math.ceil((bucketReset - now) / 1000)),
+  };
 }
 
-/**
- * IP salama kutoka headers.
- * Use `x-real-ip` kwanza (inawekwa na proxy kama nginx/Caddy) —
- * `x-forwarded-for` ya kwanza inaweza kuwa spoofed na client.
- * Ikiwa hakuna proxy, tumia "unknown" (rate limit bado inafanya kazi
- * kwa mwendo wa jumla).
- */
+/** Trust the reverse-proxy client IP supplied by Vercel or the hosting proxy. */
 export function clientIp(req: NextRequest): string {
   const real = req.headers.get("x-real-ip")?.trim();
   if (real) return real;
-  // XFF: tumia hop ya mwisho (iliyoongezwa na proxy, si ya client).
-  const fwd = req.headers.get("x-forwarded-for");
-  if (fwd) {
-    const parts = fwd.split(",").map((s) => s.trim()).filter(Boolean);
-    const last = parts[parts.length - 1];
-    if (last) return last;
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const first = forwarded.split(",").map((part) => part.trim()).find(Boolean);
+    if (first) return first;
   }
   return "unknown";
 }
 
-/** Ujumbe wa kikomo (Kiswahili). */
 export function rateLimitMessage(retryAfterSec: number): string {
   const sec = Math.max(1, retryAfterSec);
   if (sec < 60) return `Wait ${sec} seconds before trying again.`;

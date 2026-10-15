@@ -107,6 +107,39 @@ export async function getStockMap(): Promise<Record<string, number>> {
   return map;
 }
 
+export type StockMovement = {
+  id: number;
+  slug: string;
+  name: string;
+  delta: number;
+  quantity: number;
+  reason: string;
+  reference: string | null;
+  createdAt: string;
+};
+
+export async function listStockMovements(limit = 50, slug?: string): Promise<StockMovement[]> {
+  const filterSlug = slug?.trim();
+  const where = filterSlug ? "WHERE m.slug = ?" : "";
+  const values = filterSlug
+    ? [filterSlug, Math.min(200, Math.max(1, Math.floor(limit)))]
+    : [Math.min(200, Math.max(1, Math.floor(limit)))];
+  const rows = await getDb().prepare(
+    `SELECT m.id, m.slug, p.name, m.delta, m.quantity, m.reason, m.reference, m.created_at
+     FROM stock_movements m LEFT JOIN products p ON p.slug = m.slug
+     ${where}
+     ORDER BY m.id DESC LIMIT ?`,
+  ).all(...values) as {
+    id: number; slug: string; name: string | null; delta: number; quantity: number;
+    reason: string; reference: string | null; created_at: string;
+  }[];
+  return rows.map((row) => ({
+    id: Number(row.id), slug: row.slug, name: row.name ?? row.slug,
+    delta: Number(row.delta), quantity: Number(row.quantity), reason: row.reason,
+    reference: row.reference, createdAt: row.created_at,
+  }));
+}
+
 type CatalogItem = { slug: string; name: string; priceTsh: number };
 
 /**
@@ -137,14 +170,32 @@ async function pricedCatalog(): Promise<CatalogItem[]> {
 
 /** Enter stoo ya bidhaa moja (admin). */
 export async function setStockValue(slug: string, qty: number): Promise<number> {
-  const safe = Math.max(0, Math.floor(qty));
-  await getDb()
-    .prepare(
-      `INSERT INTO stock (slug, qty, updated_at) VALUES (?, ?, ?)
-       ON CONFLICT(slug) DO UPDATE SET qty = excluded.qty, updated_at = excluded.updated_at`,
-    )
-    .run(slug, safe, nowIso());
+  const safe = Number.isFinite(qty) ? Math.max(0, Math.floor(qty)) : 0;
+  const key = slug.trim();
+  const db = getDb();
+  const at = nowIso();
+  await db.transaction(async (tx) => {
+    const row = await tx.prepare("SELECT qty FROM stock WHERE slug = ? FOR UPDATE").get(key) as { qty?: number } | undefined;
+    if (!row) throw new InputError("Product not found.", 404);
+    const previous = Number(row.qty ?? 0);
+    if (previous === safe) return;
+    await tx.prepare(
+      `UPDATE stock SET qty = ?, updated_at = ? WHERE slug = ?`,
+    ).run(safe, at, key);
+    await tx.prepare(
+      "INSERT INTO stock_movements (slug, delta, quantity, reason, created_at) VALUES (?, ?, ?, 'admin_adjustment', ?)",
+    ).run(key, safe - previous, safe, at);
+  });
   return safe;
+}
+
+async function recordStockMovement(
+  tx: ReturnType<typeof getDb>, slug: string, delta: number, quantity: number,
+  reason: string, reference: string, at: string,
+): Promise<void> {
+  await tx.prepare(
+    "INSERT INTO stock_movements (slug, delta, quantity, reason, reference, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+  ).run(slug, delta, quantity, reason, reference, at);
 }
 
 /**
@@ -190,31 +241,20 @@ export async function createOrder(input: CreateOrderInput): Promise<{
   // Pooza kiasi na bidhaa.
   const catalog = await pricedCatalog();
   const lines: CartLine[] = [];
+  const quantities = new Map<string, number>();
   for (const line of rawLines) {
+    if (!line || typeof line !== "object") throw new InputError("Invalid product quantity.");
     const qty = Math.floor(Number(line.qty));
     if (!line.slug || !Number.isFinite(qty) || qty < 1 || qty > 99) {
       throw new InputError("Invalid product quantity.");
     }
     const product = catalog.find((p) => p.slug === line.slug);
     if (!product) throw new InputError(`Product "${line.slug}" was not found.`);
-    if (!lines.some((l) => l.slug === line.slug)) {
-      lines.push({ slug: line.slug, qty });
-    }
+    const combined = (quantities.get(line.slug) ?? 0) + qty;
+    if (combined > 99) throw new InputError("A product quantity cannot exceed 99.");
+    quantities.set(line.slug, combined);
   }
-
-  const stock = await getStockMap();
-  for (const line of lines) {
-    const available = stock[line.slug] ?? 0;
-    if (line.qty > available) {
-      const name = catalog.find((p) => p.slug === line.slug)?.name ?? line.slug;
-      throw new InputError(
-        available === 0
-          ? `${name} is out of stock. Remove it from your cart.`
-          : `Only ${available} of ${name} remain in stock.`,
-        409,
-      );
-    }
-  }
+  for (const [slug, qty] of quantities) lines.push({ slug, qty });
 
   // Hesabu upya bei (server ndio mwanzo wa ukweli — DB katalogi).
   const subtotalTsh = lines.reduce((sum, line) => {
@@ -265,6 +305,7 @@ export async function createOrder(input: CreateOrderInput): Promise<{
   if (await exists.get(code)) throw new InputError("Please try again.", 500);
 
   const createdAt = nowIso();
+  const inventoryLines = [...lines].sort((a, b) => a.slug.localeCompare(b.slug));
   const history: StatusEvent[] = [
     { status: "imapokelewa", at: createdAt },
   ];
@@ -299,18 +340,25 @@ export async function createOrder(input: CreateOrderInput): Promise<{
       "INSERT INTO order_events (code, status, at) VALUES (?, ?, ?)",
     ).run(code, "imapokelewa", createdAt);
 
-    // Punguza stoo — thibitisha kwamba kuna kutosha (si MAX(0, …)).
+    // Conditionally decrement inside this transaction to avoid overselling.
     const dec = tx.prepare(
       "UPDATE stock SET qty = qty - ?, updated_at = ? WHERE slug = ? AND qty >= ?",
     );
-    for (const line of lines) {
+    for (const line of inventoryLines) {
       const result = await dec.run(line.qty, createdAt, line.slug, line.qty);
       if (Number(result.changes) !== 1) {
+        const row = await tx.prepare("SELECT qty FROM stock WHERE slug = ?").get(line.slug) as { qty?: number } | undefined;
+        const available = Number(row?.qty ?? 0);
+        const name = catalog.find((p) => p.slug === line.slug)?.name ?? line.slug;
         throw new InputError(
-          `There is not enough stock for ${line.slug}. Please try again.`,
+          available === 0
+            ? `${name} is out of stock. Remove it from your cart.`
+            : `Only ${available} of ${name} remain in stock.`,
           409,
         );
       }
+      const remaining = await tx.prepare("SELECT qty FROM stock WHERE slug = ?").get(line.slug) as { qty?: number } | undefined;
+      await recordStockMovement(tx, line.slug, -line.qty, Number(remaining?.qty ?? 0), "order_placed", code, createdAt);
     }
 
     // Redeem kadi ya zawadi ndani ya transaction (haiwezi kutumika tena).
@@ -430,12 +478,24 @@ export async function cancelOrder(code: string): Promise<Order | undefined> {
   const db = getDb();
   try {
     await db.transaction(async (tx) => {
+    const history = [...(existing.history ?? [])];
+    if (!history.some((h) => h.status === "ghairiwa")) {
+      history.push({ status: "ghairiwa", at });
+    }
+    const claimed = await tx.prepare(
+      "UPDATE orders SET status = 'ghairiwa', history = ? WHERE code = ? AND status = 'imapokelewa'",
+    ).run(JSON.stringify(history), key);
+    if (claimed.changes !== 1) {
+      throw new InputError("This order can no longer be cancelled.", 409);
+    }
     // Rudisha stoo ya kila bidhaa.
     const inc = tx.prepare(
       "UPDATE stock SET qty = qty + ?, updated_at = ? WHERE slug = ?",
     );
     for (const line of existing.lines) {
       await inc.run(line.qty, at, line.slug);
+      const restored = await tx.prepare("SELECT qty FROM stock WHERE slug = ?").get(line.slug) as { qty?: number } | undefined;
+      await recordStockMovement(tx, line.slug, line.qty, Number(restored?.qty ?? 0), "order_cancelled", key, at);
     }
     // Rudisha kadi ya zawadi (kama ilikuwa imetumika na oda hii).
     if (existing.giftCardCode) {
@@ -445,13 +505,6 @@ export async function cancelOrder(code: string): Promise<Order | undefined> {
       ).run(existing.giftCardCode, key);
     }
 
-    const history = [...(existing.history ?? [])];
-    if (!history.some((h) => h.status === "ghairiwa")) {
-      history.push({ status: "ghairiwa", at });
-    }
-    await tx.prepare(
-      "UPDATE orders SET status = 'ghairiwa', history = ? WHERE code = ?",
-    ).run(JSON.stringify(history), key);
     await tx.prepare(
       "INSERT INTO order_events (code, status, at) VALUES (?, 'ghairiwa', ?)",
     ).run(key, at);
@@ -487,7 +540,9 @@ export async function orderStats(): Promise<{
   const row = await getDb()
     .prepare(
       `SELECT COUNT(*) AS orderCount,
-              COALESCE(SUM(CASE WHEN status != 'ghairiwa' THEN total_tsh ELSE 0 END), 0) AS revenueTsh,
+              COALESCE(SUM(CASE
+                WHEN payment_status = 'paid' OR (payment = 'cod' AND status = 'imefika')
+                THEN total_tsh ELSE 0 END), 0) AS revenueTsh,
               COALESCE(SUM(CASE WHEN status NOT IN ('imefika', 'ghairiwa') THEN 1 ELSE 0 END), 0) AS pendingCount
        FROM orders`,
     )

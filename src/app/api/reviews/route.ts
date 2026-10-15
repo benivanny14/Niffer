@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 /** Save hakiki mpya (huingia kama pending — admin huidhisha). */
 export async function POST(req: NextRequest) {
   try {
-    const limited = rateLimit(req, "review-create", 5, 600);
+    const limited = await rateLimit(req, "review-create", 5, 600);
     if (!limited.ok) {
       return fail(rateLimitMessage(limited.retryAfterSec), 429);
     }

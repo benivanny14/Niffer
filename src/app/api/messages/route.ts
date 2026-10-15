@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
 /** Save ujumbe wa fomu (wasiliana / jumla). */
 export async function POST(req: NextRequest) {
   try {
-    const limited = rateLimit(req, "message-create", 5, 600);
+    const limited = await rateLimit(req, "message-create", 5, 600);
     if (!limited.ok) {
       return fail(rateLimitMessage(limited.retryAfterSec), 429);
     }

@@ -6,7 +6,7 @@ import { rateLimit, rateLimitMessage } from "@/lib/server/rate-limit";
 /** Unsubscribe from the newsletter (umma). */
 export async function POST(req: NextRequest) {
   try {
-    const limited = rateLimit(req, "newsletter-unsub", 10, 600);
+    const limited = await rateLimit(req, "newsletter-unsub", 10, 600);
     if (!limited.ok) {
       return fail(rateLimitMessage(limited.retryAfterSec), 429);
     }

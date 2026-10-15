@@ -9,7 +9,7 @@ import { rateLimit, rateLimitMessage } from "@/lib/server/rate-limit";
  */
 export async function POST(req: NextRequest) {
   try {
-    const limited = rateLimit(req, "promo-validate", 20, 60);
+    const limited = await rateLimit(req, "promo-validate", 20, 60);
     if (!limited.ok) {
       return fail(rateLimitMessage(limited.retryAfterSec), 429);
     }

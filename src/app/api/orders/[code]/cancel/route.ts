@@ -17,7 +17,7 @@ export async function POST(
 ) {
   await connection();
   try {
-    const limited = rateLimit(req, "order-cancel", 5, 600);
+    const limited = await rateLimit(req, "order-cancel", 5, 600);
     if (!limited.ok) {
       return fail(rateLimitMessage(limited.retryAfterSec), 429);
     }

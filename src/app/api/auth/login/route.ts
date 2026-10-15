@@ -6,7 +6,7 @@ import { rateLimit, rateLimitMessage } from "@/lib/server/rate-limit";
 /** Ingia kama admin — hupokea cookie ya session (httpOnly). */
 export async function POST(req: NextRequest) {
   try {
-    const limited = rateLimit(req, "admin-login", 5, 300);
+    const limited = await rateLimit(req, "admin-login", 5, 300);
     if (!limited.ok) {
       return NextResponse.json(
         { ok: false, error: rateLimitMessage(limited.retryAfterSec) },

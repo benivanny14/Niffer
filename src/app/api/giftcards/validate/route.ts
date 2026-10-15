@@ -9,7 +9,7 @@ import { rateLimit, rateLimitMessage } from "@/lib/server/rate-limit";
  */
 export async function POST(req: NextRequest) {
   try {
-    const limited = rateLimit(req, "giftcard-validate", 15, 60);
+    const limited = await rateLimit(req, "giftcard-validate", 15, 60);
     if (!limited.ok) {
       return fail(rateLimitMessage(limited.retryAfterSec), 429);
     }

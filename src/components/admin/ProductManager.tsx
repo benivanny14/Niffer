@@ -78,6 +78,16 @@ export function ProductManager() {
     },
     { intervalMs: 60_000 },
   );
+  const stockHistory = useAsync<{
+    id: number; name: string; slug: string; delta: number; quantity: number;
+    reason: string; reference: string | null; createdAt: string;
+  }[]>("admin-stock-history", async () => {
+    const response = await apiGet<{ ok: boolean; movements: {
+      id: number; name: string; slug: string; delta: number; quantity: number;
+      reason: string; reference: string | null; createdAt: string;
+    }[] }>("/api/stock/movements?limit=30");
+    return response.movements;
+  }, { intervalMs: 60_000 });
 
   const products = data ?? [];
   const filtered = products.filter(
@@ -132,6 +142,7 @@ export function ProductManager() {
     try {
       await apiPatch(`/api/products/${slug}`, { stock: qty });
       refresh();
+      stockHistory.refresh();
     } catch (err) {
       setStockError(errorMessage(err));
     }
@@ -180,6 +191,7 @@ export function ProductManager() {
       }
 
       refresh();
+      stockHistory.refresh();
       flash("Saved to the database");
       setDraft(null);
     } catch (err) {
@@ -197,6 +209,7 @@ export function ProductManager() {
     try {
       await apiDelete(`/api/products/${product.slug}`);
       refresh();
+      stockHistory.refresh();
       flash("Product deleted");
     } catch (err) {
       setStockError(errorMessage(err));
@@ -379,6 +392,37 @@ export function ProductManager() {
           </table>
         )}
       </div>
+
+      <details className="card mt-5 overflow-hidden">
+        <summary className="cursor-pointer px-5 py-4 text-sm font-semibold text-ink-800">
+          Stock movement history
+        </summary>
+        {stockHistory.loading ? (
+          <p className="border-t border-cream-200 px-5 py-4 text-sm text-ink-500">Loading stock history…</p>
+        ) : stockHistory.error ? (
+          <p className="border-t border-cream-200 px-5 py-4 text-sm text-danger-600">{stockHistory.error}</p>
+        ) : (stockHistory.data?.length ?? 0) === 0 ? (
+          <p className="border-t border-cream-200 px-5 py-4 text-sm text-ink-500">No stock movements recorded yet.</p>
+        ) : (
+          <div className="overflow-x-auto border-t border-cream-200">
+            <table className="w-full min-w-[620px] text-left text-sm">
+              <thead><tr className="text-xs uppercase tracking-wide text-ink-400">
+                <th className="px-5 py-3">Product</th><th className="px-5 py-3">Movement</th>
+                <th className="px-5 py-3">Balance</th><th className="px-5 py-3">Reason</th><th className="px-5 py-3">Date</th>
+              </tr></thead>
+              <tbody>{stockHistory.data?.map((movement) => (
+                <tr key={movement.id} className="border-t border-cream-200">
+                  <td className="px-5 py-3"><span className="block font-medium text-ink-800">{movement.name}</span><span className="text-xs text-ink-400">{movement.slug}</span></td>
+                  <td className={`px-5 py-3 font-semibold ${movement.delta < 0 ? "text-danger-600" : "text-success-600"}`}>{movement.delta > 0 ? "+" : ""}{movement.delta}</td>
+                  <td className="px-5 py-3 text-ink-700">{movement.quantity}</td>
+                  <td className="px-5 py-3 text-ink-600">{movement.reason.replaceAll("_", " ")}{movement.reference ? ` · ${movement.reference}` : ""}</td>
+                  <td className="px-5 py-3 text-ink-500">{new Date(movement.createdAt).toLocaleString("en-TZ")}</td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+        )}
+      </details>
 
       <p className="mt-3 text-xs text-ink-400">
         Price, name and image changes are saved to the server database and

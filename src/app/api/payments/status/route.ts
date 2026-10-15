@@ -8,7 +8,7 @@ import { rateLimit, rateLimitMessage } from "@/lib/server/rate-limit";
 export async function GET(req: NextRequest) {
   await connection();
   try {
-    const limited = rateLimit(req, "payment-status", 30, 60);
+    const limited = await rateLimit(req, "payment-status", 30, 60);
     if (!limited.ok) {
       return fail(rateLimitMessage(limited.retryAfterSec), 429);
     }

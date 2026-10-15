@@ -35,6 +35,22 @@ CREATE TABLE IF NOT EXISTS stock (
   updated_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS stock_movements (
+  id          BIGSERIAL PRIMARY KEY,
+  slug        TEXT NOT NULL,
+  delta       INTEGER NOT NULL,
+  quantity    INTEGER NOT NULL,
+  reason      TEXT NOT NULL,
+  reference   TEXT,
+  created_at  TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS rate_limit_buckets (
+  bucket_key TEXT PRIMARY KEY,
+  hits       INTEGER NOT NULL,
+  reset_at   BIGINT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS categories (
   slug        TEXT PRIMARY KEY,
   name        TEXT NOT NULL,
@@ -219,6 +235,8 @@ CREATE INDEX IF NOT EXISTS idx_reset_tokens_customer ON password_reset_tokens(cu
 CREATE INDEX IF NOT EXISTS idx_admin_sessions_expires ON admin_sessions(expires_at);
 CREATE INDEX IF NOT EXISTS idx_rfqs_phone ON rfqs(phone);
 CREATE INDEX IF NOT EXISTS idx_stock_slug ON stock(slug);
+CREATE INDEX IF NOT EXISTS idx_stock_movements_slug_created ON stock_movements(slug, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_rate_limit_reset ON rate_limit_buckets(reset_at);
 `;
 
 export function nowIso(): string {
@@ -233,6 +251,7 @@ export function nul<T>(value: T | undefined | null): T | null {
 type DbRow = Record<string, unknown>;
 
 type DbResult<T extends DbRow = DbRow> = { rows: T[]; rowCount: number | null };
+type SchemaConnection = Pool | PoolClient;
 
 function toPostgresPlaceholders(statement: string): string {
   let index = 0;
@@ -289,7 +308,7 @@ export class NeonDatabase {
 }
 
 /** Ongeza mara SCHEMA inapobadilishwa (DDL ni polepole: ~14s kwenye Neon). */
-const SCHEMA_VERSION = "2";
+const SCHEMA_VERSION = "3";
 
 type DbGlobals = typeof globalThis & {
   __nifferPool?: Pool;
@@ -320,13 +339,9 @@ export function getDb(): NeonDatabase {
 }
 
 /** DDL imekwisha (version kwenye meta) — rukia DDL ya dakika ~14. */
-async function schemaApplied(pool: Pool): Promise<boolean> {
-  try {
-    const result = await pool.query("SELECT value FROM meta WHERE key = $1", ["schema_version"]);
-    return result.rows[0]?.value === SCHEMA_VERSION;
-  } catch {
-    return false; // meta haipo au DB mpya
-  }
+async function schemaApplied(pool: SchemaConnection): Promise<boolean> {
+  const result = await pool.query("SELECT value FROM meta WHERE key = $1", ["schema_version"]);
+  return result.rows[0]?.value === SCHEMA_VERSION;
 }
 
 /** Create PostgreSQL schema and seed once per warm serverless instance. */
@@ -335,23 +350,35 @@ export async function ensureDatabaseReady(): Promise<void> {
   if (globals.__nifferDbReady) return globals.__nifferDbReady;
   const pool = getPool();
   globals.__nifferDbReady = (async () => {
+    const client = await pool.connect();
     const started = Date.now();
-    if (!(await schemaApplied(pool))) {
-      // Dima kwa vipande — batch kubwa moja huchukua ~14s na kivuko cha
-      // muunganisho (10-30s) kinaua ombi. Kila kipande <3s.
-      const statements = SCHEMA.split(";").map((sql) => sql.trim()).filter(Boolean);
-      const CHUNK = 8;
-      for (let i = 0; i < statements.length; i += CHUNK) {
-        await pool.query(`${statements.slice(i, i + CHUNK).join(";")};`);
+    try {
+      // Transaction-scoped locking works with Neon PgBouncer transaction pooling.
+      await client.query("BEGIN");
+      await client.query("SELECT pg_advisory_xact_lock(741920341)");
+      await client.query("CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
+      if (!(await schemaApplied(client))) {
+        // Split DDL to keep each query small on Neon serverless connections.
+        const statements = SCHEMA.split(";").map((sql) => sql.trim()).filter(Boolean);
+        const CHUNK = 8;
+        for (let i = 0; i < statements.length; i += CHUNK) {
+          await client.query(`${statements.slice(i, i + CHUNK).join(";")};`);
+        }
+        await migrate(client);
+        await seed(client);
+        await client.query(
+          "INSERT INTO meta (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+          ["schema_version", SCHEMA_VERSION],
+        );
       }
-      await pool.query(
-        "INSERT INTO meta (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
-        ["schema_version", SCHEMA_VERSION],
-      );
+      await client.query("COMMIT");
+      console.log(`[db] schema ready in ${Date.now() - started}ms`);
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
     }
-    await migrate(pool);
-    await seed(pool);
-    console.log(`[db] schema ready in ${Date.now() - started}ms`);
   })().catch((error) => {
     console.error("[db] schema init failed:", error);
     globals.__nifferDbReady = undefined;
@@ -360,7 +387,7 @@ export async function ensureDatabaseReady(): Promise<void> {
   return globals.__nifferDbReady;
 }
 
-async function migrate(pool: Pool): Promise<void> {
+async function migrate(pool: SchemaConnection): Promise<void> {
   await pool.query(`UPDATE gift_cards
     SET expires_at = (created_at::timestamptz + INTERVAL '1 year')::text
     WHERE expires_at IS NULL`);
@@ -380,7 +407,7 @@ async function migrate(pool: Pool): Promise<void> {
   }
 }
 
-async function seed(pool: Pool): Promise<void> {
+async function seed(pool: SchemaConnection): Promise<void> {
   const now = nowIso();
   if (catalogCategories.length > 0) {
     const categoryTuples: string[] = [];

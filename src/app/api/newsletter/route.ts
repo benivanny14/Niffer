@@ -28,7 +28,7 @@ export async function GET() {
 /** Jiunge na jarida. */
 export async function POST(req: NextRequest) {
   try {
-    const limited = rateLimit(req, "newsletter", 5, 600);
+    const limited = await rateLimit(req, "newsletter", 5, 600);
     if (!limited.ok) {
       return fail(rateLimitMessage(limited.retryAfterSec), 429);
     }

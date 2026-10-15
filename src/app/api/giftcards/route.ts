@@ -20,7 +20,7 @@ export async function GET() {
 /** Agiza kadi ya zawadi mpya (public — mteja anaagiza). */
 export async function POST(req: NextRequest) {
   try {
-    const limited = rateLimit(req, "giftcard-create", 5, 300);
+    const limited = await rateLimit(req, "giftcard-create", 5, 300);
     if (!limited.ok) {
       return fail(rateLimitMessage(limited.retryAfterSec), 429);
     }

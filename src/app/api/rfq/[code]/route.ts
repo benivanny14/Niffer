@@ -11,7 +11,7 @@ export async function GET(
 ) {
   await connection();
   try {
-    const limited = rateLimit(req, "rfq-get", 15, 60);
+    const limited = await rateLimit(req, "rfq-get", 15, 60);
     if (!limited.ok) {
       return fail(rateLimitMessage(limited.retryAfterSec), 429);
     }

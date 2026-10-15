@@ -72,8 +72,12 @@ export async function POST(req: NextRequest) {
     const name = (body.name ?? "").trim();
     const priceTsh = Math.round(Number(body.priceTsh));
     if (name.length < 2) return fail("A product name is required.");
-    if (!Number.isFinite(priceTsh) || priceTsh <= 0) {
+    if (!Number.isSafeInteger(priceTsh) || priceTsh <= 0 || priceTsh > 100_000_000) {
       return fail("Invalid price.");
+    }
+    const initialStock = Number(body.stock ?? 10);
+    if (!Number.isSafeInteger(initialStock) || initialStock < 0 || initialStock > 1_000_000) {
+      return fail("Stock must be a whole number from 0 to 1,000,000.");
     }
 
     const slug = slugify(body.slug || name);
@@ -89,7 +93,8 @@ export async function POST(req: NextRequest) {
     if (exists) return fail("A product with this slug already exists.", 409);
 
     const now = nowIso();
-    await db.prepare(
+    await db.transaction(async (tx) => {
+    await tx.prepare(
       `INSERT INTO products (
          slug, id, name, category, price_tsh, compare_at_tsh,
          short_description, description, ingredients, how_to_use,
@@ -107,7 +112,7 @@ export async function POST(req: NextRequest) {
       (body.description ?? "").trim(),
       (body.ingredients ?? "").trim(),
       (body.howToUse ?? "").trim(),
-      Math.max(0, Math.floor(Number(body.stock ?? 10))),
+      initialStock,
       JSON.stringify(Array.isArray(body.badges) ? body.badges : []),
       optimizeCloudinaryUrl(body.image?.trim() || ""),
       (body.imageAlt ?? name).trim(),
@@ -116,10 +121,16 @@ export async function POST(req: NextRequest) {
       now,
     );
 
-    const stock = Math.max(0, Math.floor(Number(body.stock ?? 10)));
-    await db.prepare(
+    const stock = initialStock;
+    await tx.prepare(
       "INSERT INTO stock (slug, qty, updated_at) VALUES (?, ?, ?) ON CONFLICT (slug) DO NOTHING",
     ).run(slug, stock, now);
+    if (stock > 0) {
+      await tx.prepare(
+        "INSERT INTO stock_movements (slug, delta, quantity, reason, created_at) VALUES (?, ?, ?, 'initial_stock', ?)",
+      ).run(slug, stock, stock, now);
+    }
+    });
 
     const product = (await listProducts()).find((p) => p.slug === slug);
     return json({ ok: true, product }, 201);
