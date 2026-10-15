@@ -29,9 +29,9 @@ describe("discountPercent", () => {
 });
 
 describe("makeOrderCode", () => {
-  it("huunda nambari ya muundo NCF-XXXX", () => {
+  it("huunda nambari ya oda yenye herufi 12", () => {
     const code = makeOrderCode();
-    expect(code).toMatch(/^NCF-[A-Z0-9]{4}$/);
+    expect(code).toMatch(/^NCF-[A-Z0-9]{12}$/);
   });
   it("huunda nambari tofauti kwa kila wito (statistically)", () => {
     const codes = new Set(Array.from({ length: 50 }, () => makeOrderCode()));

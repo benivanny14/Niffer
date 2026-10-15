@@ -1,5 +1,6 @@
 import { getDb, nowIso } from "@/lib/server/db";
 import { InputError } from "@/lib/server/errors";
+import { randomBytes, randomUUID } from "node:crypto";
 
 /**
  * Lead/content repositories: ujumbe wa fomu (wasiliana/jumla), jarida,
@@ -189,9 +190,27 @@ export type GiftCard = {
   amountTsh: number;
   recipient: string;
   message: string;
-  status: "issued" | "redeemed" | "expired";
+  status: "issued" | "redeemed" | "expired" | "pending_review";
   createdAt: string;
   expiresAt: string;
+  paymentVerified: boolean;
+  approved: boolean;
+};
+
+export type GiftCardRequest = {
+  id: string;
+  amountTsh: number;
+  buyerName: string;
+  buyerPhone: string;
+  recipient: string;
+  message: string;
+  paymentMethod: string;
+  paymentReference: string;
+  status: "payment_pending" | "paid_pending_approval" | "approved" | "rejected";
+  createdAt: string;
+  paidAt: string | null;
+  approvedAt: string | null;
+  giftCode: string | null;
 };
 
 const GIFT_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -217,51 +236,113 @@ function isGiftExpired(
 }
 
 function giftCode(): string {
-  let out = "GC-";
-  for (let i = 0; i < 6; i += 1) {
-    out += GIFT_ALPHABET[Math.floor(Math.random() * GIFT_ALPHABET.length)];
-  }
-  return out;
+  const bytes = randomBytes(12);
+  return `GC-${Array.from(bytes, (byte) => GIFT_ALPHABET[byte % GIFT_ALPHABET.length]).join("")}`;
 }
 
-export async function issueGiftCard(input: {
+export async function createGiftCardRequest(input: {
   amountTsh?: number;
+  buyerName?: string;
+  buyerPhone?: string;
   recipient?: string;
   message?: string;
-}): Promise<GiftCard> {
+  paymentMethod?: string;
+  paymentReference?: string;
+}): Promise<GiftCardRequest> {
   const amount = Math.floor(Number(input.amountTsh ?? 0));
   if (!Number.isFinite(amount) || amount < 1000 || amount > 1_000_000) {
     throw new InputError("Choose a valid gift card value.");
   }
-
+  const buyerName = (input.buyerName ?? "").trim().slice(0, 80);
+  const buyerPhone = (input.buyerPhone ?? "").replace(/[^\d+]/g, "").slice(0, 20);
+  const paymentMethod = (input.paymentMethod ?? "").trim().toLowerCase();
+  const paymentReference = (input.paymentReference ?? "").trim().slice(0, 120);
+  if (buyerName.length < 2 || buyerPhone.replace(/\D/g, "").length < 9) {
+    throw new InputError("Enter the buyer's name and a valid phone number.");
+  }
+  if (!["mpesa", "mixx", "airtel"].includes(paymentMethod)) {
+    throw new InputError("Choose a supported mobile-money payment method.");
+  }
+  if (paymentReference.length < 4) {
+    throw new InputError("Enter the mobile-money transaction reference after paying.");
+  }
   const db = getDb();
-  const exists = db.prepare("SELECT 1 FROM gift_cards WHERE code = ?");
-  let code = giftCode();
-  for (let i = 0; i < 10 && await exists.get(code); i += 1) code = giftCode();
-
+  const requestId = randomUUID();
   const createdAt = nowIso();
-  const expiresAt = giftExpiresAt(createdAt);
-  await db.prepare(
-    `INSERT INTO gift_cards (code, amount_tsh, recipient, message, status, created_at, expires_at)
-     VALUES (?, ?, ?, ?, 'issued', ?, ?)`,
-  ).run(
-    code,
-    amount,
-    (input.recipient ?? "").trim().slice(0, 80),
-    (input.message ?? "").trim().slice(0, 300),
-    createdAt,
-    expiresAt,
-  );
-
+  const recipient = (input.recipient ?? "").trim().slice(0, 80);
+  const message = (input.message ?? "").trim().slice(0, 300);
+  await db.prepare(`INSERT INTO gift_card_requests
+    (id, amount_tsh, buyer_name, buyer_phone, recipient, message, payment_method, payment_reference, status, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'payment_pending', ?)`)
+    .run(requestId, amount, buyerName, buyerPhone, recipient, message, paymentMethod, paymentReference, createdAt);
   return {
-    code,
+    id: requestId,
     amountTsh: amount,
-    recipient: (input.recipient ?? "").trim(),
-    message: (input.message ?? "").trim(),
-    status: "issued",
+    buyerName,
+    buyerPhone,
+    recipient,
+    message,
+    paymentMethod,
+    paymentReference,
+    status: "payment_pending",
     createdAt,
-    expiresAt,
+    paidAt: null,
+    approvedAt: null,
+    giftCode: null,
   };
+}
+
+export async function listGiftCardRequests(limit = 200): Promise<GiftCardRequest[]> {
+  const rows = await getDb().prepare("SELECT * FROM gift_card_requests ORDER BY created_at DESC LIMIT ?").all(limit) as {
+    id: string; amount_tsh: number; buyer_name: string; buyer_phone: string; recipient: string; message: string;
+    payment_method: string; payment_reference: string; status: GiftCardRequest["status"]; created_at: string;
+    paid_at: string | null; approved_at: string | null; gift_code: string | null;
+  }[];
+  return rows.map((row) => ({
+    id: row.id, amountTsh: row.amount_tsh, buyerName: row.buyer_name, buyerPhone: row.buyer_phone,
+    recipient: row.recipient, message: row.message, paymentMethod: row.payment_method,
+    paymentReference: row.payment_reference, status: row.status, createdAt: row.created_at,
+    paidAt: row.paid_at, approvedAt: row.approved_at, giftCode: row.gift_code,
+  }));
+}
+
+export async function reviewGiftCardRequest(id: string, action: "verify_payment" | "approve" | "reject"): Promise<GiftCardRequest> {
+  const db = getDb();
+  if (action === "verify_payment") {
+    const result = await db.prepare(`UPDATE gift_card_requests SET status='paid_pending_approval', paid_at=?
+      WHERE id=? AND status='payment_pending'`).run(nowIso(), id);
+    if (!result.changes) throw new InputError("Request not found or payment was already reviewed.", 409);
+  } else if (action === "reject") {
+    const result = await db.prepare(`UPDATE gift_card_requests SET status='rejected'
+      WHERE id=? AND status IN ('payment_pending','paid_pending_approval')`).run(id);
+    if (!result.changes) throw new InputError("Request not found or cannot be rejected.", 409);
+  } else {
+    await db.transaction(async (tx) => {
+      const row = await tx.prepare("SELECT * FROM gift_card_requests WHERE id=? FOR UPDATE").get(id) as {
+        id: string; amount_tsh: number; recipient: string; message: string; status: string; created_at: string;
+      } | undefined;
+      if (!row || row.status !== "paid_pending_approval") throw new InputError("Verify payment before approving this request.", 409);
+      let code = giftCode();
+      for (let i = 0; i < 5 && await tx.prepare("SELECT 1 FROM gift_cards WHERE code=?").get(code); i += 1) code = giftCode();
+      const createdAt = nowIso();
+      const expiresAt = giftExpiresAt(createdAt);
+      await tx.prepare(`INSERT INTO gift_cards (code, amount_tsh, recipient, message, status, created_at, expires_at)
+        VALUES (?, ?, ?, ?, 'issued', ?, ?)`)
+        .run(code, row.amount_tsh, row.recipient, row.message, createdAt, expiresAt);
+      await tx.prepare("UPDATE gift_cards SET payment_verified=TRUE, approved=TRUE WHERE code=?").run(code);
+      await tx.prepare(`UPDATE gift_card_requests SET status='approved', approved_at=?, gift_code=? WHERE id=?`)
+        .run(createdAt, code, id);
+    });
+  }
+  const row = await db.prepare("SELECT * FROM gift_card_requests WHERE id=?").get(id) as {
+    id: string; amount_tsh: number; buyer_name: string; buyer_phone: string; recipient: string; message: string;
+    payment_method: string; payment_reference: string; status: GiftCardRequest["status"]; created_at: string;
+    paid_at: string | null; approved_at: string | null; gift_code: string | null;
+  };
+  return { id: row.id, amountTsh: row.amount_tsh, buyerName: row.buyer_name, buyerPhone: row.buyer_phone,
+    recipient: row.recipient, message: row.message, paymentMethod: row.payment_method,
+    paymentReference: row.payment_reference, status: row.status, createdAt: row.created_at,
+    paidAt: row.paid_at, approvedAt: row.approved_at, giftCode: row.gift_code };
 }
 
 export async function listGiftCards(limit = 100): Promise<GiftCard[]> {
@@ -275,12 +356,16 @@ export async function listGiftCards(limit = 100): Promise<GiftCard[]> {
     status: string;
     created_at: string;
     expires_at: string | null;
+    payment_verified: boolean;
+    approved: boolean;
   }[];
 
   return rows.map((r) => {
     const expiresAt = r.expires_at || giftExpiresAt(r.created_at);
     const status = isGiftExpired(r.status, r.created_at, r.expires_at)
       ? "expired"
+      : r.status === "issued" && (!r.payment_verified || !r.approved)
+        ? "pending_review"
       : (r.status as GiftCard["status"]);
     return {
       code: r.code,
@@ -290,6 +375,8 @@ export async function listGiftCards(limit = 100): Promise<GiftCard[]> {
       status,
       createdAt: r.created_at,
       expiresAt,
+      paymentVerified: r.payment_verified,
+      approved: r.approved,
     };
   });
 }
@@ -309,6 +396,8 @@ export async function getGiftCard(code: string): Promise<GiftCard | undefined> {
         status: string;
         created_at: string;
         expires_at: string | null;
+        payment_verified: boolean;
+        approved: boolean;
       }
     | undefined;
   if (!row) return undefined;
@@ -322,6 +411,8 @@ export async function getGiftCard(code: string): Promise<GiftCard | undefined> {
         "UPDATE gift_cards SET status = 'expired' WHERE code = ? AND status = 'issued'",
       )
       .run(row.code);
+  } else if (status === "issued" && (!row.payment_verified || !row.approved)) {
+    status = "pending_review";
   }
 
   return {
@@ -332,6 +423,8 @@ export async function getGiftCard(code: string): Promise<GiftCard | undefined> {
     status: status as GiftCard["status"],
     createdAt: row.created_at,
     expiresAt: row.expires_at || giftExpiresAt(row.created_at),
+    paymentVerified: row.payment_verified,
+    approved: row.approved,
   };
 }
 
@@ -342,10 +435,23 @@ export async function redeemGiftCard(code: string, orderCode: string, tx?: Retur
       `UPDATE gift_cards
          SET status = 'redeemed', redeemed_at = ?, order_code = ?
        WHERE code = ? AND status = 'issued'
+         AND payment_verified = TRUE AND approved = TRUE
          AND (expires_at IS NULL OR expires_at > ?)`,
     )
     .run(nowIso(), orderCode, code.trim().toUpperCase(), nowIso());
   return Number((await result).changes) > 0;
+}
+
+/** Migrate/review pre-workflow cards without changing their remaining value. */
+export async function reviewLegacyGiftCard(code: string, action: "verify_payment" | "approve"): Promise<boolean> {
+  const key = code.trim().toUpperCase();
+  const now = nowIso();
+  const result = action === "verify_payment"
+    ? await getDb().prepare(`UPDATE gift_cards SET payment_verified=TRUE
+        WHERE code=? AND status='issued' AND payment_verified=FALSE AND expires_at > ?`).run(key, now)
+    : await getDb().prepare(`UPDATE gift_cards SET approved=TRUE
+        WHERE code=? AND status='issued' AND payment_verified=TRUE AND approved=FALSE AND expires_at > ?`).run(key, now);
+  return result.changes === 1;
 }
 
 /* ============ Hakiki ============ */

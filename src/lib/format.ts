@@ -24,13 +24,12 @@ export function writeStorage<T>(key: string, value: T): void {
   }
 }
 
-/** Nambari fupi ya oda, mfano "NCF-8F3K". */
+/** Nambari ya oda yenye nafasi ya kubashiri iliyo ndogo sana. */
 export function makeOrderCode(): string {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let out = "";
-  for (let i = 0; i < 4; i += 1) {
-    out += alphabet[Math.floor(Math.random() * alphabet.length)];
-  }
+  const bytes = new Uint8Array(12);
+  globalThis.crypto.getRandomValues(bytes);
+  const out = Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join("");
   return `NCF-${out}`;
 }
 

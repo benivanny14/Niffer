@@ -9,6 +9,7 @@ export function RetryPaymentButton({ reference }: { reference: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [phone, setPhone] = useState("");
 
   async function retry() {
     if (busy) return;
@@ -18,7 +19,7 @@ export function RetryPaymentButton({ reference }: { reference: string }) {
       const data = await apiPost<{
         ok: boolean;
         payment?: { redirectUrl?: string };
-      }>("/api/payments/start", { reference });
+      }>("/api/payments/start", { reference, phone });
       if (data.payment?.redirectUrl) {
         window.location.href = data.payment.redirectUrl;
         return;
@@ -33,6 +34,15 @@ export function RetryPaymentButton({ reference }: { reference: string }) {
 
   return (
     <span className="inline-flex flex-col items-center gap-2">
+      <input
+        type="tel"
+        autoComplete="tel"
+        value={phone}
+        onChange={(event) => setPhone(event.target.value)}
+        placeholder="Phone number used for this order"
+        aria-label="Phone number used for this order"
+        className="input w-full"
+      />
       <button
         type="button"
         onClick={() => void retry()}

@@ -14,6 +14,8 @@ type PromoRow = {
   free_shipping: number;
   min_subtotal_tsh: number | null;
   active: number;
+  expires_at: string | null;
+  redeemed_at: string | null;
 };
 
 function rowToRule(row: PromoRow): PromoRule {
@@ -23,7 +25,9 @@ function rowToRule(row: PromoRow): PromoRule {
     percentOff: row.percent_off ?? undefined,
     freeShipping: row.free_shipping === 1,
     minSubtotalTsh: row.min_subtotal_tsh ?? undefined,
-    active: row.active === 1,
+    active: row.active === 1 && !row.redeemed_at && !!row.expires_at && Date.parse(row.expires_at) > Date.now(),
+    expiresAt: row.expires_at ?? undefined,
+    redeemedAt: row.redeemed_at ?? undefined,
   };
 }
 
@@ -32,6 +36,13 @@ export async function listPromoRules(): Promise<PromoRule[]> {
   const rows = await getDb()
     .prepare("SELECT * FROM promo_codes ORDER BY code")
     .all() as unknown as PromoRow[];
+  return rows.map(rowToRule);
+}
+
+export async function listAvailablePromoRules(): Promise<PromoRule[]> {
+  const rows = await getDb()
+    .prepare("SELECT * FROM promo_codes WHERE active=1 AND redeemed_at IS NULL AND expires_at > ? ORDER BY code")
+    .all(nowIso()) as unknown as PromoRow[];
   return rows.map(rowToRule);
 }
 
@@ -48,7 +59,7 @@ export async function applyPromoFromDb(
     .get(code) as PromoRow | undefined;
   const rule = row ? rowToRule(row) : undefined;
 
-  if (!rule || !rule.active) {
+  if (!rule || !rule.active || rule.redeemedAt || !rule.expiresAt || Date.parse(rule.expiresAt) <= Date.now()) {
     return { ok: false, reason: "This code is invalid or has expired." };
   }
   if (rule.minSubtotalTsh && subtotalTsh < rule.minSubtotalTsh) {
@@ -84,6 +95,7 @@ export async function createPromoRule(input: {
   percentOff?: number;
   freeShipping?: boolean;
   minSubtotalTsh?: number;
+  expiresAt?: string;
 }): Promise<PromoRule> {
   const code = (input.code ?? "").trim().toUpperCase();
   const label = (input.label ?? "").trim();
@@ -101,6 +113,10 @@ export async function createPromoRule(input: {
   if (!percentOff && !input.freeShipping) {
     throw new InputError("Enter a percentage discount or select free shipping.");
   }
+  const expiresAt = input.expiresAt ? new Date(input.expiresAt).toISOString() : "";
+  if (!expiresAt || Date.parse(expiresAt) <= Date.now()) {
+    throw new InputError("Choose a future expiry date for this one-use code.");
+  }
 
   const db = getDb();
   const exists = await db.prepare("SELECT 1 FROM promo_codes WHERE code = ?").get(code);
@@ -108,8 +124,8 @@ export async function createPromoRule(input: {
 
   await db.prepare(
     `INSERT INTO promo_codes (
-       code, label, percent_off, free_shipping, min_subtotal_tsh, active, created_at
-     ) VALUES (?, ?, ?, ?, ?, 1, ?)`,
+      code, label, percent_off, free_shipping, min_subtotal_tsh, active, created_at, expires_at
+     ) VALUES (?, ?, ?, ?, ?, 1, ?, ?)`,
   ).run(
     code,
     label,
@@ -117,6 +133,7 @@ export async function createPromoRule(input: {
     input.freeShipping ? 1 : 0,
     minSubtotalTsh ?? null,
     nowIso(),
+    expiresAt,
   );
 
   const row = await db
@@ -130,8 +147,9 @@ export async function setPromoActive(code: string, active: boolean): Promise<Pro
   const key = code.trim().toUpperCase();
   const db = getDb();
   const result = await db
-    .prepare("UPDATE promo_codes SET active = ? WHERE code = ?")
-    .run(active ? 1 : 0, key);
+    .prepare(`UPDATE promo_codes SET active = ? WHERE code = ?
+      AND (? = 0 OR (redeemed_at IS NULL AND expires_at > ?))`)
+    .run(active ? 1 : 0, key, active ? 1 : 0, nowIso());
   if (result.changes === 0) throw new InputError("Code not found.", 404);
   const row = await db
     .prepare("SELECT * FROM promo_codes WHERE code = ?")

@@ -125,7 +125,26 @@ CREATE TABLE IF NOT EXISTS gift_cards (
   created_at TEXT NOT NULL,
   expires_at TEXT,
   redeemed_at TEXT,
-  order_code  TEXT
+  order_code  TEXT,
+  payment_verified BOOLEAN NOT NULL DEFAULT FALSE,
+  approved BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE IF NOT EXISTS gift_card_requests (
+  id TEXT PRIMARY KEY,
+  amount_tsh INTEGER NOT NULL,
+  buyer_name TEXT NOT NULL,
+  buyer_phone TEXT NOT NULL,
+  recipient TEXT NOT NULL DEFAULT '',
+  message TEXT NOT NULL DEFAULT '',
+  payment_method TEXT NOT NULL,
+  payment_reference TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'payment_pending',
+  created_at TEXT NOT NULL,
+  paid_at TEXT,
+  approved_at TEXT,
+  gift_code TEXT UNIQUE,
+  UNIQUE (payment_method, payment_reference)
 );
 
 CREATE TABLE IF NOT EXISTS notifications (
@@ -164,7 +183,10 @@ CREATE TABLE IF NOT EXISTS promo_codes (
   free_shipping    INTEGER NOT NULL DEFAULT 0,
   min_subtotal_tsh INTEGER,
   active           INTEGER NOT NULL DEFAULT 1,
-  created_at       TEXT NOT NULL
+  created_at       TEXT NOT NULL,
+  expires_at       TEXT,
+  redeemed_at      TEXT,
+  order_code       TEXT
 );
 
 CREATE TABLE IF NOT EXISTS admin_sessions (
@@ -308,7 +330,7 @@ export class NeonDatabase {
 }
 
 /** Ongeza mara SCHEMA inapobadilishwa (DDL ni polepole: ~14s kwenye Neon). */
-const SCHEMA_VERSION = "3";
+const SCHEMA_VERSION = "5";
 
 type DbGlobals = typeof globalThis & {
   __nifferPool?: Pool;
@@ -388,6 +410,15 @@ export async function ensureDatabaseReady(): Promise<void> {
 }
 
 async function migrate(pool: SchemaConnection): Promise<void> {
+  await pool.query("ALTER TABLE gift_cards ADD COLUMN IF NOT EXISTS payment_verified BOOLEAN NOT NULL DEFAULT FALSE");
+  await pool.query("ALTER TABLE gift_cards ADD COLUMN IF NOT EXISTS approved BOOLEAN NOT NULL DEFAULT FALSE");
+  await pool.query("ALTER TABLE promo_codes ADD COLUMN IF NOT EXISTS expires_at TEXT");
+  await pool.query("ALTER TABLE promo_codes ADD COLUMN IF NOT EXISTS redeemed_at TEXT");
+  await pool.query("ALTER TABLE promo_codes ADD COLUMN IF NOT EXISTS order_code TEXT");
+  await pool.query(`UPDATE promo_codes SET expires_at = (created_at::timestamptz + INTERVAL '1 year')::text WHERE expires_at IS NULL`);
+  await pool.query(`UPDATE promo_codes p SET active=0, redeemed_at=COALESCE(p.redeemed_at, o.created_at), order_code=COALESCE(p.order_code, o.code)
+    FROM (SELECT DISTINCT ON (promo_code) promo_code, code, created_at FROM orders WHERE promo_code IS NOT NULL ORDER BY promo_code, created_at) o
+    WHERE p.code=o.promo_code AND p.redeemed_at IS NULL`);
   await pool.query(`UPDATE gift_cards
     SET expires_at = (created_at::timestamptz + INTERVAL '1 year')::text
     WHERE expires_at IS NULL`);
@@ -395,12 +426,13 @@ async function migrate(pool: SchemaConnection): Promise<void> {
     const tuples: string[] = [];
     const values: unknown[] = [];
     promoCodes.forEach((promo, i) => {
-      const b = i * 7;
-      tuples.push(`($${b + 1},$${b + 2},$${b + 3},$${b + 4},$${b + 5},$${b + 6},$${b + 7})`);
-      values.push(promo.code, promo.label, promo.percentOff ?? null, promo.freeShipping ? 1 : 0, promo.minSubtotalTsh ?? null, promo.active ? 1 : 0, nowIso());
+      const b = i * 8;
+      tuples.push(`($${b + 1},$${b + 2},$${b + 3},$${b + 4},$${b + 5},$${b + 6},$${b + 7},$${b + 8})`);
+      const createdAt = nowIso();
+      values.push(promo.code, promo.label, promo.percentOff ?? null, promo.freeShipping ? 1 : 0, promo.minSubtotalTsh ?? null, promo.active ? 1 : 0, createdAt, new Date(Date.parse(createdAt) + 365 * 24 * 60 * 60 * 1000).toISOString());
     });
     await pool.query(
-      `INSERT INTO promo_codes (code, label, percent_off, free_shipping, min_subtotal_tsh, active, created_at)
+      `INSERT INTO promo_codes (code, label, percent_off, free_shipping, min_subtotal_tsh, active, created_at, expires_at)
        VALUES ${tuples.join(',')} ON CONFLICT (code) DO NOTHING`,
       values,
     );

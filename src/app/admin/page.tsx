@@ -39,6 +39,7 @@ type Tab =
   | "wholesale"
   | "reviews"
   | "promo"
+  | "giftcards"
   | "storage"
   | "messages";
 
@@ -83,6 +84,8 @@ type PromoRecord = {
   freeShipping: boolean;
   minSubtotalTsh?: number;
   active: boolean;
+  expiresAt?: string;
+  redeemedAt?: string;
 };
 
 type NotificationRecord = {
@@ -106,6 +109,13 @@ type GiftCardRecord = {
   status: string;
   createdAt: string;
   expiresAt?: string;
+  paymentVerified: boolean;
+  approved: boolean;
+};
+type GiftCardRequestRecord = {
+  id: string; amountTsh: number; buyerName: string; buyerPhone: string; recipient: string; message: string;
+  paymentMethod: string; paymentReference: string; status: "payment_pending" | "paid_pending_approval" | "approved" | "rejected";
+  createdAt: string; paidAt: string | null; approvedAt: string | null; giftCode: string | null;
 };
 
 type CustomerRecord = {
@@ -256,6 +266,7 @@ function AdminDashboard() {
     notifications: NotificationRecord[];
     subscribers: SubscriberRecord[];
     giftCards: GiftCardRecord[];
+    giftCardRequests: GiftCardRequestRecord[];
     customers: CustomerRecord[];
     adminProducts: AdminProductRow[];
   }>(
@@ -275,7 +286,7 @@ function AdminDashboard() {
           ok: boolean;
           subscribers: SubscriberRecord[];
         }>("/api/newsletter"),
-        apiGet<{ ok: boolean; giftCards: GiftCardRecord[] }>(
+          apiGet<{ ok: boolean; giftCards: GiftCardRecord[]; requests: GiftCardRequestRecord[] }>(
           "/api/giftcards",
         ),
         apiGet<{ ok: boolean; customers: CustomerRecord[] }>(
@@ -294,6 +305,7 @@ function AdminDashboard() {
         notifications: nt.notifications,
         subscribers: nl.subscribers,
         giftCards: gc.giftCards,
+        giftCardRequests: gc.requests,
         customers: cu.customers,
         adminProducts: (pd.products ?? []).map((p) => ({
           slug: p.slug,
@@ -313,6 +325,7 @@ function AdminDashboard() {
   const notifications = adminData.data?.notifications ?? [];
   const subscribers = adminData.data?.subscribers ?? [];
   const giftCards = adminData.data?.giftCards ?? [];
+  const giftCardRequests = adminData.data?.giftCardRequests ?? [];
   const customers = adminData.data?.customers ?? [];
   const adminProducts = adminData.data?.adminProducts ?? [];
   const dataError = adminData.error;
@@ -329,6 +342,7 @@ function AdminDashboard() {
   const unreadNotifications = notifications.filter(
     (n) => n.status === "new",
   ).length;
+  const pendingGiftCardRequests = giftCardRequests.filter((request) => request.status === "payment_pending" || request.status === "paid_pending_approval").length;
 
   const tabs: { id: Tab; label: string }[] = [
     { id: "overview", label: "Overview" },
@@ -341,6 +355,7 @@ function AdminDashboard() {
       label: `Reviews${pendingReviews ? ` (${pendingReviews})` : ""}`,
     },
     { id: "promo", label: "Promo" },
+    { id: "giftcards", label: `Gift cards${pendingGiftCardRequests ? ` (${pendingGiftCardRequests})` : ""}` },
     {
       id: "storage",
       label: `Updates${unreadNotifications ? ` (${unreadNotifications})` : ""}`,
@@ -424,11 +439,11 @@ function AdminDashboard() {
         {tab === "promo" ? (
           <PromoTab promos={promos} onChanged={() => adminData.refresh()} />
         ) : null}
+        {tab === "giftcards" ? <GiftCardsTab giftCards={giftCards} requests={giftCardRequests} onChanged={() => adminData.refresh()} /> : null}
         {tab === "storage" ? (
           <UpdatesTab
             notifications={notifications}
             subscribers={subscribers}
-            giftCards={giftCards}
             onChanged={() => adminData.refresh()}
           />
         ) : null}
@@ -1666,6 +1681,7 @@ function PromoTab({
   const [percentOff, setPercentOff] = useState("");
   const [freeShipping, setFreeShipping] = useState(false);
   const [minSubtotal, setMinSubtotal] = useState("");
+  const [expiresAt, setExpiresAt] = useState("");
   const [saving, setSaving] = useState(false);
   const [toggling, setToggling] = useState("");
   const [error, setError] = useState("");
@@ -1682,12 +1698,14 @@ function PromoTab({
         percentOff: percentOff ? Number(percentOff) : undefined,
         freeShipping,
         minSubtotalTsh: minSubtotal ? Number(minSubtotal) : undefined,
+        expiresAt: expiresAt ? new Date(`${expiresAt}T23:59:59.999`).toISOString() : undefined,
       });
       setCode("");
       setLabel("");
       setPercentOff("");
       setFreeShipping(false);
       setMinSubtotal("");
+      setExpiresAt("");
       onChanged();
     } catch (err) {
       setError(errorMessage(err));
@@ -1727,6 +1745,10 @@ function PromoTab({
               className={field}
               placeholder="MFANO10"
             />
+          </label>
+          <label className="block text-sm">
+            <span className="mb-1.5 block font-medium text-ink-700">Expires on *</span>
+            <input required type="date" min={new Date().toISOString().slice(0, 10)} value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} className={field} />
           </label>
           <label className="block text-sm">
             <span className="mb-1.5 block font-medium text-ink-700">
@@ -1823,6 +1845,8 @@ function PromoTab({
                     min {formatTsh(promo.minSubtotalTsh)}
                   </span>
                 ) : null}
+                {promo.expiresAt ? <span className="badge bg-cream-100 text-ink-500">Expires {new Date(promo.expiresAt).toLocaleDateString("en-TZ")}</span> : null}
+                {promo.redeemedAt ? <span className="badge bg-cream-100 text-ink-500">Used</span> : null}
                 <span
                   className={`badge ${
                     promo.active
@@ -1853,16 +1877,60 @@ function PromoTab({
   );
 }
 
-/* ============ Updates (notifications + jarida + kadi) ============ */
+/* ============ Gift cards ============ */
+function GiftCardsTab({ giftCards, requests, onChanged }: {
+  giftCards: GiftCardRecord[];
+  requests: GiftCardRequestRecord[];
+  onChanged: () => void;
+}) {
+  const [saving, setSaving] = useState("");
+  async function review(id: string, action: "verify_payment" | "approve" | "reject") {
+    setSaving(id);
+    try {
+      await apiPatch(`/api/giftcards/requests/${encodeURIComponent(id)}`, { action });
+      onChanged();
+    } catch (error) {
+      window.alert(errorMessage(error));
+    } finally {
+      setSaving("");
+    }
+  }
+  async function reviewLegacyCard(code: string, action: "verify_payment" | "approve") {
+    setSaving(code);
+    try {
+      await apiPatch(`/api/giftcards/cards/${encodeURIComponent(code)}`, { action });
+      onChanged();
+    } catch (error) {
+      window.alert(errorMessage(error));
+    } finally {
+      setSaving("");
+    }
+  }
+  return <div className="space-y-10">
+    <section>
+      <h2 className="font-display text-xl text-ink-900">Purchase requests awaiting review ({requests.filter((r) => r.status === "payment_pending" || r.status === "paid_pending_approval").length})</h2>
+      <p className="mt-2 text-sm text-ink-500">Check the transaction reference and amount in the mobile-money statement. Mark payment verified first; only then can you approve and issue the code. The one-year expiry starts when the code is issued.</p>
+      {requests.length ? <ul className="mt-4 space-y-3">{requests.map((request) => <li key={request.id} className="card flex flex-wrap items-center gap-3 p-4 text-sm">
+        <div className="min-w-48 flex-1"><p className="font-semibold text-ink-900">{request.buyerName} · {formatTsh(request.amountTsh)}</p><p className="text-ink-500">{request.buyerPhone}{request.recipient ? ` · Recipient: ${request.recipient}` : ""}</p><p className="mt-1 break-all font-mono text-xs text-ink-700">{request.paymentMethod.toUpperCase()} · Ref: {request.paymentReference}</p><p className="mt-1 text-xs text-ink-400">Submitted {new Date(request.createdAt).toLocaleString("en-TZ")}</p></div>
+        <span className="badge bg-cream-100 text-ink-700">{request.status.replaceAll("_", " ")}</span>
+        {request.status === "payment_pending" ? <button type="button" disabled={!!saving} onClick={() => void review(request.id, "verify_payment")} className="btn-outline px-3 py-2 text-xs">{saving === request.id ? "Saving…" : "Verify payment"}</button> : null}
+        {request.status === "paid_pending_approval" ? <button type="button" disabled={!!saving} onClick={() => void review(request.id, "approve")} className="btn-primary px-3 py-2 text-xs">{saving === request.id ? "Saving…" : "Approve & issue code"}</button> : null}
+        {request.status === "payment_pending" || request.status === "paid_pending_approval" ? <button type="button" disabled={!!saving} onClick={() => void review(request.id, "reject")} className="btn-outline px-3 py-2 text-xs">Reject</button> : null}
+        {request.giftCode ? <><span className="font-mono font-semibold text-accent">{request.giftCode}</span><a className="btn-outline px-3 py-2 text-xs" target="_blank" rel="noopener noreferrer" href={`https://wa.me/${request.buyerPhone.replace(/\D/g, "").replace(/^0/, "255")}?text=${encodeURIComponent(`Your ${formatTsh(request.amountTsh)} Niffer gift card code is ${request.giftCode}. It expires one year after issue and can be used once.`)}`}>Send code on WhatsApp</a></> : null}
+      </li>)}</ul> : <p className="mt-3 text-sm text-ink-500">No gift card requests yet.</p>}
+    </section>
+    <section><h2 className="font-display text-xl text-ink-900">Issued gift cards ({giftCards.length})</h2><p className="mt-2 text-sm text-ink-500">Older cards are locked until their payment is reviewed under the new approval rules.</p>{giftCards.length ? <ul className="mt-4 space-y-2">{giftCards.map((card) => <li key={card.code} className="card flex flex-wrap items-center gap-3 p-4 text-sm"><span className="font-mono font-semibold text-accent">{card.code}</span><span className="font-medium text-ink-900">{formatTsh(card.amountTsh)}</span>{card.recipient ? <span className="text-ink-500">Recipient: {card.recipient}</span> : null}<span className="badge bg-cream-100 text-ink-700">{card.status}</span>{card.status === "pending_review" && !card.paymentVerified ? <button type="button" disabled={!!saving} onClick={() => void reviewLegacyCard(card.code, "verify_payment")} className="btn-outline px-3 py-2 text-xs">Verify payment</button> : null}{card.status === "pending_review" && card.paymentVerified && !card.approved ? <button type="button" disabled={!!saving} onClick={() => void reviewLegacyCard(card.code, "approve")} className="btn-primary px-3 py-2 text-xs">Approve card</button> : null}<span className="ml-auto text-xs text-ink-400">Expires: {card.expiresAt ? new Date(card.expiresAt).toLocaleDateString("en-TZ") : "—"}</span></li>)}</ul> : <p className="mt-3 text-sm text-ink-500">No gift cards issued yet.</p>}</section>
+  </div>;
+}
+
+/* ============ Updates (notifications + jarida) ============ */
 function UpdatesTab({
   notifications,
   subscribers,
-  giftCards,
   onChanged,
 }: {
   notifications: NotificationRecord[];
   subscribers: SubscriberRecord[];
-  giftCards: GiftCardRecord[];
   onChanged: () => void;
 }) {
   const [saving, setSaving] = useState("");
@@ -1963,56 +2031,7 @@ function UpdatesTab({
         )}
       </section>
 
-      {/* Gift cards */}
-      <section>
-        <h2 className="font-display text-xl text-ink-900">
-          Gift cards ({giftCards.length})
-        </h2>
-        {giftCards.length === 0 ? (
-          <p className="mt-3 text-sm text-ink-500">
-            No gift cards yet. Cards issued from /zawadi will appear here.
-          </p>
-        ) : (
-          <ul className="mt-4 space-y-2">
-            {giftCards.map((gc) => (
-              <li
-                key={gc.code}
-                className="card flex flex-wrap items-center gap-3 p-4 text-sm"
-              >
-                <span className="font-mono font-semibold text-accent">
-                  {gc.code}
-                </span>
-                <span className="font-medium text-ink-900">
-                  {formatTsh(gc.amountTsh)}
-                </span>
-                {gc.recipient ? (
-                  <span className="text-ink-500">→ {gc.recipient}</span>
-                ) : null}
-                <span
-                  className={`badge ${
-                    gc.status === "issued"
-                      ? "bg-success-100 text-success-600"
-                      : gc.status === "redeemed"
-                        ? "bg-cream-100 text-ink-500"
-                        : "bg-warning-100 text-warning-600"
-                  }`}
-                >
-                  {gc.status === "issued"
-                    ? "Issued"
-                    : gc.status === "redeemed"
-                      ? "Redeemed"
-                      : "Out of stock"}
-                </span>
-                <span className="ml-auto text-xs text-ink-400">
-                  {gc.expiresAt
-                    ? `Expires: ${new Date(gc.expiresAt).toLocaleDateString("en-TZ")}`
-                    : `Issued: ${new Date(gc.createdAt).toLocaleDateString("en-TZ")}`}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+
     </div>
   );
 }

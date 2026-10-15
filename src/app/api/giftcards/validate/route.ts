@@ -19,7 +19,9 @@ export async function POST(req: NextRequest) {
     if (!card) return json({ ok: false, error: "Gift card not found." }, 404);
     if (card.status !== "issued") {
       return json(
-        { ok: false, error: "This card has already been used or has expired." },
+        { ok: false, error: card.status === "pending_review"
+          ? "This gift card is awaiting payment review or approval. Contact the store."
+          : "This card has already been used or has expired." },
         400,
       );
     }

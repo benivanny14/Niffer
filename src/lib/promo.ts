@@ -13,6 +13,8 @@ export type PromoRule = {
   freeShipping?: boolean;
   /** Kiwango cha chini cha jumla ndogo ili msimbo utumike. */
   minSubtotalTsh?: number;
+  expiresAt?: string;
+  redeemedAt?: string;
   active: boolean;
 };
 

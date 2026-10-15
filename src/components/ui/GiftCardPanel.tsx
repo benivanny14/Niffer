@@ -14,8 +14,8 @@ const steps = [
     description: "Gift cards from TSh 10,000 to TSh 100,000.",
   },
   {
-    title: "Send a unique gift code",
-    description: "A unique code is issued and can be sent via WhatsApp.",
+    title: "Payment review and approval",
+    description: "We verify your payment and approve the gift card before issuing its code.",
   },
   {
     title: "They can redeem it",
@@ -27,12 +27,15 @@ export function GiftCardPanel() {
   const [amount, setAmount] = useState(amounts[1]);
   const [recipient, setRecipient] = useState("");
   const [message, setMessage] = useState("");
+  const [buyerName, setBuyerName] = useState("");
+  const [buyerPhone, setBuyerPhone] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("mpesa");
+  const [paymentReference, setPaymentReference] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
-  const [issued, setIssued] = useState<{
-    code: string;
+  const [request, setRequest] = useState<{
+    id: string;
     amountTsh: number;
-    expiresAt?: string;
   } | null>(null);
 
   async function issue() {
@@ -42,12 +45,11 @@ export function GiftCardPanel() {
     try {
       const data = await apiPost<{
         ok: boolean;
-        giftCard: { code: string; amountTsh: number; expiresAt?: string };
-      }>("/api/giftcards", { amountTsh: amount, recipient, message });
-      setIssued({
-        code: data.giftCard.code,
-        amountTsh: data.giftCard.amountTsh,
-        expiresAt: data.giftCard.expiresAt,
+        request: { id: string; amountTsh: number };
+      }>("/api/giftcards", { amountTsh: amount, buyerName, buyerPhone, recipient, message, paymentMethod, paymentReference });
+      setRequest({
+        id: data.request.id,
+        amountTsh: data.request.amountTsh,
       });
     } catch (err) {
       setError(errorMessage(err));
@@ -58,7 +60,7 @@ export function GiftCardPanel() {
 
   const waText = `Hello ${site.name}, I would like a gift card worth ${formatTsh(
     amount,
-)}.${issued ? ` Code: ${issued.code}.` : ""}${
+)}.${request ? ` Request: ${request.id}. Payment reference: ${paymentReference}.` : ""}${
     recipient ? ` Recipient: ${recipient}.` : ""
   }${message ? ` Message: ${message}` : ""}`;
 
@@ -92,8 +94,19 @@ export function GiftCardPanel() {
           </div>
 
           <h2 className="mt-8 font-display text-xl text-ink-900">
-            2. Optional details
+            2. Buyer and recipient
           </h2>
+          <label className="mt-4 block text-sm">
+            <span className="mb-1.5 block font-medium text-ink-700">Buyer name *</span>
+            <input required value={buyerName} onChange={(e) => setBuyerName(e.target.value)} placeholder="Your name" className="w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none focus:border-brand-500" />
+          </label>
+          <a href={waLink(`Hello ${site.name}, please send me the payment instructions for a ${formatTsh(amount)} gift card.`)} target="_blank" rel="noopener noreferrer" className="btn-outline mt-4 w-full">
+            Get payment instructions on WhatsApp
+          </a>
+          <label className="mt-4 block text-sm">
+            <span className="mb-1.5 block font-medium text-ink-700">Buyer phone *</span>
+            <input required type="tel" autoComplete="tel" value={buyerPhone} onChange={(e) => setBuyerPhone(e.target.value)} placeholder="+255..." className="w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none focus:border-brand-500" />
+          </label>
           <label className="mt-4 block text-sm">
             <span className="mb-1.5 block font-medium text-ink-700">
               Recipient name
@@ -104,6 +117,16 @@ export function GiftCardPanel() {
               placeholder="e.g. Neema"
               className="w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-500"
             />
+          </label>
+          <label className="mt-4 block text-sm">
+            <span className="mb-1.5 block font-medium text-ink-700">Mobile money method *</span>
+            <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900">
+              <option value="mpesa">M-Pesa</option><option value="mixx">Mixx by Yas</option><option value="airtel">Airtel Money</option>
+            </select>
+          </label>
+          <label className="mt-4 block text-sm">
+            <span className="mb-1.5 block font-medium text-ink-700">Transaction reference after payment *</span>
+            <input required value={paymentReference} onChange={(e) => setPaymentReference(e.target.value.trim())} placeholder="Enter reference after paying" className="w-full rounded-xl border border-cream-300 bg-surface px-4 py-3 text-sm text-ink-900 outline-none focus:border-brand-500" />
           </label>
           <label className="mt-4 block text-sm">
             <span className="mb-1.5 block font-medium text-ink-700">
@@ -118,23 +141,19 @@ export function GiftCardPanel() {
             />
           </label>
 
-          {issued ? (
-            <div className="mt-6 rounded-2xl border border-success-200 bg-success-50 p-5 text-center">
+          {request ? (
+            <div className="mt-6 rounded-2xl border border-warning-200 bg-warning-50 p-5 text-center">
               <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-success-100 text-success-600">
                 <CheckIcon className="h-5 w-5" />
               </span>
               <p className="mt-3 text-sm text-ink-500">
-                Your gift card code ({formatTsh(issued.amountTsh)}):
+                Payment submitted for {formatTsh(request.amountTsh)}. The code is not issued yet.
               </p>
               <p className="font-display mt-1 text-2xl tracking-wide text-ink-900">
-                {issued.code}
+                Request {request.id.slice(0, 8).toUpperCase()}
               </p>
               <p className="mt-2 text-xs text-ink-500">
-                Save this code; you can use it on any Niffer order
-                {issued.expiresAt
-                  ? ` before ${new Date(issued.expiresAt).toLocaleDateString("en-TZ")}`
-                  : ""}
-                .
+                Keep your transaction reference. The store will verify payment and approve the card, then send the one-time code to you.
               </p>
             </div>
           ) : null}
@@ -154,23 +173,23 @@ export function GiftCardPanel() {
             <ChatIcon className="h-4 w-4" />
             {sending
               ? "Creating gift card…"
-              : issued
+              : request
                 ? "Request another card"
                 : `Request gift card — ${formatTsh(amount)}`}
           </button>
 
-          {issued ? (
+          {request ? (
             <a
               href={waLink(waText)}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-outline mt-3 w-full"
             >
-              Send the code via WhatsApp
+              Contact us about your payment
             </a>
           ) : null}
           <p className="mt-3 text-center text-xs text-ink-400">
-            This gift card can be used on any order and expires after one year.
+            Payment is checked manually by the store. Your code is issued only after payment verification and admin approval, and expires one year after issue.
           </p>
         </div>
 

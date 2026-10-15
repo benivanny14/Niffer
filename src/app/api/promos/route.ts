@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
       percentOff?: number;
       freeShipping?: boolean;
       minSubtotalTsh?: number;
+      expiresAt?: string;
     }>(req);
     if (!body) return fail("The code details are invalid.");
     const promo = await createPromoRule(body);

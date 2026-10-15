@@ -3,7 +3,7 @@ import Link from "next/link";
 import { formatTsh } from "@/lib/format";
 import { connection } from "next/server";
 import { listProducts } from "@/lib/server/catalog";
-import { promoCodes } from "@/lib/promo";
+import { listAvailablePromoRules } from "@/lib/server/promo";
 import { ProductCard } from "@/components/catalog/ProductCard";
 import { site } from "@/lib/site";
 import { ChatIcon, TagIcon, TruckIcon } from "@/components/ui/icons";
@@ -42,6 +42,7 @@ export default async function OffersPage() {
   // Ofa kutoka DB (bei za admin) — dynamic render.
   await connection();
   const products = await listProducts();
+  const promoCodes = await listAvailablePromoRules();
   const onSale = products.filter((p) => p.compareAtTsh);
   const fresh = products.filter((p) => p.badges.includes("new"));
 
@@ -123,6 +124,7 @@ export default async function OffersPage() {
             </li>
           ))}
         </ul>
+        {promoCodes.length === 0 ? <p className="mt-4 text-sm text-ink-500">There are no active discount codes right now.</p> : null}
       </section>
 
       {/* Bundles */}

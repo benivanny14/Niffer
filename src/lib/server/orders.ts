@@ -283,7 +283,9 @@ export async function createOrder(input: CreateOrderInput): Promise<{
   if (input.giftCardCode?.trim()) {
     giftCard = await getGiftCard(input.giftCardCode.trim());
     if (!giftCard || giftCard.status !== "issued") {
-      throw new InputError("The gift card is invalid or has already been used.");
+      throw new InputError(giftCard?.status === "pending_review"
+        ? "This gift card is awaiting payment review or approval. Contact the store."
+        : "The gift card is invalid or has already been used.");
     }
     const beforeGift = Math.max(
       0,
@@ -335,6 +337,16 @@ export async function createOrder(input: CreateOrderInput): Promise<{
       giftCard ? giftCard.code : null,
       giftDiscountTsh > 0 ? giftDiscountTsh : null,
     );
+
+    if (applied) {
+      const consumed = await tx.prepare(`UPDATE promo_codes
+        SET active = 0, redeemed_at = ?, order_code = ?
+        WHERE code = ? AND active = 1 AND redeemed_at IS NULL AND expires_at > ?`)
+        .run(createdAt, code, applied.code, createdAt);
+      if (consumed.changes !== 1) {
+        throw new InputError("This discount code has expired or has already been used.", 409);
+      }
+    }
 
     await tx.prepare(
       "INSERT INTO order_events (code, status, at) VALUES (?, ?, ?)",
@@ -503,6 +515,11 @@ export async function cancelOrder(code: string): Promise<Order | undefined> {
         `UPDATE gift_cards SET status = 'issued', redeemed_at = NULL, order_code = NULL
          WHERE code = ? AND status = 'redeemed' AND order_code = ?`,
       ).run(existing.giftCardCode, key);
+    }
+    if (existing.promoCode) {
+      await tx.prepare(`UPDATE promo_codes SET active=1, redeemed_at=NULL, order_code=NULL
+        WHERE code=? AND order_code=? AND expires_at > ?`)
+        .run(existing.promoCode, key, at);
     }
 
     await tx.prepare(

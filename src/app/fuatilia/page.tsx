@@ -48,7 +48,7 @@ export default function TrackOrderPage() {
       <h1 className="heading-display mt-2">Track your order</h1>
       <p className="mt-3 text-ink-500">
         Enter the order number you received (for example{" "}
-        <span className="font-medium text-ink-700">NCF-XXXX</span>) ili kuona
+        <span className="font-medium text-ink-700">NCF-XXXXXXXXXXXX</span>) ili kuona
         to check its progress.
       </p>
 
@@ -58,7 +58,7 @@ export default function TrackOrderPage() {
           <input
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder="NCF-XXXX"
+            placeholder="NCF-XXXXXXXXXXXX"
             aria-label="Order number"
             className="w-full bg-transparent py-3 text-sm uppercase text-ink-900 outline-none placeholder:text-ink-400"
           />
